@@ -1,0 +1,15 @@
+@(name : String, street : String, city : String, email : String)
+
+@main("Impressum") {
+    <div class="container">
+        <header>
+            <h1>Impressum</h1>
+        </header>
+        <p>@name<br/>
+        @street<br/>
+        @city</p>
+
+<p><a href="mailto:@Html(email)">@Html(email)</a><br/></p>
+
+  </div>
+}

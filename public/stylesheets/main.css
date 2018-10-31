@@ -1,0 +1,64 @@
+/* Formatierung von HTML-Elementen */
+
+*                    {margin:0px 0px 0px 0px;padding:0px 0px 0px 0px;}
+
+#body                {background-color:#6c6c6c; height:100%;}
+
+body                 {font-family:Arial, Sans-serif, Helvetica;font-size:11px;font-weight:normal;line-height:14px}
+
+div                  {}
+span                 {}
+iframe               {border:none}
+
+/* Horizontale Linien */
+hr                   {background-color:#AEA794;color:#AEA794;height:1px;border-style:none}
+
+/* Links */
+
+a                    {color:#E2A612;text-decoration:none;}
+a:hover              {color:#F2B622;text-decoration:underline;}
+
+/* Bilder */
+
+/*a img                {border:none} */
+
+/* Grundgerüst */
+
+#blockFullDocument   {width:100%;height:100%; vertical-align:middle;}
+#blockMain           {width:1160px;min-height:730px;background-color:#E2E2E2;margin:0 auto;}
+#blockMainInner      {padding-left:20px; padding-right:10px;}
+#blockTop            {width:1130px;height:157px;}
+#blockTop img        {margin: auto; display: block;}
+#blockLeft           {float:left;width:160px;min-height:662px;}
+#blockMiddle         {float:left;width:800px;min-height:662px;}
+#blockRight          {float:left;width:160px;min-height:662px;}
+#blockFooter         {width:1150px;height:40px;margin:0 auto;text-align:right;padding-top:10px;}
+
+/* links */
+.linksTop               {width:150px;height:10px;background:url(../images/white_small_top.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.links                  {width:150px;background:url(../images/white_small_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.linksContent           {width:140px;padding-left:3px;padding-right:7px;}
+.linksBottom            {width:150px;height:10px;background:url(../images/white_small_bottom.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+
+/* mitte */
+.mitteTop               {width:790px;height:10px;background:url(../images/white_big_top.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.mitte                  {width:790px;min-height:524px;background:url(../images/white_big_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:auto;}
+.mittesmall             {width:790px;background:url(../images/white_big_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:auto;}
+.mitteContent           {width:755px;padding-left:3px;padding-right:7px;}
+.mitteBottom            {width:790px;height:10px;background:url(../images/white_big_bottom.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+
+/* rechts */
+.rechtsTop               {width:150px;height:10px;background:url(../images/white_small_top.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.rechts                  {width:150px;background:url(../images/white_small_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.rechtsContent           {width:140px;padding-left:3px;padding-right:7px;}
+.rechtsBottom            {width:150px;height:10px;background:url(../images/white_small_bottom.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+
+.container {
+    min-height: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.container h1 {margin-bottom: 5px;}

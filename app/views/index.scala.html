@@ -1,0 +1,57 @@
+@(clanwars: List[Clanwar], news: List[News])
+
+@main("index") {
+    <h1>Welcome to the doomwarriors clan!</h1>
+    <br>
+    <div class="mitteContent">
+        <b>Latest Wars</b>
+        <div class="mitteContent">
+            <table class="text" cellpadding="2" cellspacing="1" width="100%">
+                <tr>
+                    <td><b>date</b></td>
+                    <td><b>&nbsp;&nbsp;</b></td>
+                    <td><b>opponent</b></td>
+                    <td><b>game</b></td>
+                    <td><b>type</b></td>
+                    <td><b>league</b></td>
+                    <td><b>result</b></td>
+                    <td><b>details</b></td>
+                </tr>
+                @for(clanwar <- clanwars) {
+                    <tr>
+                        <td>@clanwar.date.format("dd.MM.yyyy")</td>
+                        <td><img src="@controllers.routes.Assets.versioned("images/flags/" + clanwar.getFlag())" alt="flag" height="16" /></td>
+                        <td><a href="@clanwar.getUrl" target="_blank">@clanwar.enemy</a></td>
+                        <td>@clanwar.game</td>
+                        <td>@clanwar.gametype</td>
+                        <td>@clanwar.league</td>
+                        <td align="center" bgcolor="@clanwar.getColor()">@clanwar.getResult()</td>
+                        <td>
+                            <a href="@controllers.routes.HomeController.clanwar(clanwar.id)">view</a>
+                        </td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+    <hr />
+    <br />
+    <div>
+        <div class="mitteContent">
+            <div>
+                <b>News</b>
+            </div>
+            @for(n <- news) {
+                <br />
+                <div>
+                    <b>@n.topic --- @n.timestamp.format("dd.MM.yyyy") by @n.username</b>
+                </div>
+                <div align="justify">
+                    @Html(n.content)
+                </div>
+                <br>
+                <hr />
+            }
+        </div>
+    </div>
+}

@@ -1,0 +1,142 @@
+@(title: String)(content: Html)
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <title>Doomwarriors Clan - @title</title>
+        <meta charset="utf-8" /> 
+        <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
+    </head>
+    <body id="body">
+        <div id="blockMain">    
+            <div id="blockFullDocument">
+                <div id="blockMainInner">
+                    <div id="blockTop">
+                        <img src="@controllers.routes.Assets.versioned("images/dwc_header.jpg")" alt="logo" />
+                    </div>
+                    
+                    <div id="blockLeft">
+                        <div class="linksTop"></div>
+                        <div class="links">
+                            @navigation()
+                        </div>
+                        <div class="linksBottom"></div>
+                        <br />
+                        @if(0==1) {
+                        if ($smarty.session.type)
+                            <div class="linksTop"></div>
+                            <div class="links">
+                                <div class="linksContent">
+                                    <b>Admin</b><br />
+                                    <div>
+                                        <ul>
+                                            <li class="off"><a href="{$path}details/list"><span>&gt;&gt;&nbsp;my details</span></a>
+                                            if (($smarty.session.type == 1) || ($smarty.session.type == 2))
+                                            <li class="off"><a href="{$path}admin/news/list"><span>&gt;&gt;&nbsp;manage news</span></a></li>
+                                            <li class="off"><a href="{$path}forum"><span>&gt;&gt;&nbsp;forum</span></a></li>
+                                            <li class="off"><a href="{$path}bnc"><span>&gt;&gt;&nbsp;bnc</span></a></li>
+                                            <li class="off"><a href="{$path}mail"><span>&gt;&gt;&nbsp;mail</span></a></li>
+                                            /if
+                                            if ($smarty.session.type == 1)
+                                            <li class="off"><a href="{$path}admin/clanwars/list"><span>&gt;&gt;&nbsp;manage clanwars</span></a></li>
+                                            <li class="off"><a href="{$path}admin/members/list"><span>&gt;&gt;&nbsp;manage members</span></a></li>
+                                            <li class="off"><a href="{$path}admin/history/list"><span>&gt;&gt;&nbsp;manage history</span></a></li>
+                                            <li class="off"><a href="{$path}bot/"><span>&gt;&gt;&nbsp;irc-bot</span></a></li>
+                                            /if
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="linksBottom"></div>
+                            <br />
+                        if
+                        }
+                        <div class="linksTop"></div>
+                        <div class="links">
+                            <div class="linksContent">
+                                <b>Sponsors</b><br>
+                                <p>
+                                    <a href="http://www.e1m1.de" target="_blank">e1m1.de</a><br>
+                                    <a href="https://www.honig-räuberei.de" target="_blank">Honigräuberei</a>
+                                </p>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="linksBottom"></div>
+                        <br />
+                        <div class="linksTop"></div>
+                        <div class="links">
+                            <div class="linksContent">
+                                <b>TODO</b><br />
+                                <p>
+                                    <a href="TODO">TODO</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="linksBottom"></div>
+                    </div>
+                    
+                    <div id="blockMiddle">
+                        <div class="mitteTop"></div>
+                        <div class="mitte">
+                            <div class="mitteContent">
+                                @content
+                            </div>
+                        </div>
+                        <div class="mitteBottom"></div>
+                        <div class="mittesmall">
+                            <div class="mitteContent">
+                                <div>
+                                    doomwarriors.de - design: motter - code: n4cer
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mitteBottom"></div>
+                    </div>
+                    <div id="blockRight">
+                        <div class="rechtsTop"></div>
+                        <div class="rechts">
+                            <div class="rechtsContent">
+                                <b>Random Pics</b><br />
+                                <br />
+                                <p align="center">
+                                    <a href="@routes.Assets.versioned("images/titten/emma1.jpg")" target="_blank"><img border="1" src="@routes.Assets.versioned("images/titten/emma1.jpg")" width="95" hspace="0" vspace="0" alt="random pics" /></a>
+                                </p>
+                                <br />
+                            </div>
+                        </div>
+                        <div class="rechtsBottom"></div>
+                        <br />
+                        <div class="rechtsTop"></div>
+                        <div class="rechts">
+                            <div class="rechtsContent">
+                                <b>Login</b><br />
+                                TODO
+                                @if(0==1) {
+                                if ($smarty.session.type)
+                                    $smarty.session.nick logged in<br />
+                                    <a href="{$path}admin/logout">logout</a>
+                                else
+                                    include file="adm_login.tpl"
+                                /if
+                                }
+                            </div>
+                        </div>
+                        <div class="rechtsBottom"></div>
+                        <br />
+                        <div class="rechtsTop"></div>
+                        <div class="rechts">
+                            <div class="rechtsContent">
+                                <iframe src="{$path}server" name="server" marginheight="0" marginwidth="0" frameborder="0">
+                                    iframe
+                                </iframe>
+                            </div>
+                        </div>
+                        <div class="rechtsBottom"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
+    </body>
+</html>

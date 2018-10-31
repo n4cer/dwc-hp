@@ -1,0 +1,27 @@
+@(clanwar: Clanwar)
+
+@main("clanwar - " + clanwar) {
+<div class="mitteContent">
+    <div>
+        @clanwar.date.format("dd.MM.yyyy") - @clanwar.league vs. @clanwar.enemy<br>
+        lineup: @for(l <- clanwar.lineups) { @l.member.nick } <br><br>
+        @for(score <- clanwar.scores) {
+            <div>
+                map: @score.map<br>
+                <b>result:</b> @score.dwcScore : @score.enemyScore
+                @if(0==1) {
+                for(from=$score->images item=image)
+                    <img border=1 src="$pathclanwars/$image->image" width="640" border="1" hspace="0" vspace="0"><br>
+                /foreach
+                }
+                Screenshot folgt!!!<br><br>
+            </div>
+        }
+        <br>
+        <div>
+            <b>report:</b><br />
+            <p>@clanwar.report</p>
+        </div>
+    </div>
+</div>
+}

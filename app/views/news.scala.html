@@ -1,0 +1,21 @@
+@(news: List[News])
+
+@main("news") {
+    <h1>News</h1>
+    <br>
+    <div>
+        <div class="mitteContent">
+            @for(n <- news) {
+                <br />
+                <div>
+                    <b>@n.topic --- @n.timestamp.format("dd.MM.yyyy") by @n.username</b>
+                </div>
+                <div align="justify">
+                    @Html(n.content)
+                </div>
+                <br>
+                <hr />
+            }
+        </div>
+    </div>
+}

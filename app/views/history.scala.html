@@ -1,0 +1,12 @@
+@(entries : List[History])
+
+@main("history") {
+    <div class="mitteContent">
+        <b>Geschichte</b>
+        @for(entry <- entries) {
+        <div class="mitteContent">
+            <p>@Html(entry.content)</p>
+        </div>
+        }
+    </div>
+}
