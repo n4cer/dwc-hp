@@ -8,13 +8,16 @@
         @for(score <- clanwar.scores) {
             <div>
                 map: @score.map<br>
-                <b>result:</b> @score.dwcScore : @score.enemyScore
-                @if(0==1) {
-                for(from=$score->images item=image)
-                    <img border=1 src="$pathclanwars/$image->image" width="640" border="1" hspace="0" vspace="0"><br>
-                /foreach
+                <b>result:</b> @score.dwcScore : @score.enemyScore<br>
+                
+                @if(score.images != null) {
+                    @for(image <- score.images) {
+                    <img class="clanwar_pic" src="@routes.Assets.versioned("images/clanwars/" + image.image)" border="1" /><br>
+                    }
+                } else {
+                kein Screenshot vorhanden :-(
                 }
-                Screenshot folgt!!!<br><br>
+                <br><br>
             </div>
         }
         <br>

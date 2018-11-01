@@ -83,6 +83,13 @@ create table scores (
   constraint pk_scores primary key (id)
 );
 
+create table score_images (
+  id                            bigserial not null,
+  score_id                      bigint,
+  image                         varchar(255),
+  constraint pk_score_images primary key (id)
+);
+
 create table squads (
   id                            bigserial not null,
   short                         varchar(255),
@@ -145,6 +152,9 @@ create index ix_scores_match_id on scores (match_id);
 alter table scores add constraint fk_scores_map_id foreign key (map_id) references maps (id) on delete restrict on update restrict;
 create index ix_scores_map_id on scores (map_id);
 
+alter table score_images add constraint fk_score_images_score_id foreign key (score_id) references scores (id) on delete restrict on update restrict;
+create index ix_score_images_score_id on score_images (score_id);
+
 
 # --- !Downs
 
@@ -181,6 +191,9 @@ drop index if exists ix_scores_match_id;
 alter table if exists scores drop constraint if exists fk_scores_map_id;
 drop index if exists ix_scores_map_id;
 
+alter table if exists score_images drop constraint if exists fk_score_images_score_id;
+drop index if exists ix_score_images_score_id;
+
 drop table if exists clanwars cascade;
 
 drop table if exists countries cascade;
@@ -200,6 +213,8 @@ drop table if exists match_lineup cascade;
 drop table if exists news cascade;
 
 drop table if exists scores cascade;
+
+drop table if exists score_images cascade;
 
 drop table if exists squads cascade;
 

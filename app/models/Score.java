@@ -1,9 +1,13 @@
 package models;
 
 
+import java.util.List;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import io.ebean.*;
@@ -23,4 +27,6 @@ public class Score extends Model {
   public Integer enemyScore;
   @ManyToOne
   public Map map;
+  @OneToMany(mappedBy="score", cascade=CascadeType.ALL)
+  public List<ScoreImage> images;
 }
