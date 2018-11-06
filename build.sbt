@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   guice,
   ehcache,
   evolutions,
+  javaWs,
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.h2database" % "h2" % "1.4.192"
 )
