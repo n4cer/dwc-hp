@@ -19,12 +19,6 @@ public class Server extends Model {
     return this.hostname + ":" + this.port;
   }
   
-  public String getName() {
-    this.name = this.name.replaceAll("\\^[0-9]", "");
-    
-    return this.name;
-  }
-  
   @Override
   public String toString() {
     return name;

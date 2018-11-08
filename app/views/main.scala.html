@@ -36,17 +36,6 @@
                             </div>
                         </div>
                         <div class="linksBottom"></div>
-                        <br />
-                        <div class="linksTop"></div>
-                        <div class="links">
-                            <div class="linksContent">
-                                <b>TODO</b><br />
-                                <p>
-                                    <a href="@routes.HomeController.todo()">TODO</a>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="linksBottom"></div>
                     </div>
                     
                     <div id="blockMiddle">
@@ -73,26 +62,9 @@
                                 <b>Random Pics</b><br />
                                 <br />
                                 <p align="center">
-                                    <a href="@routes.HomeController.randomPic()" target="_blank"><img border="1" src="@routes.HomeController.randomPic()" width="95" hspace="0" vspace="0" alt="random pics" /></a>
+                                    <a href="@routes.HomeController.randomPic()" target="_blank"><img border="1" src="@routes.HomeController.randomPic()" width="125" alt="random pics" /></a>
                                 </p>
                                 <br />
-                            </div>
-                        </div>
-                        <div class="rechtsBottom"></div>
-                        <br />
-                        <div class="rechtsTop"></div>
-                        <div class="rechts">
-                            <div class="rechtsContent">
-                                <b>Login</b><br />
-                                TODO
-                                @if(0==1) {
-                                if ($smarty.session.type)
-                                    $smarty.session.nick logged in<br />
-                                    <a href="{$path}admin/logout">logout</a>
-                                else
-                                    include file="adm_login.tpl"
-                                /if
-                                }
                             </div>
                         </div>
                         <div class="rechtsBottom"></div>

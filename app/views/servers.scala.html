@@ -8,16 +8,17 @@
         <b>doomwarriors servers</b>
         <br /><br />
     </div>
+    
     @for(server <- servers) {
         <div>
-            @server.getName()<br>
+            @Html(Util.q3ColorCodeToHtml(server.name))<br>
             @server.getAddress()<br>
             @server.map<br>
             <a href="@controllers.routes.Assets.versioned("images/quake3/" + server.map + ".png")" target="_blank"><img border="1" src="@controllers.routes.Assets.versioned("images/quake3/" + server.map + ".png")" width="95" hspace="0" vspace="0" alt="server map" /></a><br>
             @server.players.online / @server.players.max players online<br>
             <ul>
             @for(player <- server.players.list) {
-               <li>@player.name (frags: @player.frags ping: @player.ping)</li>
+               <li>@Html(Util.q3ColorCodeToHtml(player.name)) (frags: @player.frags ping: @player.ping)</li>
             }
             </ul>
         </div>
