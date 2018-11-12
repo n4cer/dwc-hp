@@ -108,15 +108,16 @@ public class HomeController extends Controller {
       String path = configuration.underlying().getString("picture_folder");
       File folder = new File(path);
       File[] listOfFiles = folder.listFiles();
-      Random r = new Random();
-      int low = 0;
-      int high = listOfFiles.length;
       
-      if(listOfFiles.length > 0) {
-        return ok(listOfFiles[r.nextInt(high-low) + low]);
+      if(listOfFiles == null) {
+        return ok(path + "nopic.jpg");
       }
       
-      return ok(path + "nopic.jpg");
+      Random r = new Random();
+      int low = 0;
+      int high = 0;
+      
+      return ok(listOfFiles[r.nextInt(high-low) + low]);
     }
     
     @Cached(key = "servers", duration = 30)
