@@ -31,7 +31,10 @@ public class Util {
       List<String> serverUrls = (List<String>) config.getStringList("servers");
       
       for (String serverUrl : serverUrls) {
-        servers.add(Util.getServer(serverUrl));
+        Server server = Util.getServer(serverUrl);
+        if(server != null) {
+          servers.add(server);
+        }
       }
       cache.set("serverObjects", servers, 30);
     }

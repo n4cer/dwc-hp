@@ -110,12 +110,12 @@ public class HomeController extends Controller {
       File[] listOfFiles = folder.listFiles();
       
       if(listOfFiles == null) {
-        return ok(path + "nopic.jpg");
+        return badRequest("no image found");
       }
       
       Random r = new Random();
       int low = 0;
-      int high = 0;
+      int high = listOfFiles.length;
       
       return ok(listOfFiles[r.nextInt(high-low) + low]);
     }
@@ -125,6 +125,11 @@ public class HomeController extends Controller {
       List<Server> servers = Util.getServers();
       
       return ok(views.html.servers.render(servers));
+    }
+    
+    @Cached(key = "pickup", duration = 2400)
+    public Result pickup() {
+      return ok(views.html.pickup.render());
     }
     
     @Cached(key = "todo", duration = 2400)

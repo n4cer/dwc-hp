@@ -9,6 +9,7 @@ body                 {font-family:Arial, Sans-serif, Helvetica;font-size:11px;fo
 div                  {}
 span                 {}
 iframe               {border:none}
+h1                   {margin: 5px 0;}
 
 /* Horizontale Linien */
 hr                   {background-color:#AEA794;color:#AEA794;height:1px;border-style:none}
@@ -72,4 +73,7 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .q3.blue {color: blue;}
 .q3.cyan {color: cyan;}
 .q3.pink {color: #FFC0CB;}
-.q3.white {color: white;}
+.q3.white {color: silver;}
+
+.servers .server_pic {float: left;margin-right: 5px;}
+.servers ul {list-style: none;}
