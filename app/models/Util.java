@@ -64,10 +64,13 @@ public class Util {
   public static String q3ColorCodeToHtml(String q3Nick) {
     String htmlNick = "";
     
+    if(!q3Nick.startsWith("^")) {
+      q3Nick = "^0" + q3Nick;
+    }
+    
     String[] splits = q3Nick.split("\\^");
     if (splits.length > 1) {
       for (int i = 1; i <= splits.length - 1; i++) {
-        // ^11
         String colorCode = splits[i].substring(0, 1);
         String text = splits[i].substring(1);
         if(text.length() > 0) {
