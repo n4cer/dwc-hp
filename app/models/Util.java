@@ -32,7 +32,7 @@ public class Util {
       
       for (String serverUrl : serverUrls) {
         Server server = Util.getServer(serverUrl);
-        if(server != null) {
+        if(server != null && server.status == true) {
           servers.add(server);
         }
       }
@@ -55,7 +55,7 @@ public class Util {
       server = Json.fromJson(json, Server.class);
       
     } catch(Exception e) {
-      
+      return null;
     }
     
     return server;
@@ -65,7 +65,7 @@ public class Util {
     String htmlNick = "";
     
     String[] splits = q3Nick.split("\\^");
-    if (splits.length > 0) {
+    if (splits.length > 1) {
       for (int i = 1; i <= splits.length - 1; i++) {
         // ^11
         String colorCode = splits[i].substring(0, 1);
@@ -74,6 +74,8 @@ public class Util {
           htmlNick += "<span class=\"q3 " + getQ3Color(colorCode) + "\">" + text + "</span>";
         }
       }
+    } else {
+      htmlNick = q3Nick;
     }
     
     return htmlNick;
