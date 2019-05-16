@@ -18,19 +18,20 @@ import play.cache.Cached;
 import play.mvc.*;
 
 public class HomeController extends Controller {
+    public static final String CONST_TIMESTAMP = "timestamp";
     @Inject Configuration configuration;
     
     @Cached(key = "index", duration = 600)
     public Result index() {
         List<Clanwar> clanwars = Clanwar.find.query().setMaxRows(2).order().desc("date").findList();
-        List<News> news = News.find.query().setMaxRows(2).order().desc("timestamp").findList();
+        List<News> news = News.find.query().setMaxRows(2).order().desc(CONST_TIMESTAMP).findList();
         
         return ok(views.html.index.render(clanwars, news));
     }
     
     @Cached(key = "news", duration = 600)
     public Result news() {
-      List<News> news = News.find.query().setMaxRows(10).order().desc("timestamp").findList();
+      List<News> news = News.find.query().setMaxRows(10).order().desc(CONST_TIMESTAMP).findList();
       
       return ok(views.html.news.render(news));
     }
@@ -69,7 +70,7 @@ public class HomeController extends Controller {
     
     @Cached(key = "history", duration = 2400)
     public Result history() {
-      List<History> entries = History.find.query().order().desc("timestamp").findList();
+      List<History> entries = History.find.query().order().desc(CONST_TIMESTAMP).findList();
       
       return ok(views.html.history.render(entries));
     }
@@ -80,12 +81,12 @@ public class HomeController extends Controller {
       String street = configuration.underlying().getString("owner.street");
       String city = configuration.underlying().getString("owner.city");
       String email = configuration.underlying().getString("owner.email");
-      String email_encoded = "";
+      String emailEncoded = "";
       for (int i = 0; i < email.length(); i++) {
-        email_encoded += ("&#" + email.codePointAt(i) + ";");
+        emailEncoded += ("&#" + email.codePointAt(i) + ";");
       }
       
-      return ok(views.html.imprint.render(name, street, city, email_encoded));
+      return ok(views.html.imprint.render(name, street, city, emailEncoded));
     }
     
     @Cached(key = "privacy", duration = 2400)
@@ -95,12 +96,12 @@ public class HomeController extends Controller {
       String city = configuration.underlying().getString("owner.city");
       String country = configuration.underlying().getString("privacy.country");
       String email = configuration.underlying().getString("privacy.email");
-      String email_encoded = "";
+      String emailEncoded = "";
       for (int i = 0; i < email.length(); i++) {
-        email_encoded += ("&#" + email.codePointAt(i) + ";");
+        emailEncoded += ("&#" + email.codePointAt(i) + ";");
       }
       
-      return ok(views.html.privacy.render(name, street, city, country, email_encoded));
+      return ok(views.html.privacy.render(name, street, city, country, emailEncoded));
     }
     
     @Cached(key = "randomPic", duration = 300)
