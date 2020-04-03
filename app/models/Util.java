@@ -28,11 +28,11 @@ public class Util {
       servers = new ArrayList<>();
       Config config = Play.current().injector().instanceOf(Config.class);
       
-      List<String> serverUrls = (List<String>) config.getStringList("servers");
+      List<String> serverUrls = config.getStringList("servers");
       
       for (String serverUrl : serverUrls) {
         Server server = Util.getServer(serverUrl);
-        if(server != null && server.status == true) {
+        if(server != null && server.status != null && server.status == true) {
           servers.add(server);
         }
       }
