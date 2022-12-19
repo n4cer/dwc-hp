@@ -3,19 +3,19 @@
 @main("member") {
 <div class="mitteContent">
     <div>
-        <a href="@controllers.routes.HomeController.lineup()">&gt;&gt;zur&uuml;ck&lt;&lt;</a>
+        <a href="@controllers.routes.HomeController.lineup">&gt;&gt;zur&uuml;ck&lt;&lt;</a>
     </div>
     <br />
-    <img border="1" src="@routes.Assets.versioned("images/lineup/" + member.image)" width="76" height="103"><br />
+    <img border="1" src="@routes.Assets.versioned("images/lineup/" + member.getImage())" width="76" height="103"><br />
     <br />
     <br />
-    nick: @member.nick<br />
-    realname: @member.realname<br />
-    city: @member.city<br />
-    since: @member.since.format("dd.MM.yyyy")<br />
-    <!--birthday: @member.birthDate<br />-->
-    job: @member.job<br />
-    quote: @member.quote<br />
-    email: @member.email<br />
+    nick: @member.getNick()<br />
+    realname: @member.getRealname()<br />
+    city: @member.getCity()<br />
+    since: @member.getSince().format("dd.MM.yyyy")<br />
+    <!--birthday: @member.getBirthDate()<br />-->
+    job: @member.getJob()<br />
+    quote: @member.getQuote()<br />
+    email: @member.getEmail()<br />
 </div>
 }

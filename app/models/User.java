@@ -20,39 +20,175 @@ import io.ebean.*;
 @Entity
 @Table(name = "lineup")
 public class User extends Model {
+  public static final Finder<Long, User> find = new Finder<>(User.class);
 
-  public static Finder<Long, User> find = new Finder<Long, User>(User.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
   @Column(unique = true)
   @MinLength(4)
-  public String nick;
-  public String password;
-  public String realname;
+  private String nick;
+  private String password;
+  private String realname;
   @Constraints.Email
   @Column(unique = true)
-  public String email;
-  public Date birthDate;
-  public String city;
-  public String job;
-  public String quote;
-  public Date since;
-  public String image;
-  public Integer squad;
+  private String email;
+  private Date birthDate;
+  private String city;
+  private String job;
+  private String quote;
+  private Date since;
+  private String image;
+  private Integer squad;
   @Column(columnDefinition = "boolean default false")
-  public Boolean notits;
-  public Integer type;
+  private Boolean notits;
+  private Integer type;
   @Column(columnDefinition = "boolean default true")
-  public Boolean active;
+  private Boolean active;
   @OneToMany(mappedBy="username", cascade=CascadeType.ALL)
-  public List<News> news;
+  private List<News> news;
   @OneToMany(mappedBy="member", cascade=CascadeType.ALL)
-  public List<MatchLineup> lineups;
+  private List<MatchLineup> lineups;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getNick() {
+    return nick;
+  }
+
+  public void setNick(String nick) {
+    this.nick = nick;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  public String getRealname() {
+    return realname;
+  }
+
+  public void setRealname(String realname) {
+    this.realname = realname;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public Date getBirthDate() {
+    return birthDate;
+  }
+
+  public void setBirthDate(Date birthDate) {
+    this.birthDate = birthDate;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  public String getJob() {
+    return job;
+  }
+
+  public void setJob(String job) {
+    this.job = job;
+  }
+
+  public String getQuote() {
+    return quote;
+  }
+
+  public void setQuote(String quote) {
+    this.quote = quote;
+  }
+
+  public Date getSince() {
+    return since;
+  }
+
+  public void setSince(Date since) {
+    this.since = since;
+  }
+
+  public String getImage() {
+    return image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
+  }
+
+  public Integer getSquad() {
+    return squad;
+  }
+
+  public void setSquad(Integer squad) {
+    this.squad = squad;
+  }
+
+  public Boolean getNotits() {
+    return notits;
+  }
+
+  public void setNotits(Boolean notits) {
+    this.notits = notits;
+  }
+
+  public Integer getType() {
+    return type;
+  }
+
+  public void setType(Integer type) {
+    this.type = type;
+  }
+
+  public Boolean getActive() {
+    return active;
+  }
+
+  public void setActive(Boolean active) {
+    this.active = active;
+  }
+
+  public List<News> getNews() {
+    return news;
+  }
+
+  public void setNews(List<News> news) {
+    this.news = news;
+  }
+
+  public List<MatchLineup> getLineups() {
+    return lineups;
+  }
+
+  public void setLineups(List<MatchLineup> lineups) {
+    this.lineups = lineups;
+  }
 
   @Override
   public String toString() {
-    return nick;
+    return getNick();
   }
   
   /**
@@ -63,7 +199,7 @@ public class User extends Model {
    * @return User
    */
   public static User authenticate(String userName, String password) {
-    User user = User.find.query().where().eq("name", userName).findUnique();
+    User user = User.find.query().where().eq("name", userName).findOne();
     if (user != null && BCrypt.checkpw(password, user.password)) {
       return user;
     } else {

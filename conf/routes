@@ -15,7 +15,6 @@ GET     /imprint                    controllers.HomeController.imprint()
 GET     /privacy                    controllers.HomeController.privacy()
 GET     /todo                       controllers.HomeController.todo
 GET     /random                     controllers.HomeController.randomPic
-GET     /servers                    controllers.HomeController.servers
 GET     /q3pickup                   controllers.HomeController.pickup
 
 # Map static resources from the /public folder to the /assets URL path

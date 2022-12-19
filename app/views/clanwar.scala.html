@@ -3,16 +3,16 @@
 @main("clanwar - " + clanwar) {
 <div class="mitteContent">
     <div>
-        @clanwar.date.format("dd.MM.yyyy") - @clanwar.league vs. @clanwar.enemy<br>
-        lineup: @for(l <- clanwar.lineups) { @l.member.nick } <br><br>
-        @for(score <- clanwar.scores) {
+        @clanwar.getDate().format("dd.MM.yyyy") - @clanwar.getLeague() vs. @clanwar.getEnemy()<br>
+        lineup: @for(l <- clanwar.getLineups()) { @l.getMember().getNick() } <br><br>
+        @for(score <- clanwar.getScores()) {
             <div>
-                map: @score.map<br>
-                <b>result:</b> @score.dwcScore : @score.enemyScore<br>
+                map: @score.getMap()<br>
+                <b>result:</b> @score.getDwcScore() : @score.getEnemyScore()<br>
                 
-                @if(score.images != null) {
-                    @for(image <- score.images) {
-                    <img class="clanwar_pic" src="@routes.Assets.versioned("images/clanwars/" + image.image)" border="1" /><br>
+                @if(score.getImages() != null) {
+                    @for(image <- score.getImages()) {
+                    <img class="clanwar_pic" src="@routes.Assets.versioned("images/clanwars/" + image.getImage())" border="1" /><br>
                     }
                 } else {
                 kein Screenshot vorhanden :-(
@@ -23,7 +23,7 @@
         <br>
         <div>
             <b>report:</b><br />
-            <p>@clanwar.report</p>
+            <p>@clanwar.getReport()</p>
         </div>
     </div>
 </div>

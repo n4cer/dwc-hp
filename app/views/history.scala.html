@@ -5,7 +5,7 @@
         <b>Geschichte</b>
         @for(entry <- entries) {
         <div class="mitteContent">
-            <p>@Html(entry.content)</p>
+            <p>@Html(entry.getContent())</p>
         </div>
         }
     </div>

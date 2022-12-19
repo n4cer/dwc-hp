@@ -12,12 +12,36 @@ import play.data.validation.Constraints;
 @Entity
 @Table(name = "score_images")
 public class ScoreImage extends Model {
+  public static final Finder<Long, ScoreImage> find = new Finder<>(ScoreImage.class);
 
-  public static Finder<Long, ScoreImage> find = new Finder<Long, ScoreImage>(ScoreImage.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
   @ManyToOne
-  public Score score;
-  public String image;
+  private Score score;
+  private String image;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Score getScore() {
+    return score;
+  }
+
+  public void setScore(Score score) {
+    this.score = score;
+  }
+
+  public String getImage() {
+    return image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
+  }
 }

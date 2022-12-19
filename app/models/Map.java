@@ -12,17 +12,41 @@ import play.data.validation.Constraints;
 @Entity
 @Table(name = "maps")
 public class Map extends Model {
+  public static final Finder<Long, Map> find = new Finder<>(Map.class);
 
-  public static Finder<Long, Map> find = new Finder<Long, Map>(Map.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
-  public String map;
+  private String map;
   @ManyToOne
-  public Game game;
+  private Game game;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getMap() {
+    return map;
+  }
+
+  public void setMap(String map) {
+    this.map = map;
+  }
+
+  public Game getGame() {
+    return game;
+  }
+
+  public void setGame(Game game) {
+    this.game = game;
+  }
 
   @Override
   public String toString() {
-    return map;
+    return getMap();
   }
 }

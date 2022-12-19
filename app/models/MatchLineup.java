@@ -14,13 +14,37 @@ import play.data.validation.Constraints;
 @Entity
 @Table(name = "match_lineup")
 public class MatchLineup extends Model {
+  public static final Finder<Long, MatchLineup> find = new Finder<>(MatchLineup.class);
 
-  public static Finder<Long, MatchLineup> find = new Finder<Long, MatchLineup>(MatchLineup.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
   @ManyToOne
-  public Clanwar match;
+  private Clanwar match;
   @ManyToOne
-  public User member;
+  private User member;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Clanwar getMatch() {
+    return match;
+  }
+
+  public void setMatch(Clanwar match) {
+    this.match = match;
+  }
+
+  public User getMember() {
+    return member;
+  }
+
+  public void setMember(User member) {
+    this.member = member;
+  }
 }

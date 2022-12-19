@@ -9,13 +9,13 @@ import javax.inject.Inject;
 import models.Clanwar;
 import models.History;
 import models.News;
-import models.Server;
 import models.Squad;
 import models.User;
-import models.Util;
 import play.api.Configuration;
 import play.cache.Cached;
 import play.mvc.*;
+
+import static play.libs.Scala.asScala;
 
 public class HomeController extends Controller {
     public static final String CONST_TIMESTAMP = "timestamp";
@@ -26,7 +26,7 @@ public class HomeController extends Controller {
         List<Clanwar> clanwars = Clanwar.find.query().setMaxRows(2).order().desc("date").findList();
         List<News> news = News.find.query().setMaxRows(2).order().desc(CONST_TIMESTAMP).findList();
         
-        return ok(views.html.index.render(clanwars, news));
+        return ok(views.html.index.render(asScala(clanwars), asScala(news)));
     }
     
     @Cached(key = "news", duration = 600)
@@ -40,7 +40,7 @@ public class HomeController extends Controller {
     public Result clanwars() {
       List<Clanwar> clanwars = Clanwar.find.query().order().desc("date").findList();
       
-      return ok(views.html.clanwars.render(clanwars));
+      return ok(views.html.clanwars.render(asScala(clanwars)));
     }
     
     public Result clanwar(Long id) {
@@ -119,13 +119,6 @@ public class HomeController extends Controller {
       int high = listOfFiles.length;
       
       return ok(listOfFiles[r.nextInt(high-low) + low]);
-    }
-    
-    @Cached(key = "servers", duration = 30)
-    public Result servers() {
-      List<Server> servers = Util.getServers();
-      
-      return ok(views.html.servers.render(servers));
     }
     
     @Cached(key = "pickup", duration = 2400)

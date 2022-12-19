@@ -8,10 +8,10 @@
             @for(n <- news) {
                 <br />
                 <div>
-                    <b>@n.topic --- @n.timestamp.format("dd.MM.yyyy") by @n.username</b>
+                    <b>@n.getTopic() --- @n.getTimestamp().format("dd.MM.yyyy") by @n.getUsername()</b>
                 </div>
                 <div align="justify">
-                    @Html(n.content)
+                    @Html(n.getContent())
                 </div>
                 <br>
                 <hr />

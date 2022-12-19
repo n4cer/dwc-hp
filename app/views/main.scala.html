@@ -1,6 +1,5 @@
 @(title: String)(content: Html)
 
-@import tags._
 <!DOCTYPE html>
 <html lang="de">
     <head>
@@ -27,9 +26,8 @@
                         <div class="linksTop"></div>
                         <div class="links">
                             <div class="linksContent">
-                                <b>Sponsors</b><br>
+                                <strong>Sponsors</strong><br>
                                 <p>
-                                    <a href="http://www.e1m1.de" target="_blank">e1m1.de</a><br>
                                     <a href="https://www.honig-räuberei.de" target="_blank">Honigräuberei</a>
                                 </p>
                                 <br />
@@ -59,10 +57,10 @@
                         <div class="rechtsTop"></div>
                         <div class="rechts">
                             <div class="rechtsContent">
-                                <b>Random Pics</b><br />
+                                <strong>Random Pics</strong><br />
                                 <br />
                                 <p align="center">
-                                    <a href="@routes.HomeController.randomPic()" target="_blank"><img border="1" src="@routes.HomeController.randomPic()" width="125" alt="random pics" /></a>
+                                    <a href="@routes.HomeController.randomPic" target="_blank"><img border="1" src="@routes.HomeController.randomPic" width="125" alt="random pics" /></a>
                                 </p>
                                 <br />
                             </div>
@@ -72,7 +70,7 @@
                         <div class="rechtsTop"></div>
                         <div class="rechts">
                             <div class="rechtsContent">
-                                @serverList(Util.getServers())
+                                leer
                             </div>
                         </div>
                         <div class="rechtsBottom"></div>

@@ -12,14 +12,46 @@ import play.data.validation.Constraints;
 @Table(name = "countries")
 public class Country extends Model {
 
-  public static Finder<Long, Country> find = new Finder<Long, Country>(Country.class);
+  public static final Finder<Long, Country> find = new Finder<Long, Country>(Country.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
-  public String country;
+  private String country;
   @Column(name = "short")
-  public String shortText;
-  public String flag;
+  private String shortText;
+  private String flag;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getCountry() {
+    return country;
+  }
+
+  public void setCountry(String country) {
+    this.country = country;
+  }
+
+  public String getShortText() {
+    return shortText;
+  }
+
+  public void setShortText(String shortText) {
+    this.shortText = shortText;
+  }
+
+  public String getFlag() {
+    return flag;
+  }
+
+  public void setFlag(String flag) {
+    this.flag = flag;
+  }
 
   @Override
   public String toString() {

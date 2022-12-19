@@ -4,43 +4,122 @@ package models;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.ebean.*;
 import play.data.validation.Constraints;
 
+@MappedSuperclass
 @Entity
 @Table(name = "clanwars")
 public class Clanwar extends Model {
-
-  public static Finder<Long, Clanwar> find = new Finder<Long, Clanwar>(Clanwar.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
-  public Date date;
-  public String enemy;
-  public String url;
+  private Date date;
+  private String enemy;
+  private String url;
   @ManyToOne
-  public League league;
+  private League league;
   @Column(columnDefinition = "TEXT")
-  public String report;
+  private String report;
   @ManyToOne
-  public Game game;
+  private Game game;
   @ManyToOne
-  public GameType gametype;
+  private GameType gametype;
   @ManyToOne
-  public Country country;
+  private Country country;
   @OneToMany(mappedBy="match", cascade=CascadeType.ALL)
-  public List<Score> scores;
+  private List<Score> scores;
   @OneToMany(mappedBy="match", cascade=CascadeType.ALL)
-  public List<MatchLineup> lineups;
-  
+  private List<MatchLineup> lineups;
+
+  public static final Finder<Long, Clanwar> find = new Finder<>(Clanwar.class);
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(Date date) {
+    this.date = date;
+  }
+
+  public String getEnemy() {
+    return enemy;
+  }
+
+  public void setEnemy(String enemy) {
+    this.enemy = enemy;
+  }
+
+  public void setUrl(String url) {
+    this.url = url;
+  }
+
+  public League getLeague() {
+    return league;
+  }
+
+  public void setLeague(League league) {
+    this.league = league;
+  }
+
+  public String getReport() {
+    return report;
+  }
+
+  public void setReport(String report) {
+    this.report = report;
+  }
+
+  public Game getGame() {
+    return game;
+  }
+
+  public void setGame(Game game) {
+    this.game = game;
+  }
+
+  public GameType getGametype() {
+    return gametype;
+  }
+
+  public void setGametype(GameType gametype) {
+    this.gametype = gametype;
+  }
+
+  public Country getCountry() {
+    return country;
+  }
+
+  public void setCountry(Country country) {
+    this.country = country;
+  }
+
+  public List<Score> getScores() {
+    return scores;
+  }
+
+  public void setScores(List<Score> scores) {
+    this.scores = scores;
+  }
+
+  public List<MatchLineup> getLineups() {
+    return lineups;
+  }
+
+  public void setLineups(List<MatchLineup> lineups) {
+    this.lineups = lineups;
+  }
+
   public String getUrl() {
     if(this.url != null && this.url.contains("http")) {
       return url;
@@ -51,7 +130,7 @@ public class Clanwar extends Model {
   
   public String getFlag() {
     //https://github.com/gosquared/flags
-    return this.country.flag;
+    return this.getCountry().getFlag();
   }
   
   public String getResult() {
@@ -61,14 +140,14 @@ public class Clanwar extends Model {
     
     for(Score score : scores)
     {
-        if (this.gametype != null && this.gametype.gameType.equals("tdm")) {
-            dwc += score.dwcScore;
-            enemy += score.enemyScore;
+        if (this.gametype != null && this.gametype.getGameType().equals("tdm")) {
+            dwc += score.getDwcScore();
+            enemy += score.getEnemyScore();
         }
-        else if (this.gametype != null && (this.gametype.gameType.equals("ctf") || this.gametype.gameType.equals("sw"))) {
-            if(score.dwcScore > score.enemyScore) {
+        else if (this.gametype != null && (this.gametype.getGameType().equals("ctf") || this.gametype.getGameType().equals("sw"))) {
+            if(score.getDwcScore() > score.getEnemyScore()) {
                 dwc += 2;
-            } else if (score.dwcScore < score.enemyScore) {
+            } else if (score.getDwcScore() < score.getEnemyScore()) {
                 enemy += 2;
             } else {
                 enemy += 1;
@@ -77,8 +156,8 @@ public class Clanwar extends Model {
         }
         else
         {
-            dwc += score.dwcScore;
-            enemy += score.enemyScore;
+            dwc += score.getDwcScore();
+            enemy += score.getEnemyScore();
         }
     }
     
@@ -104,8 +183,7 @@ public class Clanwar extends Model {
     return "#FF5706";
   }
   
-  @Override
   public String toString() {
-    return enemy;
+    return getEnemy();
   }
 }

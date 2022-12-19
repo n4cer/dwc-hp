@@ -1,4 +1,4 @@
-@(clanwars: List[Clanwar], news: List[News])
+@(clanwars: Seq[Clanwar], news: Seq[News])
 
 @main("index") {
     <h1>Welcome to the doomwarriors clan!</h1>
@@ -19,15 +19,15 @@
                 </tr>
                 @for(clanwar <- clanwars) {
                     <tr>
-                        <td>@clanwar.date.format("dd.MM.yyyy")</td>
+                        <td>@clanwar.getDate().format("dd.MM.yyyy")</td>
                         <td><img src="@controllers.routes.Assets.versioned("images/flags/" + clanwar.getFlag())" alt="flag" height="16" /></td>
-                        <td><a href="@clanwar.getUrl" target="_blank">@clanwar.enemy</a></td>
-                        <td>@clanwar.game</td>
-                        <td>@clanwar.gametype</td>
-                        <td>@clanwar.league</td>
+                        <td><a href="@clanwar.getUrl()" target="_blank">@clanwar.getEnemy()</a></td>
+                        <td>@clanwar.getGame()</td>
+                        <td>@clanwar.getGametype()</td>
+                        <td>@clanwar.getLeague()</td>
                         <td align="center" bgcolor="@clanwar.getColor()">@clanwar.getResult()</td>
                         <td>
-                            <a href="@controllers.routes.HomeController.clanwar(clanwar.id)">view</a>
+                            <a href="@controllers.routes.HomeController.clanwar(clanwar.getId())">view</a>
                         </td>
                     </tr>
                 }
@@ -44,10 +44,10 @@
             @for(n <- news) {
                 <br />
                 <div>
-                    <b>@n.topic --- @n.timestamp.format("dd.MM.yyyy") by @n.username</b>
+                    <b>@n.getTopic() --- @n.getTimestamp().format("dd.MM.yyyy") by @n.getUsername()</b>
                 </div>
                 <div align="justify">
-                    @Html(n.content)
+                    @Html(n.getContent())
                 </div>
                 <br>
                 <hr />

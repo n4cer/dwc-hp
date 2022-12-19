@@ -1,6 +1,5 @@
 package models;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -11,15 +10,30 @@ import play.data.validation.Constraints;
 @Entity
 @Table(name = "gametype")
 public class GameType extends Model {
-
-  public static Finder<Long, GameType> find = new Finder<Long, GameType>(GameType.class);
   @Id
-  public Long id;
+  private Long id;
   @Constraints.Required
-  public String gameType;
+  private String gameType;
 
-  @Override
-  public String toString() {
+  public static final Finder<Long, GameType> find = new Finder<>(GameType.class);
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getGameType() {
     return gameType;
+  }
+
+  public void setGameType(String gameType) {
+    this.gameType = gameType;
+  }
+
+  public String toString() {
+    return getGameType();
   }
 }

@@ -11,18 +11,49 @@ import play.data.validation.Constraints;
 @Entity
 @Table(name = "squads")
 public class Squad extends Model {
+  public static final Finder<Long, Squad> find = new Finder<Long, Squad>(Squad.class);
 
-  public static Finder<Long, Squad> find = new Finder<Long, Squad>(Squad.class);
   @Id
-  public Long id;
+  private Long id;
   @Column(name = "short")
-  public String shortText;
+  private String shortText;
   @Constraints.Required
-  public String description;
-  public Integer game;
+  private String description;
+  private Integer game;
 
-  @Override
-  public String toString() {
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getShortText() {
     return shortText;
+  }
+
+  public void setShortText(String shortText) {
+    this.shortText = shortText;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public Integer getGame() {
+    return game;
+  }
+
+  public void setGame(Integer game) {
+    this.game = game;
+  }
+
+  public String toString() {
+    return getShortText();
   }
 }
