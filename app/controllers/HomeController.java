@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import models.Clanwar;
 import models.History;
