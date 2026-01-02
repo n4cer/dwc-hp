@@ -1,11 +1,14 @@
 logs
 target
+.bloop
 /.idea
 /.idea_modules
 /.classpath
 /.project
 /.settings
 /RUNNING_PID
+/.metals
+/.vscode
 bin
 dist
 .target

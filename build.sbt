@@ -5,10 +5,10 @@ version := "1.0-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayJava, PlayEbean)
 
-scalaVersion := "2.13.15"
+scalaVersion := "2.13.18"
 
 libraryDependencies ++= Seq(
-  jdbc, javaJdbc, "org.postgresql" % "postgresql" % "42.7.5",
+  jdbc, javaJdbc, "org.postgresql" % "postgresql" % "42.7.8",
   guice,
   ehcache,
   evolutions,
