@@ -17,5 +17,19 @@ GET     /todo                       controllers.HomeController.todo
 GET     /random                     controllers.HomeController.randomPic
 GET     /q3pickup                   controllers.HomeController.pickup
 
+# Administration
+GET     /admin/login                controllers.AdminController.login(request: Request)
+POST    /admin/login                controllers.AdminController.authenticate(request: Request)
+POST    /admin/logout               controllers.AdminController.logout(request: Request)
+GET     /admin                      controllers.AdminController.index(request: Request)
+GET     /admin/news/new             controllers.AdminController.newNews(request: Request)
+GET     /admin/news/:id/edit        controllers.AdminController.editNews(request: Request, id: Long)
+POST    /admin/news                 controllers.AdminController.createNews(request: Request)
+POST    /admin/news/:id             controllers.AdminController.updateNews(request: Request, id: Long)
+GET     /admin/clanwars/new         controllers.AdminController.newClanwar(request: Request)
+GET     /admin/clanwars/:id/edit    controllers.AdminController.editClanwar(request: Request, id: Long)
+POST    /admin/clanwars             controllers.AdminController.createClanwar(request: Request)
+POST    /admin/clanwars/:id         controllers.AdminController.updateClanwar(request: Request, id: Long)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

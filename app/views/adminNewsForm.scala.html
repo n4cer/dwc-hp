@@ -1,0 +1,19 @@
+@(request: Http.Request, item: News, users: List[User], error: String)
+
+@main(if(item == null) "Add news" else "Edit news") {
+    <div class="admin-page">
+        <h1>@if(item == null) { Add news } else { Edit news }</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createNews()} else {@controllers.routes.AdminController.updateNews(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <label>Title *<input type="text" name="topic" required value="@if(item != null) {@item.getTopic()}"></label>
+            <label>Date and time *<input type="datetime-local" name="timestamp" required value="@if(item != null) {@item.getTimestamp().format("yyyy-MM-dd'T'HH:mm")}"></label>
+            <label>Author *<select name="usernameId" required><option value="">Please select</option>
+                @for(user <- users) { <option value="@user.getId()" @if(item != null && item.getUsername() != null && item.getUsername().getId() == user.getId()) {selected}>@user.getNick()</option> }
+            </select></label>
+            <label>Content *<textarea name="content" rows="14" required>@if(item != null) {@item.getContent()}</textarea></label>
+            <p class="admin-hint">HTML is supported, as with the existing news items.</p>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.index()">Cancel</a></div>
+        </form>
+    </div>
+}

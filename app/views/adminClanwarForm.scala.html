@@ -1,0 +1,90 @@
+@(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], error: String)
+@import scala.jdk.CollectionConverters._
+
+@main(if(item == null) "Add clanwar" else "Edit clanwar") {
+    <div class="admin-page">
+        <h1>@if(item == null) { Add clanwar } else { Edit clanwar }</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createClanwar()} else {@controllers.routes.AdminController.updateClanwar(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Opponent *<input type="text" name="enemy" required value="@if(item != null) {@item.getEnemy()}"></label>
+                <label>Date and time *<input type="datetime-local" name="date" required value="@if(item != null) {@item.getDate().format("yyyy-MM-dd'T'HH:mm")}"></label>
+                <label>Website<input type="url" name="url" value="@if(item != null) {@item.getUrl()}"></label>
+                <label>Game *<select name="gameId" required><option value="">Please select</option>@for(value <- games) {<option value="@value.getId()" @if(item != null && item.getGame() != null && item.getGame().getId() == value.getId()) {selected}>@value.getDescription()</option>}</select></label>
+                <label>Game type *<select name="gameTypeId" required><option value="">Please select</option>@for(value <- gameTypes) {<option value="@value.getId()" @if(item != null && item.getGametype() != null && item.getGametype().getId() == value.getId()) {selected}>@value.getGameType()</option>}</select></label>
+                <label>League *<select name="leagueId" required><option value="">Please select</option>@for(value <- leagues) {<option value="@value.getId()" @if(item != null && item.getLeague() != null && item.getLeague().getId() == value.getId()) {selected}>@value.getLeague()</option>}</select></label>
+                <label>Country *<select name="countryId" required><option value="">Please select</option>@for(value <- countries) {<option value="@value.getId()" @if(item != null && item.getCountry() != null && item.getCountry().getId() == value.getId()) {selected}>@value.getCountry()</option>}</select></label>
+            </div>
+            <label>Report<textarea name="report" rows="14">@if(item != null) {@item.getReport()}</textarea></label>
+
+            <fieldset class="admin-fieldset">
+                <legend>Lineup</legend>
+                @defining(if(item == null || item.getLineups() == null) scala.collection.immutable.Set.empty[Long] else item.getLineups().asScala.map(_.getMember().getId()).toSet) { selectedMembers =>
+                    <div class="admin-check-grid">@for(user <- users) {
+                        <label class="admin-check"><input type="checkbox" name="lineupMemberId" value="@user.getId()" @if(selectedMembers.contains(user.getId())) {checked}> @user.getNick()</label>
+                    }</div>
+                }
+            </fieldset>
+
+            <fieldset class="admin-fieldset">
+                <legend>Scores, maps and screenshots</legend>
+                <div id="score-list">@if(item != null && item.getScores() != null) {@for(score <- item.getScores()) {
+                    <div class="admin-score-row">
+                        <div class="admin-grid admin-score-fields">
+                            <label>Map *<select name="scoreMap_@score.getId()" required><option value="">Please select</option>@for(value <- maps) {<option value="@value.getId()" @if(score.getMap() != null && score.getMap().getId() == value.getId()) {selected}>@value.getMap() (@value.getGame())</option>}</select></label>
+                            <label>DWC score *<input type="number" name="scoreDwc_@score.getId()" required value="@score.getDwcScore()"></label>
+                            <label>Opponent score *<input type="number" name="scoreEnemy_@score.getId()" required value="@score.getEnemyScore()"></label>
+                            <label class="admin-check admin-delete"><input type="checkbox" name="scoreDelete_@score.getId()"> Remove score</label>
+                        </div>
+                        <div class="admin-images"><strong>Screenshots</strong>
+                            @if(score.getImages() != null) {@for(image <- score.getImages()) {
+                                <div class="admin-image-row"><input type="text" name="imageName_@image.getId()" value="@image.getImage()" aria-label="Screenshot filename"><label class="admin-check"><input type="checkbox" name="imageDelete_@image.getId()"> Remove</label></div>
+                            }}
+                            <div data-new-images="scoreNewImage_@score.getId()"></div>
+                            <button type="button" class="secondary add-image" data-target="scoreNewImage_@score.getId()">Add screenshot</button>
+                        </div>
+                    </div>
+                }}</div>
+                <button type="button" id="add-score" class="secondary">Add score</button>
+                <p class="admin-hint">Screenshot files are resolved below <code>public/images/clanwars/</code>.</p>
+            </fieldset>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.index()">Cancel</a></div>
+        </form>
+    </div>
+    <template id="score-template"><div class="admin-score-row new-score-row">
+        <input type="hidden" name="newScoreKey" value="__KEY__">
+        <div class="admin-grid admin-score-fields">
+            <label>Map *<select name="newScoreMap___KEY__" required><option value="">Please select</option>@for(value <- maps) {<option value="@value.getId()">@value.getMap() (@value.getGame())</option>}</select></label>
+            <label>DWC score *<input type="number" name="newScoreDwc___KEY__" required></label>
+            <label>Opponent score *<input type="number" name="newScoreEnemy___KEY__" required></label>
+        </div>
+        <div class="admin-images"><strong>Screenshots</strong><div data-new-images="newScoreImage___KEY__"></div><button type="button" class="secondary add-image" data-target="newScoreImage___KEY__">Add screenshot</button></div>
+        <button type="button" class="secondary remove-new-score">Remove score</button>
+    </div></template>
+    <script>
+    (() => {
+        const list = document.getElementById('score-list');
+        const template = document.getElementById('score-template');
+        let nextKey = 0;
+        document.getElementById('add-score').addEventListener('click', () => {
+            const key = 'n' + nextKey++;
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = template.innerHTML.replaceAll('__KEY__', key).trim();
+            list.appendChild(wrapper.firstElementChild);
+        });
+        document.addEventListener('click', event => {
+            const imageButton = event.target.closest('.add-image');
+            if (imageButton) {
+                const name = imageButton.dataset.target;
+                const target = document.querySelector('[data-new-images="' + name + '"]');
+                const input = document.createElement('input');
+                input.type = 'text'; input.name = name; input.placeholder = 'Screenshot filename';
+                target.appendChild(input);
+            }
+            const removeButton = event.target.closest('.remove-new-score');
+            if (removeButton) removeButton.closest('.new-score-row').remove();
+        });
+    })();
+    </script>
+}

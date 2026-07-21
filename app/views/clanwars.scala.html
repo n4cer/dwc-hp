@@ -18,7 +18,13 @@
                     <tr>
                         <td>@clanwar.getDate().format("dd.MM.yyyy")</td>
                         <td><img src="@controllers.routes.Assets.versioned("images/flags/" + clanwar.getFlag())" alt="flag" height="16" /></td>
-                        <td><a href="@clanwar.getUrl" target="_blank">@clanwar.getEnemy()</a></td>
+                        <td>
+                            @if(clanwar.hasUrl()) {
+                                <a href="@clanwar.getUrl" target="_blank" rel="noopener noreferrer">@clanwar.getEnemy()</a>
+                            } else {
+                                @clanwar.getEnemy()
+                            }
+                        </td>
                         <td>@clanwar.getGame()</td>
                         <td>@clanwar.getGametype()</td>
                         <td>@clanwar.getLeague()</td>

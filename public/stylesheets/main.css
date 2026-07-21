@@ -77,3 +77,35 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 
 .servers .server_pic {float: left;margin-right: 5px;}
 .servers ul {list-style: none;}
+
+/* Administration */
+.admin-page {padding:10px 6px 24px; font-size:13px; line-height:18px;}
+.admin-page h1,.admin-page h2 {margin-bottom:12px;}
+.admin-page section {margin-top:28px;}
+.admin-header {display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.admin-page label {display:block;font-weight:bold;margin:12px 0;}
+.admin-page input,.admin-page select,.admin-page textarea {box-sizing:border-box;display:block;width:100%;margin-top:4px;padding:7px;border:1px solid #aaa;background:#fff;font:inherit;}
+.admin-page textarea {resize:vertical;}
+.admin-grid {display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+.admin-page button,.admin-button {display:inline-block;border:0;background:#E2A612;color:#111;padding:7px 12px;font-weight:bold;cursor:pointer;}
+.admin-page button.secondary {background:#ddd;}
+.admin-actions {display:flex;align-items:center;gap:16px;margin-top:16px;}
+.admin-table {border-collapse:collapse;width:100%;}
+.admin-table th,.admin-table td {border-bottom:1px solid #ccc;padding:6px;text-align:left;vertical-align:top;}
+.admin-message {margin:10px 0;padding:8px;border:1px solid;}
+.admin-message.error {background:#f9dddd;border-color:#b33;}
+.admin-message.success {background:#e0f2df;border-color:#4b8b45;}
+.admin-hint {color:#666;font-size:11px;}
+.admin-login {max-width:420px;}
+.admin-fieldset {border:1px solid #bbb;margin:20px 0;padding:12px;}
+.admin-fieldset legend {font-weight:bold;padding:0 6px;}
+.admin-check-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:4px 12px;}
+.admin-page label.admin-check {display:flex;align-items:center;gap:5px;margin:3px 0;font-weight:normal;}
+.admin-page .admin-check input {display:inline-block;width:auto;margin:0;}
+.admin-score-row {border-bottom:1px solid #bbb;margin-bottom:15px;padding-bottom:15px;}
+.admin-score-fields {grid-template-columns:2fr 1fr 1fr auto;align-items:end;}
+.admin-delete {padding-bottom:8px;}
+.admin-images {margin:5px 0 10px;}
+.admin-image-row {display:flex;align-items:center;gap:10px;margin:5px 0;}
+.admin-image-row input {margin:0;}
+.admin-images button,.remove-new-score {margin-top:6px;}

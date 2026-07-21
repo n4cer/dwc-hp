@@ -194,7 +194,7 @@ public class User extends Model {
    * @return User
    */
   public static User authenticate(String userName, String password) {
-    User user = User.find.query().where().eq("name", userName).findOne();
+    User user = User.find.query().where().eq("nick", userName).findOne();
     if (user != null && BCrypt.checkpw(password, user.password)) {
       return user;
     } else {

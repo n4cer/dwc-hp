@@ -121,11 +121,19 @@ public class Clanwar extends Model {
   }
 
   public String getUrl() {
-    if(this.url != null && this.url.contains("http")) {
+    if (this.url == null || this.url.isBlank()) {
+      return "";
+    }
+
+    if(this.url.startsWith("http://") || this.url.startsWith("https://")) {
       return url;
     }
     
     return "http://" + this.url;
+  }
+
+  public boolean hasUrl() {
+    return this.url != null && !this.url.isBlank();
   }
   
   public String getFlag() {
