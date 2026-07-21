@@ -2,6 +2,7 @@ package controllers;
 
 import jakarta.inject.Inject;
 import models.Clanwar;
+import models.ContentSanitizer;
 import models.Country;
 import models.Game;
 import models.GameType;
@@ -36,11 +37,13 @@ public class AdminController extends Controller {
 
     private final Configuration configuration;
     private final AsyncCacheApi cache;
+    private final LoginRateLimiter loginRateLimiter;
 
     @Inject
-    public AdminController(Configuration configuration, AsyncCacheApi cache) {
+    public AdminController(Configuration configuration, AsyncCacheApi cache, LoginRateLimiter loginRateLimiter) {
         this.configuration = configuration;
         this.cache = cache;
+        this.loginRateLimiter = loginRateLimiter;
     }
 
     @AddCSRFToken
@@ -50,14 +53,27 @@ public class AdminController extends Controller {
     }
 
     public Result authenticate(Http.Request request) {
+        String client = request.remoteAddress();
+        LoginRateLimiter.LimitStatus limit = loginRateLimiter.status(client);
+        if (limit.blocked()) return rateLimited(request, limit);
+
         Map<String, String[]> data = form(request);
         String username = value(data, "username");
         String password = value(data, "password");
         if (!credentialsConfigured() || !secureEquals(username, configured("admin.username"))
                 || !secureEquals(password, configured("admin.password"))) {
+            limit = loginRateLimiter.recordFailure(client);
+            if (limit.blocked()) return rateLimited(request, limit);
             return unauthorized(views.html.adminLogin.render(request, credentialsConfigured(), "Invalid username or password."));
         }
+        loginRateLimiter.reset(client);
         return redirect(routes.AdminController.index()).addingToSession(request, ADMIN_SESSION, username);
+    }
+
+    private Result rateLimited(Http.Request request, LoginRateLimiter.LimitStatus limit) {
+        return status(TOO_MANY_REQUESTS, views.html.adminLogin.render(request, credentialsConfigured(),
+                "Too many failed login attempts. Please try again later."))
+                .withHeader("Retry-After", Long.toString(limit.retryAfterSeconds()));
     }
 
     public Result logout(Http.Request request) {
@@ -138,7 +154,7 @@ public class AdminController extends Controller {
                     User.find.all(), "Please complete all required fields correctly."));
         }
         news.setTopic(topic);
-        news.setContent(content);
+        news.setContent(ContentSanitizer.sanitizeHtml(content));
         news.setUsername(author);
         news.setTimestamp(timestamp);
         if (news.getId() == null) news.save(); else news.update();

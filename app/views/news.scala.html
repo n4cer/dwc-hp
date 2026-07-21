@@ -11,7 +11,7 @@
                     <b>@n.getTopic() --- @n.getTimestamp().format("dd.MM.yyyy") by @n.getUsername()</b>
                 </div>
                 <div align="justify">
-                    @Html(n.getContent())
+                    @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
                 </div>
                 <br>
                 <hr />

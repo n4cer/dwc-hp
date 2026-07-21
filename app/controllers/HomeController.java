@@ -1,8 +1,14 @@
 package controllers;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.List;
-import java.util.Random;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import jakarta.inject.Inject;
 
@@ -19,6 +25,7 @@ import static play.libs.Scala.asScala;
 
 public class HomeController extends Controller {
     public static final String CONST_TIMESTAMP = "timestamp";
+    private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     @Inject Configuration configuration;
     
     @Cached(key = "index", duration = 600)
@@ -106,19 +113,27 @@ public class HomeController extends Controller {
     
     @Cached(key = "randomPic", duration = 300)
     public Result randomPic() {
-      String path = configuration.underlying().getString("picture_folder");
-      File folder = new File(path);
-      File[] listOfFiles = folder.listFiles();
-      
-      if(listOfFiles == null) {
-        return badRequest("no image found");
+      Path folder = Path.of(configuration.underlying().getString("picture_folder"));
+      if (!Files.isDirectory(folder)) return notFound("no image found");
+
+      try (Stream<Path> entries = Files.list(folder)) {
+        List<Path> images = entries
+                .filter(path -> Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS))
+                .filter(HomeController::hasAllowedImageExtension)
+                .toList();
+        if (images.isEmpty()) return notFound("no image found");
+        Path image = images.get(ThreadLocalRandom.current().nextInt(images.size()));
+        return ok(image.toFile());
+      } catch (IOException ex) {
+        return internalServerError("image directory unavailable");
       }
-      
-      Random r = new Random();
-      int low = 0;
-      int high = listOfFiles.length;
-      
-      return ok(listOfFiles[r.nextInt(high-low) + low]);
+    }
+
+    static boolean hasAllowedImageExtension(Path path) {
+      String name = path.getFileName().toString();
+      int separator = name.lastIndexOf('.');
+      return separator > 0 && separator < name.length() - 1
+              && IMAGE_EXTENSIONS.contains(name.substring(separator + 1).toLowerCase(Locale.ROOT));
     }
     
     @Cached(key = "pickup", duration = 2400)
