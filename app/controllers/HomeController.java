@@ -23,22 +23,22 @@ public class HomeController extends Controller {
     
     @Cached(key = "index", duration = 600)
     public Result index() {
-        List<Clanwar> clanwars = Clanwar.find.query().setMaxRows(2).order().desc("date").findList();
-        List<News> news = News.find.query().setMaxRows(2).order().desc(CONST_TIMESTAMP).findList();
+        List<Clanwar> clanwars = Clanwar.find.query().setMaxRows(2).orderBy().desc("date").findList();
+        List<News> news = News.find.query().setMaxRows(2).orderBy().desc(CONST_TIMESTAMP).findList();
         
         return ok(views.html.index.render(asScala(clanwars), asScala(news)));
     }
     
     @Cached(key = "news", duration = 600)
     public Result news() {
-      List<News> news = News.find.query().setMaxRows(10).order().desc(CONST_TIMESTAMP).findList();
+      List<News> news = News.find.query().setMaxRows(10).orderBy().desc(CONST_TIMESTAMP).findList();
       
       return ok(views.html.news.render(news));
     }
     
     @Cached(key = "clanwars", duration = 1200)
     public Result clanwars() {
-      List<Clanwar> clanwars = Clanwar.find.query().order().desc("date").findList();
+      List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
       
       return ok(views.html.clanwars.render(asScala(clanwars)));
     }
@@ -70,7 +70,7 @@ public class HomeController extends Controller {
     
     @Cached(key = "history", duration = 2400)
     public Result history() {
-      List<History> entries = History.find.query().order().desc(CONST_TIMESTAMP).findList();
+      List<History> entries = History.find.query().orderBy().desc(CONST_TIMESTAMP).findList();
       
       return ok(views.html.history.render(entries));
     }
