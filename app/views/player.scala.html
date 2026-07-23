@@ -6,7 +6,7 @@
         <a href="@controllers.routes.HomeController.lineup">&gt;&gt;zur&uuml;ck&lt;&lt;</a>
     </div>
     <br />
-    <img border="1" src="@routes.Assets.versioned("images/lineup/" + member.getImage())" width="76" height="103"><br />
+    <img class="bordered-image" src="@routes.Assets.versioned("images/lineup/" + member.getImage())" width="76" height="103" alt="@member.getNick()"><br />
     <br />
     <br />
     nick: @member.getNick()<br />

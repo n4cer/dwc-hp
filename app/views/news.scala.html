@@ -10,7 +10,7 @@
                 <div>
                     <b>@n.getTopic() --- @n.getTimestamp().format("dd.MM.yyyy") by @n.getUsername()</b>
                 </div>
-                <div align="justify">
+                <div class="text-justify">
                     @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
                 </div>
                 <br>

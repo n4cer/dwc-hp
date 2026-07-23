@@ -14,7 +14,7 @@
         }
         <section>
             <div class="admin-header"><h2>News</h2><a class="admin-button" href="@controllers.routes.AdminController.newNews()">Add news</a></div>
-            <table class="admin-table"><thead><tr><th>Date</th><th>Title</th><th>Author</th><th></th></tr></thead><tbody>
+            <table class="admin-table"><thead><tr><th scope="col">Date</th><th scope="col">Title</th><th scope="col">Author</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
             @for(item <- news) {
                 <tr><td>@item.getTimestamp().format("dd.MM.yyyy HH:mm")</td><td>@item.getTopic()</td><td>@item.getUsername()</td>
                     <td><a href="@controllers.routes.AdminController.editNews(item.getId())">Edit</a></td></tr>
@@ -23,7 +23,7 @@
         </section>
         <section>
             <div class="admin-header"><h2>Clanwars</h2><a class="admin-button" href="@controllers.routes.AdminController.newClanwar()">Add clanwar</a></div>
-            <table class="admin-table"><thead><tr><th>Date</th><th>Opponent</th><th>Game</th><th>League</th><th></th></tr></thead><tbody>
+            <table class="admin-table"><thead><tr><th scope="col">Date</th><th scope="col">Opponent</th><th scope="col">Game</th><th scope="col">League</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
             @for(item <- clanwars) {
                 <tr><td>@item.getDate().format("dd.MM.yyyy HH:mm")</td><td>@item.getEnemy()</td><td>@item.getGame()</td><td>@item.getLeague()</td>
                     <td><a href="@controllers.routes.AdminController.editClanwar(item.getId())">Edit</a></td></tr>

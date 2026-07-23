@@ -28,7 +28,7 @@
                             <div class="linksContent">
                                 <strong>Sponsors</strong><br>
                                 <p>
-                                    <a href="https://www.honig-räuberei.de" target="_blank">Honigräuberei</a>
+                                    <a href="https://www.honig-räuberei.de" target="_blank" rel="noopener noreferrer">Honigräuberei</a>
                                 </p>
                                 <br />
                             </div>
@@ -59,8 +59,8 @@
                             <div class="rechtsContent">
                                 <strong>Random Pics</strong><br />
                                 <br />
-                                <p align="center">
-                                    <a href="@routes.HomeController.randomPic" target="_blank"><img border="1" src="@routes.HomeController.randomPic" width="125" alt="random pics" /></a>
+                                <p class="text-center">
+                                    <a href="@routes.HomeController.randomPic" target="_blank" rel="noopener noreferrer"><img class="bordered-image" src="@routes.HomeController.randomPic" width="125" alt="Zufälliges Clanbild" /></a>
                                 </p>
                                 <br />
                             </div>
@@ -78,6 +78,6 @@
                 </div>
             </div>
         </div>
-        <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     </body>
 </html>

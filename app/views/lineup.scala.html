@@ -8,7 +8,7 @@
     </div>
     @for(squad <- squads) {
         <div>
-            <b><u>@squad.getDescription() (@squad.getShortText()</u></b><br /><br />
+            <b><u>@squad.getDescription() (@squad.getShortText())</u></b><br /><br />
             @for(player <- players) {
                 @if(player.getSquad() == squad.getId()) {
                     <div><a href="@controllers.routes.HomeController.player(player.getId())">@player.getNick()</a></div>

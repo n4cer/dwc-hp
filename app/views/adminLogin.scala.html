@@ -8,8 +8,8 @@
             @if(error != null) { <div class="admin-message error">@error</div> }
             <form method="post" action="@controllers.routes.AdminController.authenticate()">
                 @helper.CSRF.formField(request.asScala())
-                <label>Username<input type="text" name="username" required autofocus></label>
-                <label>Password<input type="password" name="password" required></label>
+                <label>Username<input type="text" name="username" autocomplete="username" required autofocus></label>
+                <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
                 <button type="submit">Sign in</button>
             </form>
         } else {

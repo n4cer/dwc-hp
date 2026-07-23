@@ -6,31 +6,33 @@
     <div class="mitteContent">
         <b>Latest Wars</b>
         <div class="mitteContent">
-            <table class="text" cellpadding="2" cellspacing="1" width="100%">
-                <tr>
-                    <td><b>date</b></td>
-                    <td><b>&nbsp;&nbsp;</b></td>
-                    <td><b>opponent</b></td>
-                    <td><b>game</b></td>
-                    <td><b>type</b></td>
-                    <td><b>league</b></td>
-                    <td><b>result</b></td>
-                    <td><b>details</b></td>
-                </tr>
+            <table class="text clanwar-table">
+                <thead><tr>
+                    <th scope="col">date</th>
+                    <th scope="col"><span class="visually-hidden">country</span></th>
+                    <th scope="col">opponent</th>
+                    <th scope="col">game</th>
+                    <th scope="col">type</th>
+                    <th scope="col">league</th>
+                    <th scope="col">result</th>
+                    <th scope="col">details</th>
+                </tr></thead>
+                <tbody>
                 @for(clanwar <- clanwars) {
                     <tr>
                         <td>@clanwar.getDate().format("dd.MM.yyyy")</td>
                         <td><img src="@controllers.routes.Assets.versioned("images/flags/" + clanwar.getFlag())" alt="flag" height="16" /></td>
-                        <td><a href="@clanwar.getUrl()" target="_blank">@clanwar.getEnemy()</a></td>
+                        <td><a href="@clanwar.getUrl()" target="_blank" rel="noopener noreferrer">@clanwar.getEnemy()</a></td>
                         <td>@clanwar.getGame()</td>
                         <td>@clanwar.getGametype()</td>
                         <td>@clanwar.getLeague()</td>
-                        <td align="center" bgcolor="@clanwar.getColor()">@clanwar.getResult()</td>
+                        <td class="result" data-result-color="@clanwar.getColor()">@clanwar.getResult()</td>
                         <td>
                             <a href="@controllers.routes.HomeController.clanwar(clanwar.getId())">view</a>
                         </td>
                     </tr>
                 }
+                </tbody>
             </table>
         </div>
     </div>
@@ -46,7 +48,7 @@
                 <div>
                     <b>@n.getTopic() --- @n.getTimestamp().format("dd.MM.yyyy") by @n.getUsername()</b>
                 </div>
-                <div align="justify">
+                <div class="text-justify">
                     @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
                 </div>
                 <br>
