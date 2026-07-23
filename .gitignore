@@ -21,3 +21,4 @@ libexec
 /conf/prod.conf
 .bsp
 *.iml
+*.dump
