@@ -121,6 +121,8 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .bordered-image {border:1px solid;}
 .text-center {text-align:center;}
 .text-justify {text-align:justify;}
+.pagination {display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0 10px;font-weight:bold;}
+.pagination span {color:#555;}
 .clanwar-table {border-collapse:separate;border-spacing:1px;width:100%;}
 .clanwar-table th,.clanwar-table td {padding:2px;}
 .clanwar-table th {text-align:left;}

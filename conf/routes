@@ -4,7 +4,7 @@
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
-GET     /news                       controllers.HomeController.news
+GET     /news                       controllers.HomeController.news(page: Int ?= 1)
 GET     /clanwars                   controllers.HomeController.clanwars
 GET     /clanwar/:id                controllers.HomeController.clanwar(id: Long)
 GET     /history                    controllers.HomeController.history

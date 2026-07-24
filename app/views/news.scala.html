@@ -1,4 +1,4 @@
-@(news: List[News])
+@(news: List[News], currentPage: Int, pageCount: Int)
 
 @main("news") {
     <h1>News</h1>
@@ -15,6 +15,17 @@
                 </div>
                 <br>
                 <hr />
+            }
+            @if(pageCount > 1) {
+                <nav class="pagination" aria-label="News-Seiten">
+                    @if(currentPage > 1) {
+                        <a href="@controllers.routes.HomeController.news(currentPage - 1)" rel="prev">&laquo; Zurück</a>
+                    }
+                    <span>Seite @currentPage von @pageCount</span>
+                    @if(currentPage < pageCount) {
+                        <a href="@controllers.routes.HomeController.news(currentPage + 1)" rel="next">Weiter &raquo;</a>
+                    }
+                </nav>
             }
         </div>
     </div>

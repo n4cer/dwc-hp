@@ -25,6 +25,7 @@ import static play.libs.Scala.asScala;
 
 public class HomeController extends Controller {
     public static final String CONST_TIMESTAMP = "timestamp";
+    private static final int NEWS_PAGE_SIZE = 10;
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     @Inject Configuration configuration;
     
@@ -36,11 +37,17 @@ public class HomeController extends Controller {
         return ok(views.html.index.render(asScala(clanwars), asScala(news)));
     }
     
-    @Cached(key = "news", duration = 600)
-    public Result news() {
-      List<News> news = News.find.query().setMaxRows(10).orderBy().desc(CONST_TIMESTAMP).findList();
+    public Result news(int page) {
+      int newsCount = News.find.query().findCount();
+      int pageCount = Math.max(1, (newsCount + NEWS_PAGE_SIZE - 1) / NEWS_PAGE_SIZE);
+      int currentPage = Math.min(Math.max(page, 1), pageCount);
+      List<News> news = News.find.query()
+              .setFirstRow((currentPage - 1) * NEWS_PAGE_SIZE)
+              .setMaxRows(NEWS_PAGE_SIZE)
+              .orderBy(CONST_TIMESTAMP + " desc, id desc")
+              .findList();
       
-      return ok(views.html.news.render(news));
+      return ok(views.html.news.render(news, currentPage, pageCount));
     }
     
     @Cached(key = "clanwars", duration = 1200)
