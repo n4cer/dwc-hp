@@ -1,7 +1,8 @@
 @(member: User)
 
-@main("member") {
+@main(member.getNick() + " - Spielerprofil", "Profil des Doomwarriors-Spielers " + member.getNick() + ".", controllers.routes.HomeController.player(member.getId()).url) {
 <div class="mitteContent">
+    <h1>@member.getNick()</h1>
     <div>
         <a href="@controllers.routes.HomeController.lineup">&gt;&gt;zur&uuml;ck&lt;&lt;</a>
     </div>

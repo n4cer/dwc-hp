@@ -1,10 +1,23 @@
-@(title: String)(content: Html)
+@(title: String, description: String = "Doomwarriors: deutscher Gaming-Clan mit News, Spielerprofilen und Clanwar-Archiv.", canonicalPath: String = "", noindex: Boolean = false)(content: Html)
 
 <!DOCTYPE html>
 <html lang="de">
     <head>
         <title>Doomwarriors Clan - @title</title>
-        <meta charset="utf-8" /> 
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="@description" />
+        @if(noindex) {
+            <meta name="robots" content="noindex, nofollow" />
+        }
+        @if(canonicalPath.nonEmpty) {
+            <link rel="canonical" href="@canonicalPath" />
+            <meta property="og:url" content="@canonicalPath" />
+        }
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Doomwarriors Clan" />
+        <meta property="og:title" content="Doomwarriors Clan - @title" />
+        <meta property="og:description" content="@description" />
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
     </head>
@@ -13,7 +26,7 @@
             <div id="blockFullDocument">
                 <div id="blockMainInner">
                     <div id="blockTop">
-                        <img src="@controllers.routes.Assets.versioned("images/dwc_header.jpg")" alt="logo" />
+                        <img src="@controllers.routes.Assets.versioned("images/dwc_header.jpg")" alt="Doomwarriors Clan" width="562" height="90" />
                     </div>
                     
                     <div id="blockLeft">

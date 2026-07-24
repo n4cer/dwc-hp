@@ -1,8 +1,8 @@
 @(entries : List[History])
 
-@main("history") {
+@main("Geschichte", "Die Geschichte und Entwicklung des Doomwarriors Clans.", controllers.routes.HomeController.history.url) {
     <div class="mitteContent">
-        <b>Geschichte</b>
+        <h1>Geschichte des Doomwarriors Clans</h1>
         @for(entry <- entries) {
         <div class="mitteContent">
             <p>@Html(ContentSanitizer.sanitizeHtml(entry.getContent()))</p>

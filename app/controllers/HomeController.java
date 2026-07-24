@@ -59,7 +59,8 @@ public class HomeController extends Controller {
     
     public Result clanwar(Long id) {
       Clanwar clanwar = Clanwar.find.byId(id);
-      
+      if (clanwar == null) return notFound("Clanwar nicht gefunden");
+
       return ok(views.html.clanwar.render(clanwar));
     }
     
@@ -73,7 +74,8 @@ public class HomeController extends Controller {
     
     public Result player(Long id) {
         User player = User.find.byId(id);
-        
+        if (player == null) return notFound("Spieler nicht gefunden");
+
         return ok(views.html.player.render(player));
     }
     
@@ -151,5 +153,58 @@ public class HomeController extends Controller {
     @Cached(key = "todo", duration = 2400)
     public Result todo() {
         return ok(views.html.todo.render());
+    }
+
+    @Cached(key = "robots", duration = 86400)
+    public Result robots() {
+      String baseUrl = siteBaseUrl();
+      String content = "User-agent: *\n"
+              + "Allow: /\n"
+              + "Disallow: /admin\n"
+              + "Sitemap: " + baseUrl + "/sitemap.xml\n";
+      return ok(content).as("text/plain; charset=utf-8");
+    }
+
+    @Cached(key = "sitemap", duration = 3600)
+    public Result sitemap() {
+      String baseUrl = siteBaseUrl();
+      StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+      xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
+
+      addSitemapUrl(xml, baseUrl, routes.HomeController.index().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.news(1).url());
+      int newsCount = News.find.query().findCount();
+      int pageCount = Math.max(1, (newsCount + NEWS_PAGE_SIZE - 1) / NEWS_PAGE_SIZE);
+      for (int page = 2; page <= pageCount; page++) {
+        addSitemapUrl(xml, baseUrl, routes.HomeController.news(page).url());
+      }
+      addSitemapUrl(xml, baseUrl, routes.HomeController.clanwars().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.history().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.lineup().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.pickup().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.contact().url());
+
+      Clanwar.find.query().select("id").findEach(
+              clanwar -> addSitemapUrl(xml, baseUrl, routes.HomeController.clanwar(clanwar.getId()).url()));
+      User.find.query().select("id").findEach(
+              player -> addSitemapUrl(xml, baseUrl, routes.HomeController.player(player.getId()).url()));
+
+      xml.append("</urlset>\n");
+      return ok(xml.toString()).as("application/xml; charset=utf-8");
+    }
+
+    private String siteBaseUrl() {
+      String value = configuration.underlying().getString("site.baseUrl");
+      return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private static void addSitemapUrl(StringBuilder xml, String baseUrl, String path) {
+      String location = (baseUrl + path)
+              .replace("&", "&amp;")
+              .replace("<", "&lt;")
+              .replace(">", "&gt;")
+              .replace("\"", "&quot;")
+              .replace("'", "&apos;");
+      xml.append("  <url><loc>").append(location).append("</loc></url>\n");
     }
 }

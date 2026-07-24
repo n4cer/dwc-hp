@@ -1,6 +1,6 @@
 @(name : String, street : String, city : String, country : String, email : String)
 
-@main("Datenschutzerklärung") {
+@main("Datenschutzerklärung", "Informationen zum Datenschutz auf der Website des Doomwarriors Clans.", controllers.routes.HomeController.privacy().url) {
     <article class="container privacy-page">
         <header class="privacy-header">
             <span class="privacy-kicker">Datenschutz bei Doomwarriors</span>

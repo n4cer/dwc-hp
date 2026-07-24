@@ -1,6 +1,6 @@
 @(request: Http.Request, item: News, users: List[User], error: String)
 
-@main(if(item == null) "Add news" else "Edit news") {
+@main(if(item == null) "Add news" else "Edit news", noindex = true) {
     <div class="admin-page">
         <h1>@if(item == null) { Add news } else { Edit news }</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }

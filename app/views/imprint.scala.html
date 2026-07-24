@@ -1,6 +1,6 @@
 @(name : String, street : String, city : String, email : String)
 
-@main("Impressum") {
+@main("Impressum", "Impressum und Anbieterkennzeichnung der Doomwarriors-Website.", controllers.routes.HomeController.imprint().url) {
     <div class="container">
         <header>
             <h1>Impressum</h1>

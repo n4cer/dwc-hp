@@ -1,6 +1,7 @@
 @(clanwars: Seq[Clanwar])
 
-@main("clanwars") {
+@main("Clanwar-Archiv", "Ergebnisse und Berichte vergangener Clanwars der Doomwarriors.", controllers.routes.HomeController.clanwars.url) {
+    <h1>Clanwar-Archiv</h1>
     <div class="mitteContent">
         <div class="mitteContent">
             <table class="text clanwar-table">

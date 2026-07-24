@@ -1,6 +1,6 @@
 @(request: Http.Request, configured: Boolean, error: String)
 
-@main("Admin Login") {
+@main("Admin Login", noindex = true) {
     <div class="admin-page admin-login">
         <h1>Administration</h1>
         @if(configured) {

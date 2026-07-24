@@ -1,7 +1,7 @@
 @(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], error: String)
 @import scala.jdk.CollectionConverters._
 
-@main(if(item == null) "Add clanwar" else "Edit clanwar") {
+@main(if(item == null) "Add clanwar" else "Edit clanwar", noindex = true) {
     <div class="admin-page">
         <h1>@if(item == null) { Add clanwar } else { Edit clanwar }</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }

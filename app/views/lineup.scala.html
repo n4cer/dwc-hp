@@ -1,9 +1,9 @@
 @(squads: List[Squad], players: List[User])
 
-@main("lineup") {
+@main("Spieler und Lineup", "Spieler, Mitglieder und Squads des Doomwarriors Clans.", controllers.routes.HomeController.lineup.url) {
 <div class="mitteContent">
     <div>
-        <b>Lineup</b>
+        <h1>Spieler und Lineup</h1>
         <br /><br />
     </div>
     @for(squad <- squads) {

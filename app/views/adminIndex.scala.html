@@ -1,6 +1,6 @@
 @(request: Http.Request, news: List[News], clanwars: List[Clanwar])
 
-@main("Administration") {
+@main("Administration", noindex = true) {
     <div class="admin-page">
         <div class="admin-header">
             <h1>Administration</h1>

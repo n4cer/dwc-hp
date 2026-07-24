@@ -4,6 +4,8 @@
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
+GET     /robots.txt                controllers.HomeController.robots
+GET     /sitemap.xml               controllers.HomeController.sitemap
 GET     /news                       controllers.HomeController.news(page: Int ?= 1)
 GET     /clanwars                   controllers.HomeController.clanwars
 GET     /clanwar/:id                controllers.HomeController.clanwar(id: Long)

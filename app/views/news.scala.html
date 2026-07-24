@@ -1,19 +1,19 @@
 @(news: List[News], currentPage: Int, pageCount: Int)
 
-@main("news") {
+@main("News", "Neuigkeiten, Termine und Berichte des Doomwarriors Clans.", controllers.routes.HomeController.news(currentPage).url) {
     <h1>News</h1>
     <br>
     <div>
         <div class="mitteContent">
             @for(n <- news) {
                 <br />
-                <div>
-                    <b>@n.getTopic() --- @n.getTimestamp().format("dd.MM.yyyy") by @n.getUsername()</b>
-                </div>
+                <article>
+                    <h2>@n.getTopic()</h2>
+                    <p><time datetime="@n.getTimestamp().format("yyyy-MM-dd")">@n.getTimestamp().format("dd.MM.yyyy")</time> von @n.getUsername()</p>
                 <div class="text-justify">
                     @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
                 </div>
-                <br>
+                </article>
                 <hr />
             }
             @if(pageCount > 1) {
