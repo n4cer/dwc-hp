@@ -1,0 +1,32 @@
+@(request: Http.Request, item: User, squads: List[Squad], error: String)
+
+@main(if(item == null) "Add lineup member" else "Edit lineup member", noindex = true) {
+    <div class="admin-page">
+        <h1>@if(item == null) {Add lineup member} else {Edit lineup member}</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createLineupMember()} else {@controllers.routes.AdminController.updateLineupMember(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Nick *<input type="text" name="nick" minlength="4" required value="@if(item != null) {@item.getNick()}"></label>
+                <label>Real name<input type="text" name="realname" value="@if(item != null) {@item.getRealname()}"></label>
+                <label>Email<input type="email" name="email" value="@if(item != null) {@item.getEmail()}"></label>
+                <label>Password @if(item == null) {*}<input type="password" name="password" @if(item == null) {required} autocomplete="new-password"></label>
+                <label>Birth date<input type="date" name="birthDate" value="@if(item != null && item.getBirthDate() != null) {@item.getBirthDate().format("yyyy-MM-dd")}"></label>
+                <label>Member since<input type="date" name="since" value="@if(item != null && item.getSince() != null) {@item.getSince().format("yyyy-MM-dd")}"></label>
+                <label>Exit date<input type="date" name="exitDate" value="@if(item != null && item.getExitDate() != null) {@item.getExitDate().format("yyyy-MM-dd")}"></label>
+                <label>City<input type="text" name="city" value="@if(item != null) {@item.getCity()}"></label>
+                <label>Job<input type="text" name="job" value="@if(item != null) {@item.getJob()}"></label>
+                <label>Image filename<input type="text" name="image" value="@if(item != null) {@item.getImage()}"></label>
+                <label>Squad<select name="squad"><option value="">No squad</option>@for(squad <- squads) {<option value="@squad.getId()" @if(item != null && item.getSquad() == squad.getId()) {selected}>@squad.getDescription() (@squad.getShortText())</option>}</select></label>
+                <label>Type<input type="number" name="type" value="@if(item != null) {@item.getType()}"></label>
+            </div>
+            <label>Quote<textarea name="quote" rows="3">@if(item != null) {@item.getQuote()}</textarea></label>
+            <div class="admin-check-grid">
+                <label class="admin-check"><input type="checkbox" name="active" @if(item == null || java.lang.Boolean.TRUE.equals(item.getActive())) {checked}> Active</label>
+                <label class="admin-check"><input type="checkbox" name="notits" @if(item != null && java.lang.Boolean.TRUE.equals(item.getNotits())) {checked}> Notits</label>
+            </div>
+            @if(item != null) {<p class="admin-hint">Leave the password empty to keep the existing password.</p>}
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.index()">Cancel</a></div>
+        </form>
+    </div>
+}

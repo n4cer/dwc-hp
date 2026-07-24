@@ -13,7 +13,10 @@
     nick: @member.getNick()<br />
     realname: @member.getRealname()<br />
     city: @member.getCity()<br />
-    since: @member.getSince().format("dd.MM.yyyy")<br />
+    since: @if(member.getSince() != null) {@member.getSince().format("dd.MM.yyyy")} else {-}<br />
+    @if(member.getExitDate() != null) {
+        exit date: @member.getExitDate().format("dd.MM.yyyy")<br />
+    }
     <!--birthday: @member.getBirthDate()<br />-->
     job: @member.getJob()<br />
     quote: @member.getQuote()<br />

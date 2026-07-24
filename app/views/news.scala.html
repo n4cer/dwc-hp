@@ -9,7 +9,7 @@
                 <br />
                 <article>
                     <h2>@n.getTopic()</h2>
-                    <p><time datetime="@n.getTimestamp().format("yyyy-MM-dd")">@n.getTimestamp().format("dd.MM.yyyy")</time> von @n.getUsername()</p>
+                    <p><time datetime="@n.getTimestamp().format(if (n.getTimestamp().format("HH:mm") == "00:00") "yyyy-MM-dd" else "yyyy-MM-dd'T'HH:mm")">@n.getTimestamp().format(if (n.getTimestamp().format("HH:mm") == "00:00") "dd.MM.yyyy" else "dd.MM.yyyy HH:mm")</time> von @n.getUsername()</p>
                 <div class="text-justify">
                     @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
                 </div>

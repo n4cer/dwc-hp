@@ -33,6 +33,7 @@ public class User extends Model {
   private String job;
   private String quote;
   private Date since;
+  private Date exitDate;
   private String image;
   private Integer squad;
   @Column(columnDefinition = "boolean default false")
@@ -123,6 +124,14 @@ public class User extends Model {
 
   public void setSince(Date since) {
     this.since = since;
+  }
+
+  public Date getExitDate() {
+    return exitDate;
+  }
+
+  public void setExitDate(Date exitDate) {
+    this.exitDate = exitDate;
   }
 
   public String getImage() {
@@ -236,5 +245,10 @@ public class User extends Model {
   public void changePassword(String password) {
     this.password = BCrypt.hashpw(password, BCrypt.gensalt());
     this.save();
+  }
+
+  /** Sets a new password hash without persisting the user. */
+  public void setPlainTextPassword(String password) {
+    this.password = BCrypt.hashpw(password, BCrypt.gensalt());
   }
 }

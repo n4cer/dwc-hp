@@ -11,6 +11,7 @@ import models.MatchLineup;
 import models.News;
 import models.Score;
 import models.ScoreImage;
+import models.Squad;
 import models.User;
 import play.api.Configuration;
 import play.cache.AsyncCacheApi;
@@ -22,6 +23,7 @@ import play.mvc.Result;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -34,6 +36,7 @@ import java.util.Set;
 public class AdminController extends Controller {
     private static final String ADMIN_SESSION = "dwc-admin";
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final Configuration configuration;
     private final AsyncCacheApi cache;
@@ -86,7 +89,34 @@ public class AdminController extends Controller {
         if (denied != null) return denied;
         List<News> news = News.find.query().orderBy().desc("timestamp").findList();
         List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
-        return ok(views.html.adminIndex.render(request, news, clanwars));
+        List<User> lineup = User.find.query().orderBy().asc("nick").findList();
+        return ok(views.html.adminIndex.render(request, news, clanwars, lineup));
+    }
+
+    @AddCSRFToken
+    public Result newLineupMember(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(lineupForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editLineupMember(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        User member = User.find.byId(id);
+        if (member == null) return notFound("Lineup member not found.");
+        return ok(lineupForm(request, member, null));
+    }
+
+    public Result createLineupMember(Http.Request request) {
+        return saveLineupMember(request, new User());
+    }
+
+    public Result updateLineupMember(Http.Request request, Long id) {
+        User member = User.find.byId(id);
+        if (member == null) return notFound("Lineup member not found.");
+        return saveLineupMember(request, member);
     }
 
     @AddCSRFToken
@@ -194,6 +224,61 @@ public class AdminController extends Controller {
         return redirect(routes.AdminController.index()).flashing("success", "Clanwar saved successfully.");
     }
 
+    private Result saveLineupMember(Http.Request request, User member) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        boolean creating = member.getId() == null;
+        String nick = value(data, "nick");
+        String email = value(data, "email");
+        String password = value(data, "password");
+        Date birthDate = parseDay(value(data, "birthDate"));
+        Date since = parseDay(value(data, "since"));
+        Date exitDate = parseDay(value(data, "exitDate"));
+        Integer squad = optionalInteger(value(data, "squad"));
+        Integer type = optionalInteger(value(data, "type"));
+
+        if (nick.length() < 4 || (creating && password.isBlank())
+                || (!value(data, "birthDate").isBlank() && birthDate == null)
+                || (!value(data, "since").isBlank() && since == null)
+                || (!value(data, "exitDate").isBlank() && exitDate == null)
+                || (!value(data, "squad").isBlank() && squad == null)
+                || (!value(data, "type").isBlank() && type == null)) {
+            return badRequest(lineupForm(request, creating ? null : member,
+                    "Please enter a nick with at least four characters and check all entered values. A password is required for new members."));
+        }
+        User sameNick = User.find.query().where().eq("nick", nick).findOne();
+        User sameEmail = email.isBlank() ? null : User.find.query().where().eq("email", email).findOne();
+        if ((sameNick != null && !sameNick.getId().equals(member.getId()))
+                || (sameEmail != null && !sameEmail.getId().equals(member.getId()))) {
+            return badRequest(lineupForm(request, creating ? null : member, "Nick and email address must be unique."));
+        }
+
+        member.setNick(nick);
+        member.setRealname(value(data, "realname"));
+        member.setEmail(email.isBlank() ? null : email);
+        member.setBirthDate(birthDate);
+        member.setCity(value(data, "city"));
+        member.setJob(value(data, "job"));
+        member.setQuote(value(data, "quote"));
+        member.setSince(since);
+        member.setExitDate(exitDate);
+        member.setImage(value(data, "image"));
+        member.setSquad(squad);
+        member.setType(type);
+        member.setNotits(data.containsKey("notits"));
+        member.setActive(data.containsKey("active"));
+        if (!password.isBlank()) member.setPlainTextPassword(password);
+        if (creating) member.save(); else member.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.index()).flashing("success", "Lineup member saved successfully.");
+    }
+
+    private play.twirl.api.Html lineupForm(Http.Request request, User member, String error) {
+        return views.html.adminLineupForm.render(request, member,
+                Squad.find.query().orderBy().asc("description").findList(), error);
+    }
+
     private play.twirl.api.Html clanwarForm(Http.Request request, Clanwar clanwar, String error) {
         return views.html.adminClanwarForm.render(request, clanwar, Game.find.all(), GameType.find.all(),
                 League.find.all(), Country.find.all(), models.Map.find.all(), User.find.all(), error);
@@ -292,6 +377,7 @@ public class AdminController extends Controller {
         cache.remove("index");
         cache.remove("news");
         cache.remove("clanwars");
+        cache.remove("lineup");
     }
 
     private Result requireAdmin(Http.Request request) {
@@ -328,6 +414,19 @@ public class AdminController extends Controller {
 
     private static Integer integer(String value) {
         try { return Integer.valueOf(value); } catch (NumberFormatException ex) { return null; }
+    }
+
+    private static Integer optionalInteger(String value) {
+        return value.isBlank() ? null : integer(value);
+    }
+
+    private static Date parseDay(String value) {
+        if (value.isBlank()) return null;
+        try {
+            return Date.from(LocalDate.parse(value, DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        } catch (DateTimeParseException ex) {
+            return null;
+        }
     }
 
     private static Date parseDate(String value) {

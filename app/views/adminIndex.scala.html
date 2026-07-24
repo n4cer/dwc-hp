@@ -1,4 +1,4 @@
-@(request: Http.Request, news: List[News], clanwars: List[Clanwar])
+@(request: Http.Request, news: List[News], clanwars: List[Clanwar], lineup: List[User])
 
 @main("Administration", noindex = true) {
     <div class="admin-page">
@@ -27,6 +27,15 @@
             @for(item <- clanwars) {
                 <tr><td>@item.getDate().format("dd.MM.yyyy HH:mm")</td><td>@item.getEnemy()</td><td>@item.getGame()</td><td>@item.getLeague()</td>
                     <td><a href="@controllers.routes.AdminController.editClanwar(item.getId())">Edit</a></td></tr>
+            }
+            </tbody></table>
+        </section>
+        <section>
+            <div class="admin-header"><h2>Lineup</h2><a class="admin-button" href="@controllers.routes.AdminController.newLineupMember()">Add member</a></div>
+            <table class="admin-table"><thead><tr><th scope="col">Nick</th><th scope="col">Real name</th><th scope="col">Squad</th><th scope="col">Active</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+            @for(member <- lineup) {
+                <tr><td>@member.getNick()</td><td>@member.getRealname()</td><td>@member.getSquad()</td><td>@if(java.lang.Boolean.TRUE.equals(member.getActive())) {Yes} else {No}</td>
+                    <td><a href="@controllers.routes.AdminController.editLineupMember(member.getId())">Edit</a></td></tr>
             }
             </tbody></table>
         </section>

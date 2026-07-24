@@ -32,6 +32,10 @@ GET     /admin/clanwars/new         controllers.AdminController.newClanwar(reque
 GET     /admin/clanwars/:id/edit    controllers.AdminController.editClanwar(request: Request, id: Long)
 POST    /admin/clanwars             controllers.AdminController.createClanwar(request: Request)
 POST    /admin/clanwars/:id         controllers.AdminController.updateClanwar(request: Request, id: Long)
+GET     /admin/lineup/new            controllers.AdminController.newLineupMember(request: Request)
+GET     /admin/lineup/:id/edit       controllers.AdminController.editLineupMember(request: Request, id: Long)
+POST    /admin/lineup                controllers.AdminController.createLineupMember(request: Request)
+POST    /admin/lineup/:id            controllers.AdminController.updateLineupMember(request: Request, id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
