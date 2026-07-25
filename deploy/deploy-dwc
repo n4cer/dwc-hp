@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+archive="${1:-}"
+release_id="${2:-}"
+app_root="/home/micha/dwc"
+releases="$app_root/releases"
+release="$releases/$release_id"
+
+if [[ ! "$archive" =~ ^/tmp/dwc-[0-9a-f]{40}\.tgz$ ]] || [[ ! "$release_id" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "Invalid archive path or release id" >&2
+  exit 2
+fi
+if [[ ! -f "$archive" ]] || [[ -e "$release" ]]; then
+  echo "Archive missing or release already exists" >&2
+  exit 2
+fi
+
+install -d -o micha -g users -m 0755 "$releases" "$release"
+trap 'rm -f -- "$archive"' EXIT
+tar -xzf "$archive" --strip-components=1 -C "$release"
+test -x "$release/bin/dwc"
+chown -R micha:users "$release"
+
+previous="$(readlink -f "$app_root/current" 2>/dev/null || true)"
+ln -s "$release" "$app_root/current.new"
+mv -Tf "$app_root/current.new" "$app_root/current"
+
+if ! systemctl restart dwc.service || ! systemctl is-active --quiet dwc.service; then
+  healthy=false
+else
+  healthy=false
+  for attempt in {1..20}; do
+    if curl --fail --silent --show-error --max-time 3 -H 'Host: localhost' http://127.0.0.1:9003/ >/dev/null; then
+      healthy=true
+      break
+    fi
+    sleep 2
+  done
+fi
+
+if [[ "$healthy" != true ]]; then
+  echo "Deployment failed; rolling back" >&2
+  if [[ -n "$previous" && -d "$previous" ]]; then
+    ln -s "$previous" "$app_root/current.new"
+    mv -Tf "$app_root/current.new" "$app_root/current"
+    systemctl restart dwc.service
+  fi
+  exit 1
+fi
+
+find "$releases" -mindepth 1 -maxdepth 1 -type d -printf '%T@ %p\n' \
+  | sort -rn | tail -n +6 | cut -d' ' -f2- | xargs -r rm -rf --
+echo "Release $release_id is healthy"

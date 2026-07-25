@@ -1,0 +1,25 @@
+[Unit]
+Description=dwc
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=micha
+Group=users
+WorkingDirectory=/home/micha/dwc/current
+EnvironmentFile=/etc/dwc/environment
+Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+ExecStart=/home/micha/dwc/current/bin/dwc -Dplay.evolutions.db.default.autoApply=true -Dconfig.file=/etc/dwc/prod.conf -Dhttp.address=127.0.0.1 -Dhttp.port=9003
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/micha/dwc /var/lib/dwc
+
+[Install]
+WantedBy=multi-user.target

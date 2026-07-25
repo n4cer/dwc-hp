@@ -1,0 +1,87 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: dwc
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: bla
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dwc"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: sbt
+      - uses: sbt/setup-sbt@v1
+      - name: Test and package
+        run: sbt -batch clean test Universal/packageZipTarball
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact="$(find target/universal -maxdepth 1 -type f -name '*.tgz' -print -quit)"
+          test -n "$artifact"
+          cp "$artifact" dwc.tgz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dwc-${{ github.sha }}
+          path: dwc.tgz
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dwc-${{ github.sha }}
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+      - name: Upload and activate release
+        env:
+          SSH_HOST: ${{ vars.SSH_HOST }}
+          SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+          SSH_USER: ${{ vars.SSH_USER }}
+          RELEASE_ID: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$SSH_HOST"
+          test -n "$SSH_USER"
+          scp -P "$SSH_PORT" -i ~/.ssh/deploy_key dwc.tgz "$SSH_USER@$SSH_HOST:/tmp/dwc-$RELEASE_ID.tgz"
+          ssh -p "$SSH_PORT" -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+            "sudo /usr/local/sbin/deploy-dwc '/tmp/dwc-$RELEASE_ID.tgz' '$RELEASE_ID'"

@@ -1,0 +1,7 @@
+include "/home/micha/dwc/current/conf/application.conf"
+
+play.http.secret.key = ${?PLAY_HTTP_SECRET_KEY}
+db.default.url = ${?DWC_DB_URL}
+db.default.username = ${?DWC_DB_USERNAME}
+db.default.password = ${?DWC_DB_PASSWORD}
+picture_folder = "/var/lib/dwc/pictures"

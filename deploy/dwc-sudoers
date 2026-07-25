@@ -1,0 +1,2 @@
+# Restrict the GitHub deployment account to the audited deployment command.
+dwc-deploy ALL=(root) NOPASSWD: /usr/local/sbin/deploy-dwc /tmp/dwc-*.tgz [0-9a-f]*

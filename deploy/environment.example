@@ -1,0 +1,6 @@
+PLAY_HTTP_SECRET_KEY=replace-with-a-long-random-value
+DWC_DB_URL=jdbc:postgresql://127.0.0.1:5432/dwc
+DWC_DB_USERNAME=dwc
+DWC_DB_PASSWORD=replace-me
+DWC_ADMIN_USERNAME=admin
+DWC_ADMIN_PASSWORD=replace-me-too
