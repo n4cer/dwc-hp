@@ -6,6 +6,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
@@ -19,15 +20,19 @@ import models.Squad;
 import models.User;
 import play.api.Configuration;
 import play.cache.Cached;
+import play.cache.SyncCacheApi;
 import play.mvc.*;
+import play.twirl.api.Html;
 
 import static play.libs.Scala.asScala;
 
 public class HomeController extends Controller {
     public static final String CONST_TIMESTAMP = "timestamp";
     private static final int NEWS_PAGE_SIZE = 10;
+    private static final int CLANWAR_CACHE_DURATION = 1200;
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     @Inject Configuration configuration;
+    @Inject SyncCacheApi cache;
     
     @Cached(key = "index", duration = 600)
     public Result index() {
@@ -37,7 +42,7 @@ public class HomeController extends Controller {
         return ok(views.html.index.render(asScala(clanwars), asScala(news)));
     }
     
-    public Result news(int page) {
+    public Result news(Http.Request request, int page) {
       int newsCount = News.find.query().findCount();
       int pageCount = Math.max(1, (newsCount + NEWS_PAGE_SIZE - 1) / NEWS_PAGE_SIZE);
       int currentPage = Math.min(Math.max(page, 1), pageCount);
@@ -46,8 +51,9 @@ public class HomeController extends Controller {
               .setMaxRows(NEWS_PAGE_SIZE)
               .orderBy(CONST_TIMESTAMP + " desc, id desc")
               .findList();
-      
-      return ok(views.html.news.render(news, currentPage, pageCount));
+      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+
+      return ok(views.html.news.render(news, currentPage, pageCount, isAdmin));
     }
     
     @Cached(key = "clanwars", duration = 1200)
@@ -57,11 +63,23 @@ public class HomeController extends Controller {
       return ok(views.html.clanwars.render(asScala(clanwars)));
     }
     
-    public Result clanwar(Long id) {
+    public Result clanwar(Http.Request request, Long id) {
+      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+      if (!isAdmin) {
+        Optional<Html> cached = cache.get(clanwarCacheKey(id));
+        if (cached.isPresent()) return ok(cached.get());
+      }
+
       Clanwar clanwar = Clanwar.find.byId(id);
       if (clanwar == null) return notFound("Clanwar nicht gefunden");
+      Html html = views.html.clanwar.render(clanwar, isAdmin);
+      if (!isAdmin) cache.set(clanwarCacheKey(id), html, CLANWAR_CACHE_DURATION);
 
-      return ok(views.html.clanwar.render(clanwar));
+      return ok(html);
+    }
+
+    public static String clanwarCacheKey(Long id) {
+      return "clanwar_" + id;
     }
     
     @Cached(key = "lineup", duration = 600)
