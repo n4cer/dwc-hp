@@ -2,6 +2,7 @@
 
 @main(if(item == null) "Add lineup member" else "Edit lineup member", noindex = true) {
     <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.lineupIndex()">&laquo; Back to lineup</a></p>
         <h1>@if(item == null) {Add lineup member} else {Edit lineup member}</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }
         <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createLineupMember()} else {@controllers.routes.AdminController.updateLineupMember(item.getId())}">
@@ -26,7 +27,7 @@
                 <label class="admin-check"><input type="checkbox" name="notits" @if(item != null && java.lang.Boolean.TRUE.equals(item.getNotits())) {checked}> Notits</label>
             </div>
             @if(item != null) {<p class="admin-hint">Leave the password empty to keep the existing password.</p>}
-            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.index()">Cancel</a></div>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.lineupIndex()">Cancel</a></div>
         </form>
     </div>
 }

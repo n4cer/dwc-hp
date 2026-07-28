@@ -2,6 +2,7 @@
 
 @main(if(item == null) "Add news" else "Edit news", noindex = true) {
     <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.newsIndex()">&laquo; Back to news</a></p>
         <h1>@if(item == null) { Add news } else { Edit news }</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }
         <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createNews()} else {@controllers.routes.AdminController.updateNews(item.getId())}">
@@ -13,7 +14,7 @@
             </select></label>
             <label>Content *<textarea name="content" rows="14" required>@if(item != null) {@item.getContent()}</textarea></label>
             <p class="admin-hint">HTML is supported, as with the existing news items.</p>
-            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.index()">Cancel</a></div>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.newsIndex()">Cancel</a></div>
         </form>
     </div>
 }

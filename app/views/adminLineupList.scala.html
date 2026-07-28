@@ -1,0 +1,17 @@
+@(request: Http.Request, lineup: List[User])
+
+@main("Lineup administration", noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Lineup</h1><a class="admin-button" href="@controllers.routes.AdminController.newLineupMember()">Add member</a></div>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        <table class="admin-table"><thead><tr><th scope="col">Nick</th><th scope="col">Real name</th><th scope="col">Squad</th><th scope="col">Active</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        @for(member <- lineup) {
+            <tr><td>@member.getNick()</td><td>@member.getRealname()</td><td>@member.getSquad()</td><td>@if(java.lang.Boolean.TRUE.equals(member.getActive())) {Yes} else {No}</td>
+                <td><a href="@controllers.routes.AdminController.editLineupMember(member.getId())">Edit</a></td></tr>
+        }
+        </tbody></table>
+    </div>
+}

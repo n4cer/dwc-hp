@@ -1,0 +1,17 @@
+@(request: Http.Request, clanwars: List[Clanwar])
+
+@main("Clanwar administration", noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Clanwars</h1><a class="admin-button" href="@controllers.routes.AdminController.newClanwar()">Add clanwar</a></div>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        <table class="admin-table"><thead><tr><th scope="col">Date</th><th scope="col">Opponent</th><th scope="col">Game</th><th scope="col">League</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        @for(item <- clanwars) {
+            <tr><td>@item.getDate().format("dd.MM.yyyy HH:mm")</td><td>@item.getEnemy()</td><td>@item.getGame()</td><td>@item.getLeague()</td>
+                <td><a href="@controllers.routes.AdminController.editClanwar(item.getId())">Edit</a></td></tr>
+        }
+        </tbody></table>
+    </div>
+}
