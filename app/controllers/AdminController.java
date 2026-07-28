@@ -221,6 +221,7 @@ public class AdminController extends Controller {
         if (clanwar.getId() == null) clanwar.save(); else clanwar.update();
         syncClanwarRelations(clanwar, data);
         clearPublicCaches();
+        cache.remove(HomeController.clanwarCacheKey(clanwar.getId()));
         return redirect(routes.AdminController.index()).flashing("success", "Clanwar saved successfully.");
     }
 
