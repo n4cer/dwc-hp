@@ -3,6 +3,7 @@
 
 @main(if(item == null) "Add clanwar" else "Edit clanwar", noindex = true) {
     <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.clanwarIndex()">&laquo; Back to clanwars</a></p>
         <h1>@if(item == null) { Add clanwar } else { Edit clanwar }</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }
         <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createClanwar()} else {@controllers.routes.AdminController.updateClanwar(item.getId())}">
@@ -49,7 +50,7 @@
                 <button type="button" id="add-score" class="secondary">Add score</button>
                 <p class="admin-hint">Screenshot files are resolved below <code>public/images/clanwars/</code>.</p>
             </fieldset>
-            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.index()">Cancel</a></div>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.clanwarIndex()">Cancel</a></div>
         </form>
     </div>
     <template id="score-template"><div class="admin-score-row new-score-row">

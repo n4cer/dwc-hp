@@ -163,6 +163,12 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .admin-message.success {background:#e0f2df;border-color:#4b8b45;}
 .admin-hint {color:#666;font-size:11px;}
 .admin-login {max-width:420px;}
+.admin-back {margin-bottom:16px;}
+.admin-dashboard {display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:20px;}
+.admin-card {display:block;border:1px solid #ccc;background:#fafafa;padding:14px;text-decoration:none;color:inherit;}
+.admin-card:hover {border-color:#E2A612;}
+.admin-card h2 {margin:0 0 6px;font-size:14px;}
+.admin-card-count {margin:0;font-size:24px;font-weight:bold;}
 .admin-fieldset {border:1px solid #bbb;margin:20px 0;padding:12px;}
 .admin-fieldset legend {font-weight:bold;padding:0 6px;}
 .admin-check-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:4px 12px;}

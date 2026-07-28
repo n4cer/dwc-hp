@@ -87,10 +87,43 @@ public class AdminController extends Controller {
     public Result index(Http.Request request) {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
+        long newsCount = News.find.query().findCount();
+        long clanwarCount = Clanwar.find.query().findCount();
+        long lineupCount = User.find.query().findCount();
+        long squadCount = Squad.find.query().findCount();
+        return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount));
+    }
+
+    @AddCSRFToken
+    public Result newsIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
         List<News> news = News.find.query().orderBy().desc("timestamp").findList();
+        return ok(views.html.adminNewsList.render(request, news));
+    }
+
+    @AddCSRFToken
+    public Result clanwarIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
         List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
+        return ok(views.html.adminClanwarList.render(request, clanwars));
+    }
+
+    @AddCSRFToken
+    public Result lineupIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
         List<User> lineup = User.find.query().orderBy().asc("nick").findList();
-        return ok(views.html.adminIndex.render(request, news, clanwars, lineup));
+        return ok(views.html.adminLineupList.render(request, lineup));
+    }
+
+    @AddCSRFToken
+    public Result squadIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<Squad> squads = Squad.find.query().orderBy().asc("description").findList();
+        return ok(views.html.adminSquadList.render(request, squads));
     }
 
     @AddCSRFToken
@@ -171,6 +204,54 @@ public class AdminController extends Controller {
         return saveClanwar(request, clanwar);
     }
 
+    @AddCSRFToken
+    public Result newSquad(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(squadForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editSquad(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Squad squad = Squad.find.byId(id);
+        if (squad == null) return notFound("Squad not found.");
+        return ok(squadForm(request, squad, null));
+    }
+
+    public Result createSquad(Http.Request request) {
+        return saveSquad(request, new Squad());
+    }
+
+    public Result updateSquad(Http.Request request, Long id) {
+        Squad squad = Squad.find.byId(id);
+        if (squad == null) return notFound("Squad not found.");
+        return saveSquad(request, squad);
+    }
+
+    private Result saveSquad(Http.Request request, Squad squad) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String description = value(data, "description");
+        Integer game = optionalInteger(value(data, "game"));
+        if (description.isBlank() || (!value(data, "game").isBlank() && game == null)) {
+            return badRequest(squadForm(request, squad.getId() == null ? null : squad,
+                    "Please complete all required fields correctly."));
+        }
+        squad.setDescription(description);
+        squad.setShortText(value(data, "shortText"));
+        squad.setGame(game);
+        if (squad.getId() == null) squad.save(); else squad.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.squadIndex()).flashing("success", "Squad saved successfully.");
+    }
+
+    private play.twirl.api.Html squadForm(Http.Request request, Squad squad, String error) {
+        return views.html.adminSquadForm.render(request, squad, Game.find.all(), error);
+    }
+
     private Result saveNews(Http.Request request, News news) {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
@@ -189,7 +270,7 @@ public class AdminController extends Controller {
         news.setTimestamp(timestamp);
         if (news.getId() == null) news.save(); else news.update();
         clearPublicCaches();
-        return redirect(routes.AdminController.index()).flashing("success", "News item saved successfully.");
+        return redirect(routes.AdminController.newsIndex()).flashing("success", "News item saved successfully.");
     }
 
     private Result saveClanwar(Http.Request request, Clanwar clanwar) {
@@ -222,7 +303,7 @@ public class AdminController extends Controller {
         syncClanwarRelations(clanwar, data);
         clearPublicCaches();
         cache.remove(HomeController.clanwarCacheKey(clanwar.getId()));
-        return redirect(routes.AdminController.index()).flashing("success", "Clanwar saved successfully.");
+        return redirect(routes.AdminController.clanwarIndex()).flashing("success", "Clanwar saved successfully.");
     }
 
     private Result saveLineupMember(Http.Request request, User member) {
@@ -272,7 +353,7 @@ public class AdminController extends Controller {
         if (!password.isBlank()) member.setPlainTextPassword(password);
         if (creating) member.save(); else member.update();
         clearPublicCaches();
-        return redirect(routes.AdminController.index()).flashing("success", "Lineup member saved successfully.");
+        return redirect(routes.AdminController.lineupIndex()).flashing("success", "Lineup member saved successfully.");
     }
 
     private play.twirl.api.Html lineupForm(Http.Request request, User member, String error) {
