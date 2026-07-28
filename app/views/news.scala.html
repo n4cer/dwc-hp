@@ -1,4 +1,4 @@
-@(news: List[News], currentPage: Int, pageCount: Int)
+@(news: List[News], currentPage: Int, pageCount: Int, isAdmin: Boolean)
 
 @main("News", "Neuigkeiten, Termine und Berichte des Doomwarriors Clans.", controllers.routes.HomeController.news(currentPage).url) {
     <h1>News</h1>
@@ -13,6 +13,9 @@
                 <div class="text-justify">
                     @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
                 </div>
+                @if(isAdmin) {
+                    <p><a href="@controllers.routes.AdminController.editNews(n.getId())">Edit</a></p>
+                }
                 </article>
                 <hr />
             }

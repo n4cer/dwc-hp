@@ -37,7 +37,7 @@ public class HomeController extends Controller {
         return ok(views.html.index.render(asScala(clanwars), asScala(news)));
     }
     
-    public Result news(int page) {
+    public Result news(Http.Request request, int page) {
       int newsCount = News.find.query().findCount();
       int pageCount = Math.max(1, (newsCount + NEWS_PAGE_SIZE - 1) / NEWS_PAGE_SIZE);
       int currentPage = Math.min(Math.max(page, 1), pageCount);
@@ -46,8 +46,9 @@ public class HomeController extends Controller {
               .setMaxRows(NEWS_PAGE_SIZE)
               .orderBy(CONST_TIMESTAMP + " desc, id desc")
               .findList();
-      
-      return ok(views.html.news.render(news, currentPage, pageCount));
+      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+
+      return ok(views.html.news.render(news, currentPage, pageCount, isAdmin));
     }
     
     @Cached(key = "clanwars", duration = 1200)
@@ -57,11 +58,12 @@ public class HomeController extends Controller {
       return ok(views.html.clanwars.render(asScala(clanwars)));
     }
     
-    public Result clanwar(Long id) {
+    public Result clanwar(Http.Request request, Long id) {
       Clanwar clanwar = Clanwar.find.byId(id);
       if (clanwar == null) return notFound("Clanwar nicht gefunden");
+      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
 
-      return ok(views.html.clanwar.render(clanwar));
+      return ok(views.html.clanwar.render(clanwar, isAdmin));
     }
     
     @Cached(key = "lineup", duration = 600)

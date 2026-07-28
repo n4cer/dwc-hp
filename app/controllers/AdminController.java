@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class AdminController extends Controller {
-    private static final String ADMIN_SESSION = "dwc-admin";
+    private static final String ADMIN_SESSION = AdminAuth.ADMIN_SESSION;
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -385,12 +385,11 @@ public class AdminController extends Controller {
     }
 
     private boolean isAuthenticated(Http.Request request) {
-        return credentialsConfigured() && request.session().getOptional(ADMIN_SESSION)
-                .filter(value -> secureEquals(value, configured("admin.username"))).isPresent();
+        return AdminAuth.isAuthenticated(request, configuration);
     }
 
     private boolean credentialsConfigured() {
-        return !configured("admin.username").isBlank() && !configured("admin.password").isBlank();
+        return AdminAuth.credentialsConfigured(configuration);
     }
 
     private String configured(String path) {
