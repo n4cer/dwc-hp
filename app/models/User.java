@@ -8,8 +8,6 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
-import org.mindrot.jbcrypt.BCrypt;
-
 import io.ebean.*;
 
 @Entity
@@ -23,7 +21,6 @@ public class User extends Model {
   @Column(unique = true)
   @MinLength(4)
   private String nick;
-  private String password;
   private String realname;
   @Constraints.Email
   @Column(unique = true)
@@ -35,16 +32,14 @@ public class User extends Model {
   private Date since;
   private Date exitDate;
   private String image;
-  private Integer squad;
-  @Column(columnDefinition = "boolean default false")
-  private Boolean notits;
-  private Integer type;
   @Column(columnDefinition = "boolean default true")
   private Boolean active;
   @OneToMany(mappedBy="username", cascade=CascadeType.ALL)
   private List<News> news;
   @OneToMany(mappedBy="member", cascade=CascadeType.ALL)
   private List<MatchLineup> lineups;
+  @OneToMany(mappedBy="member", cascade=CascadeType.ALL)
+  private List<UserSquad> squads;
 
   public Long getId() {
     return id;
@@ -60,14 +55,6 @@ public class User extends Model {
 
   public void setNick(String nick) {
     this.nick = nick;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
   }
 
   public String getRealname() {
@@ -142,28 +129,12 @@ public class User extends Model {
     this.image = image;
   }
 
-  public Integer getSquad() {
-    return squad;
+  public List<UserSquad> getSquads() {
+    return squads;
   }
 
-  public void setSquad(Integer squad) {
-    this.squad = squad;
-  }
-
-  public Boolean getNotits() {
-    return notits;
-  }
-
-  public void setNotits(Boolean notits) {
-    this.notits = notits;
-  }
-
-  public Integer getType() {
-    return type;
-  }
-
-  public void setType(Integer type) {
-    this.type = type;
+  public void setSquads(List<UserSquad> squads) {
+    this.squads = squads;
   }
 
   public Boolean getActive() {
@@ -193,62 +164,5 @@ public class User extends Model {
   @Override
   public String toString() {
     return getNick();
-  }
-  
-  /**
-   * Checks username and password
-   * 
-   * @param userName
-   * @param password
-   * @return User
-   */
-  public static User authenticate(String userName, String password) {
-    User user = User.find.query().where().eq("nick", userName).findOne();
-    if (user != null && BCrypt.checkpw(password, user.password)) {
-      return user;
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Create new user with password hash
-   * 
-   * @param userName
-   * @param password
-   * @return User
-   */
-  public static User create(String userName, String password) {
-    User user = new User();
-    user.nick = userName;
-    user.password = BCrypt.hashpw(password, BCrypt.gensalt());
-    user.active = true;
-    user.save();
-    
-    return user;
-  }
-  
-  public static User mockCreate(String userName, String password, String realname, String image, Integer squad) {
-	    User user = new User();
-	    user.nick = userName;
-	    user.password = BCrypt.hashpw(password, BCrypt.gensalt());
-	    user.realname = realname;
-	    user.image = image;
-	    user.squad = squad;
-	    user.type = 0;
-	    user.active = true;
-	    user.save();
-	    
-	    return user;
-	  }
-  
-  public void changePassword(String password) {
-    this.password = BCrypt.hashpw(password, BCrypt.gensalt());
-    this.save();
-  }
-
-  /** Sets a new password hash without persisting the user. */
-  public void setPlainTextPassword(String password) {
-    this.password = BCrypt.hashpw(password, BCrypt.gensalt());
   }
 }

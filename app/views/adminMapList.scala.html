@@ -1,0 +1,17 @@
+@(request: Http.Request, maps: List[models.Map])
+
+@main("Map administration", noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Maps</h1><a class="admin-button" href="@controllers.routes.AdminController.newMap()">Add map</a></div>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        <table class="admin-table"><thead><tr><th scope="col">Map</th><th scope="col">Game</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        @for(item <- maps) {
+            <tr><td>@item.getMap()</td><td>@if(item.getGame() != null) {@item.getGame().getDescription()}</td>
+                <td><a href="@controllers.routes.AdminController.editMap(item.getId())">Edit</a></td></tr>
+        }
+        </tbody></table>
+    </div>
+}

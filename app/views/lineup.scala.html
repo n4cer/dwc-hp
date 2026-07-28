@@ -1,4 +1,4 @@
-@(squads: List[Squad], players: List[User])
+@(squads: List[Squad])
 
 @main("Spieler und Lineup", "Spieler, Mitglieder und Squads des Doomwarriors Clans.", controllers.routes.HomeController.lineup.url) {
 <div class="mitteContent">
@@ -9,9 +9,9 @@
     @for(squad <- squads) {
         <div>
             <b><u>@squad.getDescription() (@squad.getShortText())</u></b><br /><br />
-            @for(player <- players) {
-                @if(player.getSquad() == squad.getId()) {
-                    <div><a href="@controllers.routes.HomeController.player(player.getId())">@player.getNick()</a></div>
+            @if(squad.getMembers() != null) {
+                @for(membership <- squad.getMembers()) {
+                    <div><a href="@controllers.routes.HomeController.player(membership.getMember().getId())">@membership.getMember().getNick()</a></div>
                 }
             }
         </div>

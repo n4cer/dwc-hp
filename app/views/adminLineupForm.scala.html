@@ -1,4 +1,5 @@
 @(request: Http.Request, item: User, squads: List[Squad], error: String)
+@import scala.jdk.CollectionConverters._
 
 @main(if(item == null) "Add lineup member" else "Edit lineup member", noindex = true) {
     <div class="admin-page">
@@ -11,22 +12,25 @@
                 <label>Nick *<input type="text" name="nick" minlength="4" required value="@if(item != null) {@item.getNick()}"></label>
                 <label>Real name<input type="text" name="realname" value="@if(item != null) {@item.getRealname()}"></label>
                 <label>Email<input type="email" name="email" value="@if(item != null) {@item.getEmail()}"></label>
-                <label>Password @if(item == null) {*}<input type="password" name="password" @if(item == null) {required} autocomplete="new-password"></label>
                 <label>Birth date<input type="date" name="birthDate" value="@if(item != null && item.getBirthDate() != null) {@item.getBirthDate().format("yyyy-MM-dd")}"></label>
                 <label>Member since<input type="date" name="since" value="@if(item != null && item.getSince() != null) {@item.getSince().format("yyyy-MM-dd")}"></label>
                 <label>Exit date<input type="date" name="exitDate" value="@if(item != null && item.getExitDate() != null) {@item.getExitDate().format("yyyy-MM-dd")}"></label>
                 <label>City<input type="text" name="city" value="@if(item != null) {@item.getCity()}"></label>
                 <label>Job<input type="text" name="job" value="@if(item != null) {@item.getJob()}"></label>
                 <label>Image filename<input type="text" name="image" value="@if(item != null) {@item.getImage()}"></label>
-                <label>Squad<select name="squad"><option value="">No squad</option>@for(squad <- squads) {<option value="@squad.getId()" @if(item != null && item.getSquad() == squad.getId()) {selected}>@squad.getDescription() (@squad.getShortText())</option>}</select></label>
-                <label>Type<input type="number" name="type" value="@if(item != null) {@item.getType()}"></label>
             </div>
             <label>Quote<textarea name="quote" rows="3">@if(item != null) {@item.getQuote()}</textarea></label>
+            <fieldset class="admin-fieldset">
+                <legend>Squads</legend>
+                @defining(if(item == null || item.getSquads() == null) scala.collection.immutable.Set.empty[Long] else item.getSquads().asScala.map(_.getSquad().getId()).toSet) { selectedSquads =>
+                    <div class="admin-check-grid">@for(squad <- squads) {
+                        <label class="admin-check"><input type="checkbox" name="squadId" value="@squad.getId()" @if(selectedSquads.contains(squad.getId())) {checked}> @squad.getDescription() (@squad.getShortText())</label>
+                    }</div>
+                }
+            </fieldset>
             <div class="admin-check-grid">
                 <label class="admin-check"><input type="checkbox" name="active" @if(item == null || java.lang.Boolean.TRUE.equals(item.getActive())) {checked}> Active</label>
-                <label class="admin-check"><input type="checkbox" name="notits" @if(item != null && java.lang.Boolean.TRUE.equals(item.getNotits())) {checked}> Notits</label>
             </div>
-            @if(item != null) {<p class="admin-hint">Leave the password empty to keep the existing password.</p>}
             <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.lineupIndex()">Cancel</a></div>
         </form>
     </div>

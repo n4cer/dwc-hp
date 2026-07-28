@@ -1,0 +1,16 @@
+@(request: Http.Request, item: GameType, error: String)
+
+@main(if(item == null) "Add game type" else "Edit game type", noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.gameTypeIndex()">&laquo; Back to game types</a></p>
+        <h1>@if(item == null) { Add game type } else { Edit game type }</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createGameType()} else {@controllers.routes.AdminController.updateGameType(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Game type *<input type="text" name="gameType" required value="@if(item != null) {@item.getGameType()}"></label>
+            </div>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.gameTypeIndex()">Cancel</a></div>
+        </form>
+    </div>
+}
