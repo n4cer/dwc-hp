@@ -1,5 +1,7 @@
 package models;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 
 import io.ebean.*;
@@ -17,6 +19,8 @@ public class Squad extends Model {
   @Constraints.Required
   private String description;
   private Integer game;
+  @OneToMany(mappedBy="squad", cascade=CascadeType.ALL)
+  private List<UserSquad> members;
 
   public Long getId() {
     return id;
@@ -48,6 +52,14 @@ public class Squad extends Model {
 
   public void setGame(Integer game) {
     this.game = game;
+  }
+
+  public List<UserSquad> getMembers() {
+    return members;
+  }
+
+  public void setMembers(List<UserSquad> members) {
+    this.members = members;
   }
 
   public String toString() {

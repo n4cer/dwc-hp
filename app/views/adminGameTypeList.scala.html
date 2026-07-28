@@ -1,0 +1,17 @@
+@(request: Http.Request, gameTypes: List[GameType])
+
+@main("Game type administration", noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Game types</h1><a class="admin-button" href="@controllers.routes.AdminController.newGameType()">Add game type</a></div>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        <table class="admin-table"><thead><tr><th scope="col">Game type</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        @for(item <- gameTypes) {
+            <tr><td>@item.getGameType()</td>
+                <td><a href="@controllers.routes.AdminController.editGameType(item.getId())">Edit</a></td></tr>
+        }
+        </tbody></table>
+    </div>
+}

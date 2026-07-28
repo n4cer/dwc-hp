@@ -1,4 +1,4 @@
-@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long)
+@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long)
 
 @main("Administration", noindex = true) {
     <div class="admin-page">
@@ -28,6 +28,22 @@
             <a class="admin-card" href="@controllers.routes.AdminController.squadIndex()">
                 <h2>Squads</h2>
                 <p class="admin-card-count">@squadCount</p>
+            </a>
+            <a class="admin-card" href="@controllers.routes.AdminController.mapIndex()">
+                <h2>Maps</h2>
+                <p class="admin-card-count">@mapCount</p>
+            </a>
+            <a class="admin-card" href="@controllers.routes.AdminController.leagueIndex()">
+                <h2>Leagues</h2>
+                <p class="admin-card-count">@leagueCount</p>
+            </a>
+            <a class="admin-card" href="@controllers.routes.AdminController.gameIndex()">
+                <h2>Games</h2>
+                <p class="admin-card-count">@gameCount</p>
+            </a>
+            <a class="admin-card" href="@controllers.routes.AdminController.gameTypeIndex()">
+                <h2>Game types</h2>
+                <p class="admin-card-count">@gameTypeCount</p>
             </a>
         </div>
     </div>

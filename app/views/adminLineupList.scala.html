@@ -1,4 +1,5 @@
 @(request: Http.Request, lineup: List[User])
+@import scala.jdk.CollectionConverters._
 
 @main("Lineup administration", noindex = true) {
     <div class="admin-page">
@@ -7,9 +8,9 @@
         @request.flash().get("success").map { message =>
             <div class="admin-message success">@message</div>
         }
-        <table class="admin-table"><thead><tr><th scope="col">Nick</th><th scope="col">Real name</th><th scope="col">Squad</th><th scope="col">Active</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        <table class="admin-table"><thead><tr><th scope="col">Nick</th><th scope="col">Real name</th><th scope="col">Squads</th><th scope="col">Active</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
         @for(member <- lineup) {
-            <tr><td>@member.getNick()</td><td>@member.getRealname()</td><td>@member.getSquad()</td><td>@if(java.lang.Boolean.TRUE.equals(member.getActive())) {Yes} else {No}</td>
+            <tr><td>@member.getNick()</td><td>@member.getRealname()</td><td>@if(member.getSquads() != null) {@member.getSquads().asScala.map(_.getSquad().getShortText()).mkString(", ")}</td><td>@if(java.lang.Boolean.TRUE.equals(member.getActive())) {Yes} else {No}</td>
                 <td><a href="@controllers.routes.AdminController.editLineupMember(member.getId())">Edit</a></td></tr>
         }
         </tbody></table>

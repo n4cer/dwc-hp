@@ -13,6 +13,7 @@ import models.Score;
 import models.ScoreImage;
 import models.Squad;
 import models.User;
+import models.UserSquad;
 import play.api.Configuration;
 import play.cache.AsyncCacheApi;
 import play.filters.csrf.AddCSRFToken;
@@ -91,7 +92,12 @@ public class AdminController extends Controller {
         long clanwarCount = Clanwar.find.query().findCount();
         long lineupCount = User.find.query().findCount();
         long squadCount = Squad.find.query().findCount();
-        return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount));
+        long mapCount = models.Map.find.query().findCount();
+        long leagueCount = League.find.query().findCount();
+        long gameCount = Game.find.query().findCount();
+        long gameTypeCount = GameType.find.query().findCount();
+        return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount,
+                mapCount, leagueCount, gameCount, gameTypeCount));
     }
 
     @AddCSRFToken
@@ -252,6 +258,221 @@ public class AdminController extends Controller {
         return views.html.adminSquadForm.render(request, squad, Game.find.all(), error);
     }
 
+    @AddCSRFToken
+    public Result mapIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<models.Map> maps = models.Map.find.query().orderBy().asc("map").findList();
+        return ok(views.html.adminMapList.render(request, maps));
+    }
+
+    @AddCSRFToken
+    public Result newMap(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(mapForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editMap(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        models.Map map = models.Map.find.byId(id);
+        if (map == null) return notFound("Map not found.");
+        return ok(mapForm(request, map, null));
+    }
+
+    public Result createMap(Http.Request request) {
+        return saveMap(request, new models.Map());
+    }
+
+    public Result updateMap(Http.Request request, Long id) {
+        models.Map map = models.Map.find.byId(id);
+        if (map == null) return notFound("Map not found.");
+        return saveMap(request, map);
+    }
+
+    private Result saveMap(Http.Request request, models.Map map) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String mapName = value(data, "map");
+        Game game = find(Game.find, value(data, "game"));
+        if (mapName.isBlank() || (!value(data, "game").isBlank() && game == null)) {
+            return badRequest(mapForm(request, map.getId() == null ? null : map,
+                    "Please complete all required fields correctly."));
+        }
+        map.setMap(mapName);
+        map.setGame(game);
+        if (map.getId() == null) map.save(); else map.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.mapIndex()).flashing("success", "Map saved successfully.");
+    }
+
+    private play.twirl.api.Html mapForm(Http.Request request, models.Map map, String error) {
+        return views.html.adminMapForm.render(request, map, Game.find.all(), error);
+    }
+
+    @AddCSRFToken
+    public Result leagueIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<League> leagues = League.find.query().orderBy().asc("league").findList();
+        return ok(views.html.adminLeagueList.render(request, leagues));
+    }
+
+    @AddCSRFToken
+    public Result newLeague(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(leagueForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editLeague(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        League league = League.find.byId(id);
+        if (league == null) return notFound("League not found.");
+        return ok(leagueForm(request, league, null));
+    }
+
+    public Result createLeague(Http.Request request) {
+        return saveLeague(request, new League());
+    }
+
+    public Result updateLeague(Http.Request request, Long id) {
+        League league = League.find.byId(id);
+        if (league == null) return notFound("League not found.");
+        return saveLeague(request, league);
+    }
+
+    private Result saveLeague(Http.Request request, League league) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String leagueName = value(data, "league");
+        if (leagueName.isBlank()) {
+            return badRequest(leagueForm(request, league.getId() == null ? null : league,
+                    "Please complete all required fields correctly."));
+        }
+        league.setLeague(leagueName);
+        if (league.getId() == null) league.save(); else league.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.leagueIndex()).flashing("success", "League saved successfully.");
+    }
+
+    private play.twirl.api.Html leagueForm(Http.Request request, League league, String error) {
+        return views.html.adminLeagueForm.render(request, league, error);
+    }
+
+    @AddCSRFToken
+    public Result gameIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<Game> games = Game.find.query().orderBy().asc("description").findList();
+        return ok(views.html.adminGameList.render(request, games));
+    }
+
+    @AddCSRFToken
+    public Result newGame(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(gameForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editGame(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Game game = Game.find.byId(id);
+        if (game == null) return notFound("Game not found.");
+        return ok(gameForm(request, game, null));
+    }
+
+    public Result createGame(Http.Request request) {
+        return saveGame(request, new Game());
+    }
+
+    public Result updateGame(Http.Request request, Long id) {
+        Game game = Game.find.byId(id);
+        if (game == null) return notFound("Game not found.");
+        return saveGame(request, game);
+    }
+
+    private Result saveGame(Http.Request request, Game game) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String description = value(data, "description");
+        if (description.isBlank()) {
+            return badRequest(gameForm(request, game.getId() == null ? null : game,
+                    "Please complete all required fields correctly."));
+        }
+        game.setDescription(description);
+        game.setShortText(value(data, "shortText"));
+        if (game.getId() == null) game.save(); else game.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.gameIndex()).flashing("success", "Game saved successfully.");
+    }
+
+    private play.twirl.api.Html gameForm(Http.Request request, Game game, String error) {
+        return views.html.adminGameForm.render(request, game, error);
+    }
+
+    @AddCSRFToken
+    public Result gameTypeIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<GameType> gameTypes = GameType.find.query().orderBy().asc("gameType").findList();
+        return ok(views.html.adminGameTypeList.render(request, gameTypes));
+    }
+
+    @AddCSRFToken
+    public Result newGameType(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(gameTypeForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editGameType(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        GameType gameType = GameType.find.byId(id);
+        if (gameType == null) return notFound("Game type not found.");
+        return ok(gameTypeForm(request, gameType, null));
+    }
+
+    public Result createGameType(Http.Request request) {
+        return saveGameType(request, new GameType());
+    }
+
+    public Result updateGameType(Http.Request request, Long id) {
+        GameType gameType = GameType.find.byId(id);
+        if (gameType == null) return notFound("Game type not found.");
+        return saveGameType(request, gameType);
+    }
+
+    private Result saveGameType(Http.Request request, GameType gameType) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String gameTypeName = value(data, "gameType");
+        if (gameTypeName.isBlank()) {
+            return badRequest(gameTypeForm(request, gameType.getId() == null ? null : gameType,
+                    "Please complete all required fields correctly."));
+        }
+        gameType.setGameType(gameTypeName);
+        if (gameType.getId() == null) gameType.save(); else gameType.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.gameTypeIndex()).flashing("success", "Game type saved successfully.");
+    }
+
+    private play.twirl.api.Html gameTypeForm(Http.Request request, GameType gameType, String error) {
+        return views.html.adminGameTypeForm.render(request, gameType, error);
+    }
+
     private Result saveNews(Http.Request request, News news) {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
@@ -313,21 +534,16 @@ public class AdminController extends Controller {
         boolean creating = member.getId() == null;
         String nick = value(data, "nick");
         String email = value(data, "email");
-        String password = value(data, "password");
         Date birthDate = parseDay(value(data, "birthDate"));
         Date since = parseDay(value(data, "since"));
         Date exitDate = parseDay(value(data, "exitDate"));
-        Integer squad = optionalInteger(value(data, "squad"));
-        Integer type = optionalInteger(value(data, "type"));
 
-        if (nick.length() < 4 || (creating && password.isBlank())
+        if (nick.length() < 4
                 || (!value(data, "birthDate").isBlank() && birthDate == null)
                 || (!value(data, "since").isBlank() && since == null)
-                || (!value(data, "exitDate").isBlank() && exitDate == null)
-                || (!value(data, "squad").isBlank() && squad == null)
-                || (!value(data, "type").isBlank() && type == null)) {
+                || (!value(data, "exitDate").isBlank() && exitDate == null)) {
             return badRequest(lineupForm(request, creating ? null : member,
-                    "Please enter a nick with at least four characters and check all entered values. A password is required for new members."));
+                    "Please enter a nick with at least four characters and check all entered values."));
         }
         User sameNick = User.find.query().where().eq("nick", nick).findOne();
         User sameEmail = email.isBlank() ? null : User.find.query().where().eq("email", email).findOne();
@@ -346,14 +562,34 @@ public class AdminController extends Controller {
         member.setSince(since);
         member.setExitDate(exitDate);
         member.setImage(value(data, "image"));
-        member.setSquad(squad);
-        member.setType(type);
-        member.setNotits(data.containsKey("notits"));
         member.setActive(data.containsKey("active"));
-        if (!password.isBlank()) member.setPlainTextPassword(password);
         if (creating) member.save(); else member.update();
+        syncSquads(member, data);
         clearPublicCaches();
         return redirect(routes.AdminController.lineupIndex()).flashing("success", "Lineup member saved successfully.");
+    }
+
+    private void syncSquads(User member, Map<String, String[]> data) {
+        Set<Long> selected = new HashSet<>();
+        for (String id : values(data, "squadId")) {
+            try { selected.add(Long.valueOf(id)); } catch (NumberFormatException ignored) { }
+        }
+        List<UserSquad> entries = UserSquad.find.query().where().eq("member.id", member.getId()).findList();
+        Set<Long> existing = new HashSet<>();
+        for (UserSquad entry : entries) {
+            Long squadId = entry.getSquad().getId();
+            if (!selected.contains(squadId)) entry.delete(); else existing.add(squadId);
+        }
+        for (Long squadId : selected) {
+            if (existing.contains(squadId)) continue;
+            Squad squad = Squad.find.byId(squadId);
+            if (squad != null) {
+                UserSquad entry = new UserSquad();
+                entry.setMember(member);
+                entry.setSquad(squad);
+                entry.save();
+            }
+        }
     }
 
     private play.twirl.api.Html lineupForm(Http.Request request, User member, String error) {

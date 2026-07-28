@@ -84,10 +84,9 @@ public class HomeController extends Controller {
     
     @Cached(key = "lineup", duration = 600)
     public Result lineup() {
-        List<User> players = User.find.all();
         List<Squad> squads = Squad.find.all();
-        
-        return ok(views.html.lineup.render(squads, players));
+
+        return ok(views.html.lineup.render(squads));
     }
     
     public Result player(Long id) {

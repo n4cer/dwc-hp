@@ -1,0 +1,17 @@
+@(request: Http.Request, item: models.Map, games: List[Game], error: String)
+
+@main(if(item == null) "Add map" else "Edit map", noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.mapIndex()">&laquo; Back to maps</a></p>
+        <h1>@if(item == null) { Add map } else { Edit map }</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createMap()} else {@controllers.routes.AdminController.updateMap(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Map *<input type="text" name="map" required value="@if(item != null) {@item.getMap()}"></label>
+                <label>Game<select name="game"><option value="">No game</option>@for(game <- games) {<option value="@game.getId()" @if(item != null && item.getGame() != null && item.getGame().getId() == game.getId()) {selected}>@game.getDescription()</option>}</select></label>
+            </div>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.mapIndex()">Cancel</a></div>
+        </form>
+    </div>
+}
