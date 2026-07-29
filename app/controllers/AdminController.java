@@ -538,12 +538,12 @@ public class AdminController extends Controller {
         Date since = parseDay(value(data, "since"));
         Date exitDate = parseDay(value(data, "exitDate"));
 
-        if (nick.length() < 4
+        if (nick.length() < 3
                 || (!value(data, "birthDate").isBlank() && birthDate == null)
                 || (!value(data, "since").isBlank() && since == null)
                 || (!value(data, "exitDate").isBlank() && exitDate == null)) {
             return badRequest(lineupForm(request, creating ? null : member,
-                    "Please enter a nick with at least four characters and check all entered values."));
+                    "Please enter a nick with at least three characters and check all entered values."));
         }
         User sameNick = User.find.query().where().eq("nick", nick).findOne();
         User sameEmail = email.isBlank() ? null : User.find.query().where().eq("email", email).findOne();

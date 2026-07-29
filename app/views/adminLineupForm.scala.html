@@ -9,7 +9,7 @@
         <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createLineupMember()} else {@controllers.routes.AdminController.updateLineupMember(item.getId())}">
             @helper.CSRF.formField(request.asScala())
             <div class="admin-grid">
-                <label>Nick *<input type="text" name="nick" minlength="4" required value="@if(item != null) {@item.getNick()}"></label>
+                <label>Nick *<input type="text" name="nick" minlength="3" required value="@if(item != null) {@item.getNick()}"></label>
                 <label>Real name<input type="text" name="realname" value="@if(item != null) {@item.getRealname()}"></label>
                 <label>Email<input type="email" name="email" value="@if(item != null) {@item.getEmail()}"></label>
                 <label>Birth date<input type="date" name="birthDate" value="@if(item != null && item.getBirthDate() != null) {@item.getBirthDate().format("yyyy-MM-dd")}"></label>
