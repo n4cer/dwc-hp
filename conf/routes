@@ -17,6 +17,8 @@ GET     /imprint                    controllers.HomeController.imprint()
 GET     /privacy                    controllers.HomeController.privacy()
 GET     /todo                       controllers.HomeController.todo
 GET     /random                     controllers.HomeController.randomPic
+GET     /images/clanwars/:file      controllers.HomeController.clanwarImage(file: String)
+GET     /images/lineup/:file        controllers.HomeController.lineupImage(file: String)
 GET     /q3pickup                   controllers.HomeController.pickup
 
 # Administration

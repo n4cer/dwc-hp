@@ -19,6 +19,7 @@
                 <label>Job<input type="text" name="job" value="@if(item != null) {@item.getJob()}"></label>
                 <label>Image filename<input type="text" name="image" value="@if(item != null) {@item.getImage()}"></label>
             </div>
+            <p class="admin-hint">Image files are resolved below <code>picture_folder/lineup/</code>.</p>
             <label>Quote<textarea name="quote" rows="3">@if(item != null) {@item.getQuote()}</textarea></label>
             <fieldset class="admin-fieldset">
                 <legend>Squads</legend>

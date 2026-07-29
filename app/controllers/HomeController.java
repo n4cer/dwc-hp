@@ -139,7 +139,7 @@ public class HomeController extends Controller {
     
     @Cached(key = "randomPic", duration = 300)
     public Result randomPic() {
-      Path folder = Path.of(configuration.underlying().getString("picture_folder"));
+      Path folder = pictureSubfolder("random");
       if (!Files.isDirectory(folder)) return notFound("no image found");
 
       try (Stream<Path> entries = Files.list(folder)) {
@@ -153,6 +153,31 @@ public class HomeController extends Controller {
       } catch (IOException ex) {
         return internalServerError("image directory unavailable");
       }
+    }
+
+    public Result clanwarImage(String file) {
+      return pictureFile("clanwars", file);
+    }
+
+    public Result lineupImage(String file) {
+      return pictureFile("lineup", file);
+    }
+
+    private Result pictureFile(String subfolder, String file) {
+      if (file.contains("/") || file.contains("\\")) return notFound("image not found");
+
+      Path folder = pictureSubfolder(subfolder);
+      Path image = folder.resolve(file).normalize();
+      if (!image.startsWith(folder)
+              || !hasAllowedImageExtension(image)
+              || !Files.isRegularFile(image, LinkOption.NOFOLLOW_LINKS)) {
+        return notFound("image not found");
+      }
+      return ok(image.toFile());
+    }
+
+    private Path pictureSubfolder(String subfolder) {
+      return Path.of(configuration.underlying().getString("picture_folder")).resolve(subfolder);
     }
 
     static boolean hasAllowedImageExtension(Path path) {
