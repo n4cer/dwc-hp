@@ -16,7 +16,7 @@
                 
                 @if(score.getImages() != null) {
                     @for(image <- score.getImages()) {
-                    <img class="clanwar_pic bordered-image" src="@routes.Assets.versioned("images/clanwars/" + image.getImage())" alt="Screenshot des Clanwars gegen @clanwar.getEnemy()" /><br>
+                    <img class="clanwar_pic bordered-image" src="@routes.HomeController.clanwarImage(image.getImage())" alt="Screenshot des Clanwars gegen @clanwar.getEnemy()" /><br>
                     }
                 } else {
                 kein Screenshot vorhanden :-(
