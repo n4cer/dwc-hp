@@ -1,6 +1,6 @@
-@(founders: List[User], honorary: List[User], longTenure: List[User])
+@(founders: List[User], leaders: List[User], honorary: List[User], longTenure: List[User])
 
-@main("Hall of Fame", "Gründer, Ehrenmitglieder und besonders langjährige Mitglieder des Doomwarriors Clans.", controllers.routes.HomeController.hallOfFame.url) {
+@main("Hall of Fame", "Gründer, Clanleader, Ehrenmitglieder und besonders langjährige Mitglieder des Doomwarriors Clans.", controllers.routes.HomeController.hallOfFame.url) {
 <div class="mitteContent">
     <div>
         <h1>Hall of Fame</h1>
@@ -10,6 +10,18 @@
         <div>
             <b><u>Gr&uuml;nder</u></b><br /><br />
             @for(member <- founders) {
+                <div>
+                    <a href="@controllers.routes.HomeController.player(member.getId())">@member.getNick()</a>
+                    @if(member.getSince() != null) { (@membershipYears(member)) }
+                </div>
+            }
+        </div>
+        <br />
+    }
+    @if(!leaders.isEmpty()) {
+        <div>
+            <b><u>Clanleader</u></b><br /><br />
+            @for(member <- leaders) {
                 <div>
                     <a href="@controllers.routes.HomeController.player(member.getId())">@member.getNick()</a>
                     @if(member.getSince() != null) { (@membershipYears(member)) }
