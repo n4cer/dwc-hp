@@ -31,6 +31,9 @@
             </fieldset>
             <div class="admin-check-grid">
                 <label class="admin-check"><input type="checkbox" name="active" @if(item == null || java.lang.Boolean.TRUE.equals(item.getActive())) {checked}> Active</label>
+                <label class="admin-check"><input type="checkbox" name="founder" @if(item != null && java.lang.Boolean.TRUE.equals(item.getFounder())) {checked}> Founder</label>
+                <label class="admin-check"><input type="checkbox" name="clanLeader" @if(item != null && java.lang.Boolean.TRUE.equals(item.getClanLeader())) {checked}> Clan leader</label>
+                <label class="admin-check"><input type="checkbox" name="honoraryMember" @if(item != null && java.lang.Boolean.TRUE.equals(item.getHonoraryMember())) {checked}> Honorary member</label>
             </div>
             <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.lineupIndex()">Cancel</a></div>
         </form>

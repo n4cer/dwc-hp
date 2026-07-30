@@ -1,0 +1,46 @@
+@(founders: List[User], honorary: List[User], longTenure: List[User])
+
+@main("Hall of Fame", "Gründer, Ehrenmitglieder und besonders langjährige Mitglieder des Doomwarriors Clans.", controllers.routes.HomeController.hallOfFame.url) {
+<div class="mitteContent">
+    <div>
+        <h1>Hall of Fame</h1>
+        <br /><br />
+    </div>
+    @if(!founders.isEmpty()) {
+        <div>
+            <b><u>Gr&uuml;nder</u></b><br /><br />
+            @for(member <- founders) {
+                <div>
+                    <a href="@controllers.routes.HomeController.player(member.getId())">@member.getNick()</a>
+                    @if(member.getSince() != null) { (@membershipYears(member)) }
+                </div>
+            }
+        </div>
+        <br />
+    }
+    @if(!honorary.isEmpty()) {
+        <div>
+            <b><u>Ehrenmitglieder</u></b><br /><br />
+            @for(member <- honorary) {
+                <div>
+                    <a href="@controllers.routes.HomeController.player(member.getId())">@member.getNick()</a>
+                    @if(member.getSince() != null) { (@membershipYears(member)) }
+                </div>
+            }
+        </div>
+        <br />
+    }
+    @if(!longTenure.isEmpty()) {
+        <div>
+            <b><u>Besonders langj&auml;hrige Mitglieder</u></b><br /><br />
+            @for(member <- longTenure) {
+                <div>
+                    <a href="@controllers.routes.HomeController.player(member.getId())">@member.getNick()</a>
+                    @if(member.getSince() != null) { (@membershipYears(member)) }
+                </div>
+            }
+        </div>
+        <br />
+    }
+</div>
+}

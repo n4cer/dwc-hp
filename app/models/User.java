@@ -34,6 +34,12 @@ public class User extends Model {
   private String image;
   @Column(columnDefinition = "boolean default true")
   private Boolean active;
+  @Column(columnDefinition = "boolean default false")
+  private Boolean founder;
+  @Column(columnDefinition = "boolean default false")
+  private Boolean clanLeader;
+  @Column(columnDefinition = "boolean default false")
+  private Boolean honoraryMember;
   @OneToMany(mappedBy="username", cascade=CascadeType.ALL)
   private List<News> news;
   @OneToMany(mappedBy="member", cascade=CascadeType.ALL)
@@ -143,6 +149,30 @@ public class User extends Model {
 
   public void setActive(Boolean active) {
     this.active = active;
+  }
+
+  public Boolean getFounder() {
+    return founder;
+  }
+
+  public void setFounder(Boolean founder) {
+    this.founder = founder;
+  }
+
+  public Boolean getClanLeader() {
+    return clanLeader;
+  }
+
+  public void setClanLeader(Boolean clanLeader) {
+    this.clanLeader = clanLeader;
+  }
+
+  public Boolean getHonoraryMember() {
+    return honoraryMember;
+  }
+
+  public void setHonoraryMember(Boolean honoraryMember) {
+    this.honoraryMember = honoraryMember;
   }
 
   public List<News> getNews() {

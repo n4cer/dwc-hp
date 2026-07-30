@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -18,6 +23,7 @@ import models.History;
 import models.News;
 import models.Squad;
 import models.User;
+import models.UserSquad;
 import play.api.Configuration;
 import play.cache.Cached;
 import play.cache.SyncCacheApi;
@@ -85,10 +91,65 @@ public class HomeController extends Controller {
     @Cached(key = "lineup", duration = 600)
     public Result lineup() {
         List<Squad> squads = Squad.find.all();
+        for (Squad squad : squads) {
+            List<UserSquad> members = squad.getMembers();
+            if (members != null) members.sort((a, b) -> compareSinceDesc(a.getMember(), b.getMember()));
+        }
 
         return ok(views.html.lineup.render(squads));
     }
-    
+
+    private static final int LONG_TENURE_YEARS = 5;
+
+    @Cached(key = "halloffame", duration = 600)
+    public Result hallOfFame() {
+        List<User> founders = new ArrayList<>();
+        List<User> honorary = new ArrayList<>();
+        List<User> longTenure = new ArrayList<>();
+        for (User member : User.find.all()) {
+            if (Boolean.TRUE.equals(member.getFounder())) {
+                founders.add(member);
+            } else if (Boolean.TRUE.equals(member.getHonoraryMember())) {
+                honorary.add(member);
+            } else if (membershipYears(member) >= LONG_TENURE_YEARS) {
+                longTenure.add(member);
+            }
+        }
+        founders.sort(HomeController::compareMembershipDurationDesc);
+        honorary.sort(HomeController::compareMembershipDurationDesc);
+        longTenure.sort(HomeController::compareMembershipDurationDesc);
+
+        return ok(views.html.hallOfFame.render(founders, honorary, longTenure));
+    }
+
+    private static long membershipYears(User member) {
+        if (member.getSince() == null) return 0;
+        LocalDate start = toLocalDate(member.getSince());
+        LocalDate end = member.getExitDate() != null ? toLocalDate(member.getExitDate()) : LocalDate.now();
+        return ChronoUnit.YEARS.between(start, end);
+    }
+
+    private static LocalDate toLocalDate(Date date) {
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    private static int compareSinceDesc(User a, User b) {
+        if (a.getSince() == null && b.getSince() == null) return 0;
+        if (a.getSince() == null) return 1;
+        if (b.getSince() == null) return -1;
+        return b.getSince().compareTo(a.getSince());
+    }
+
+    private static int compareMembershipDurationDesc(User a, User b) {
+        return Long.compare(membershipDurationMillis(b), membershipDurationMillis(a));
+    }
+
+    private static long membershipDurationMillis(User member) {
+        if (member.getSince() == null) return 0;
+        Date end = member.getExitDate() != null ? member.getExitDate() : new Date();
+        return end.getTime() - member.getSince().getTime();
+    }
+
     public Result player(Long id) {
         User player = User.find.byId(id);
         if (player == null) return notFound("Spieler nicht gefunden");
@@ -223,6 +284,7 @@ public class HomeController extends Controller {
       addSitemapUrl(xml, baseUrl, routes.HomeController.clanwars().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.history().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.lineup().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.hallOfFame().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.pickup().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.contact().url());
 

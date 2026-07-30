@@ -563,6 +563,9 @@ public class AdminController extends Controller {
         member.setExitDate(exitDate);
         member.setImage(value(data, "image"));
         member.setActive(data.containsKey("active"));
+        member.setFounder(data.containsKey("founder"));
+        member.setClanLeader(data.containsKey("clanLeader"));
+        member.setHonoraryMember(data.containsKey("honoraryMember"));
         if (creating) member.save(); else member.update();
         syncSquads(member, data);
         clearPublicCaches();
@@ -696,6 +699,7 @@ public class AdminController extends Controller {
         cache.remove("news");
         cache.remove("clanwars");
         cache.remove("lineup");
+        cache.remove("halloffame");
     }
 
     private Result requireAdmin(Http.Request request) {
