@@ -102,7 +102,7 @@ public class HomeController extends Controller {
         List<Squad> squads = Squad.find.all();
         for (Squad squad : squads) {
             List<UserSquad> members = squad.getMembers();
-            if (members != null) members.sort((a, b) -> compareSinceDesc(a.getMember(), b.getMember()));
+            if (members != null) members.sort((a, b) -> compareMembershipDurationDesc(a.getMember(), b.getMember()));
         }
 
         return ok(views.html.lineup.render(squads));
@@ -113,11 +113,14 @@ public class HomeController extends Controller {
     @Cached(key = "halloffame", duration = 600)
     public Result hallOfFame() {
         List<User> founders = new ArrayList<>();
+        List<User> leaders = new ArrayList<>();
         List<User> honorary = new ArrayList<>();
         List<User> longTenure = new ArrayList<>();
         for (User member : User.find.all()) {
             if (Boolean.TRUE.equals(member.getFounder())) {
                 founders.add(member);
+            } else if (Boolean.TRUE.equals(member.getClanLeader())) {
+                leaders.add(member);
             } else if (Boolean.TRUE.equals(member.getHonoraryMember())) {
                 honorary.add(member);
             } else if (membershipYears(member) >= LONG_TENURE_YEARS) {
@@ -125,10 +128,11 @@ public class HomeController extends Controller {
             }
         }
         founders.sort(HomeController::compareMembershipDurationDesc);
+        leaders.sort(HomeController::compareMembershipDurationDesc);
         honorary.sort(HomeController::compareMembershipDurationDesc);
         longTenure.sort(HomeController::compareMembershipDurationDesc);
 
-        return ok(views.html.hallOfFame.render(founders, honorary, longTenure));
+        return ok(views.html.hallOfFame.render(founders, leaders, honorary, longTenure));
     }
 
     private static long membershipYears(User member) {
@@ -140,13 +144,6 @@ public class HomeController extends Controller {
 
     private static LocalDate toLocalDate(Date date) {
         return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    private static int compareSinceDesc(User a, User b) {
-        if (a.getSince() == null && b.getSince() == null) return 0;
-        if (a.getSince() == null) return 1;
-        if (b.getSince() == null) return -1;
-        return b.getSince().compareTo(a.getSince());
     }
 
     private static int compareMembershipDurationDesc(User a, User b) {
