@@ -11,6 +11,7 @@ GET     /clanwars                   controllers.HomeController.clanwars
 GET     /clanwar/:id                controllers.HomeController.clanwar(request: Request, id: Long)
 GET     /history                    controllers.HomeController.history
 GET     /lineup                     controllers.HomeController.lineup
+GET     /hall-of-fame                controllers.HomeController.hallOfFame
 GET     /player/:id                 controllers.HomeController.player(id: Long)
 GET     /contact                    controllers.HomeController.contact
 GET     /imprint                    controllers.HomeController.imprint()

@@ -11,7 +11,10 @@
             <b><u>@squad.getDescription() (@squad.getShortText())</u></b><br /><br />
             @if(squad.getMembers() != null) {
                 @for(membership <- squad.getMembers()) {
-                    <div><a href="@controllers.routes.HomeController.player(membership.getMember().getId())">@membership.getMember().getNick()</a></div>
+                    <div>
+                        <a href="@controllers.routes.HomeController.player(membership.getMember().getId())">@membership.getMember().getNick()</a>
+                        @if(membership.getMember().getSince() != null) { (@membershipYears(membership.getMember())) }
+                    </div>
                 }
             }
         </div>

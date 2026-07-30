@@ -1,0 +1,2 @@
+@(member: User)
+@if(member.getSince() != null) {@member.getSince().format("yyyy")@if(member.getExitDate() != null) { - @member.getExitDate().format("yyyy")}}
