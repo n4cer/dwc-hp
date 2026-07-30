@@ -21,5 +21,6 @@
     job: @member.getJob()<br />
     quote: @member.getQuote()<br />
     email: @member.getEmail()<br />
+    clanwars: @if(member.getLineups() != null) {@member.getLineups().size()} else {0}<br />
 </div>
 }

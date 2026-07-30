@@ -119,11 +119,14 @@ public class HomeController extends Controller {
         for (User member : User.find.all()) {
             if (Boolean.TRUE.equals(member.getFounder())) {
                 founders.add(member);
-            } else if (Boolean.TRUE.equals(member.getClanLeader())) {
+            }
+            if (Boolean.TRUE.equals(member.getClanLeader())) {
                 leaders.add(member);
-            } else if (Boolean.TRUE.equals(member.getHonoraryMember())) {
+            }
+            if (Boolean.TRUE.equals(member.getHonoraryMember())) {
                 honorary.add(member);
-            } else if (membershipYears(member) >= LONG_TENURE_YEARS) {
+            }
+            if (membershipYears(member) >= LONG_TENURE_YEARS) {
                 longTenure.add(member);
             }
         }
