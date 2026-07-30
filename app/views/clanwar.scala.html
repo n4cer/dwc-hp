@@ -1,4 +1,4 @@
-@(clanwar: Clanwar, isAdmin: Boolean)
+@(clanwar: Clanwar, isAdmin: Boolean, previous: Clanwar, next: Clanwar)
 
 @main("Clanwar gegen " + clanwar.getEnemy(), "Ergebnis, Lineup, Maps und Bericht zum Clanwar der Doomwarriors gegen " + clanwar.getEnemy() + ".", controllers.routes.HomeController.clanwar(clanwar.getId()).url) {
 <div class="mitteContent">
@@ -6,6 +6,16 @@
     @if(isAdmin) {
         <p><a href="@controllers.routes.AdminController.editClanwar(clanwar.getId())">Edit</a></p>
     }
+    <div class="clanwar-nav">
+        @if(previous != null) {
+            <a href="@controllers.routes.HomeController.clanwar(previous.getId())">&laquo; @previous.getDate().format("dd.MM.yyyy") vs. @previous.getEnemy()</a>
+        }
+        @if(previous != null && next != null) { | }
+        @if(next != null) {
+            <a href="@controllers.routes.HomeController.clanwar(next.getId())">@next.getDate().format("dd.MM.yyyy") vs. @next.getEnemy() &raquo;</a>
+        }
+    </div>
+    <br />
     <div>
         @clanwar.getDate().format("dd.MM.yyyy") - @clanwar.getLeague() vs. @clanwar.getEnemy()<br>
         lineup: @for(l <- clanwar.getLineups()) { @l.getMember().getNick() } <br><br>
