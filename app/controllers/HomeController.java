@@ -78,7 +78,16 @@ public class HomeController extends Controller {
 
       Clanwar clanwar = Clanwar.find.byId(id);
       if (clanwar == null) return notFound("Clanwar nicht gefunden");
-      Html html = views.html.clanwar.render(clanwar, isAdmin);
+
+      List<Clanwar> ordered = Clanwar.find.query().select("id, date, enemy").orderBy("date desc, id desc").findList();
+      int index = -1;
+      for (int i = 0; i < ordered.size(); i++) {
+        if (ordered.get(i).getId().equals(id)) { index = i; break; }
+      }
+      Clanwar previous = index >= 0 && index + 1 < ordered.size() ? ordered.get(index + 1) : null;
+      Clanwar next = index > 0 ? ordered.get(index - 1) : null;
+
+      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next);
       if (!isAdmin) cache.set(clanwarCacheKey(id), html, CLANWAR_CACHE_DURATION);
 
       return ok(html);

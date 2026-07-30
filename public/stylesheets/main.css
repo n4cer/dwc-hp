@@ -131,6 +131,9 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-table .result[data-result-color="#00B900"] {background-color:#00B900;}
 .clanwar-table .result[data-result-color="#FF5706"] {background-color:#FF5706;}
 .visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.member-inactive {color:#999;opacity:0.6;}
+.member-inactive a {color:#999;}
+.member-inactive a:hover {color:#777;}
 
 .q3.black {color: black;}
 .q3.red {color: red;}
