@@ -8,6 +8,7 @@ GET     /robots.txt                controllers.HomeController.robots
 GET     /sitemap.xml               controllers.HomeController.sitemap
 GET     /news                       controllers.HomeController.news(request: Request, page: Int ?= 1)
 GET     /clanwars                   controllers.HomeController.clanwars
+GET     /clanwars.json               controllers.HomeController.clanwarsJson
 GET     /clanwar/:id                controllers.HomeController.clanwar(request: Request, id: Long)
 GET     /history                    controllers.HomeController.history
 GET     /lineup                     controllers.HomeController.lineup
