@@ -6,6 +6,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,17 +17,23 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import jakarta.inject.Inject;
 
 import models.Clanwar;
 import models.History;
+import models.MatchLineup;
 import models.News;
+import models.Score;
 import models.Squad;
 import models.User;
 import models.UserSquad;
 import play.api.Configuration;
 import play.cache.Cached;
 import play.cache.SyncCacheApi;
+import play.libs.Json;
 import play.mvc.*;
 import play.twirl.api.Html;
 
@@ -96,7 +103,57 @@ public class HomeController extends Controller {
     public static String clanwarCacheKey(Long id) {
       return "clanwar_" + id;
     }
-    
+
+    private static final DateTimeFormatter CLANWAR_JSON_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
+    @Cached(key = "clanwarsJson", duration = 1200)
+    public Result clanwarsJson() {
+      List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
+
+      ArrayNode result = Json.newArray();
+      for (Clanwar clanwar : clanwars) {
+        result.add(clanwarToJson(clanwar));
+      }
+
+      return ok(result);
+    }
+
+    private ObjectNode clanwarToJson(Clanwar clanwar) {
+      ObjectNode node = Json.newObject();
+      node.put("id", clanwar.getId());
+      node.put("date", clanwar.getDate().toInstant().atZone(ZoneId.systemDefault()).format(CLANWAR_JSON_DATE));
+      node.put("enemy", clanwar.getEnemy());
+      node.put("country", clanwar.getCountry() != null ? clanwar.getCountry().getCountry() : null);
+      node.put("league", clanwar.getLeague() != null ? clanwar.getLeague().getLeague() : null);
+      node.put("game", clanwar.getGame() != null ? clanwar.getGame().getDescription() : null);
+      node.put("gametype", clanwar.getGametype() != null ? clanwar.getGametype().getGameType() : null);
+      node.put("url", clanwar.hasUrl() ? clanwar.getUrl() : null);
+      node.put("result", clanwar.getResult());
+      node.put("report", clanwar.getReport());
+
+      ArrayNode scores = Json.newArray();
+      if (clanwar.getScores() != null) {
+        for (Score score : clanwar.getScores()) {
+          ObjectNode scoreNode = Json.newObject();
+          scoreNode.put("map", score.getMap() != null ? score.getMap().getMap() : null);
+          scoreNode.put("dwcScore", score.getDwcScore());
+          scoreNode.put("enemyScore", score.getEnemyScore());
+          scores.add(scoreNode);
+        }
+      }
+      node.set("scores", scores);
+
+      ArrayNode lineup = Json.newArray();
+      if (clanwar.getLineups() != null) {
+        for (MatchLineup entry : clanwar.getLineups()) {
+          if (entry.getMember() != null) lineup.add(entry.getMember().getNick());
+        }
+      }
+      node.set("lineup", lineup);
+
+      return node;
+    }
+
     @Cached(key = "lineup", duration = 600)
     public Result lineup() {
         List<Squad> squads = Squad.find.all();
