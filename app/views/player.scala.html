@@ -1,4 +1,4 @@
-@(member: User, wins: Int, draws: Int, losses: Int, winPct: Int, drawPct: Int, lossPct: Int, longTenureMember: Boolean)
+@(member: User, wins: Int, draws: Int, losses: Int, winPct: Int, drawPct: Int, lossPct: Int, winRatio: Int, longTenureMember: Boolean)
 
 @main(member.getNick() + " - Spielerprofil", "Profil des Doomwarriors-Spielers " + member.getNick() + ".", controllers.routes.HomeController.player(member.getId()).url) {
 <div class="mitteContent">
@@ -47,6 +47,10 @@
             <div class="stat-card stat-loss">
                 <span class="stat-value">@losses</span>
                 <span class="stat-label">Niederlagen</span>
+            </div>
+            <div class="stat-card stat-ratio">
+                <span class="stat-value">@if(wins + draws + losses > 0) {@winRatio%} else {-}</span>
+                <span class="stat-label">Win Ratio</span>
             </div>
         </div>
         @if(wins + draws + losses > 0) {

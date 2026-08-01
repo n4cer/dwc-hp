@@ -250,8 +250,9 @@ public class HomeController extends Controller {
         int winPct = roundToStep(wins, total);
         int drawPct = roundToStep(draws, total);
         int lossPct = roundToStep(losses, total);
+        int winRatio = total > 0 ? Math.round(wins * 100f / total) : 0;
 
-        return ok(views.html.player.render(player, wins, draws, losses, winPct, drawPct, lossPct, isLongTenureMember(player)));
+        return ok(views.html.player.render(player, wins, draws, losses, winPct, drawPct, lossPct, winRatio, isLongTenureMember(player)));
     }
 
     private static final int STAT_BAR_STEP = 5;

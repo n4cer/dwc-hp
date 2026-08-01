@@ -163,6 +163,7 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .stat-card.stat-win .stat-value {color:#00B900;}
 .stat-card.stat-draw .stat-value {color:#E2A612;}
 .stat-card.stat-loss .stat-value {color:#C10000;}
+.stat-card.stat-ratio .stat-value {color:#E2A612;}
 .stat-bar {display:flex;width:100%;max-width:400px;height:10px;overflow:hidden;border:1px solid #ccc;margin-top:6px;}
 .stat-bar > div {height:100%;}
 .stat-bar-win {background:#00B900;}
