@@ -147,6 +147,33 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .servers .server_pic {float: left;margin-right: 5px;}
 .servers ul {list-style: none;}
 
+/* Spielerprofil */
+.player-badges {display:flex;flex-wrap:wrap;gap:6px;}
+.badge {display:inline-block;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:bold;color:#fff;text-transform:uppercase;letter-spacing:.03em;}
+.badge-founder {background:#E2A612;color:#111;}
+.badge-leader {background:#C10000;}
+.badge-honorary {background:#6c3fa0;}
+.badge-longtenure {background:#00B900;}
+
+.player-stats {margin-top:6px;}
+.stat-cards {display:flex;flex-wrap:wrap;gap:10px;margin:6px 0;}
+.stat-card {min-width:90px;padding:10px 14px;border:1px solid #ccc;background:#fafafa;text-align:center;}
+.stat-card .stat-value {display:block;font-size:22px;font-weight:bold;}
+.stat-card .stat-label {display:block;font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.03em;}
+.stat-card.stat-win .stat-value {color:#00B900;}
+.stat-card.stat-draw .stat-value {color:#E2A612;}
+.stat-card.stat-loss .stat-value {color:#C10000;}
+.stat-bar {display:flex;width:100%;max-width:400px;height:10px;overflow:hidden;border:1px solid #ccc;margin-top:6px;}
+.stat-bar > div {height:100%;}
+.stat-bar-win {background:#00B900;}
+.stat-bar-draw {background:#FF5706;}
+.stat-bar-loss {background:#C10000;}
+/* CSP disallows inline styles, so bar segment widths are rounded to the nearest step and applied via class */
+.pct-0{width:0%} .pct-5{width:5%} .pct-10{width:10%} .pct-15{width:15%} .pct-20{width:20%} .pct-25{width:25%}
+.pct-30{width:30%} .pct-35{width:35%} .pct-40{width:40%} .pct-45{width:45%} .pct-50{width:50%} .pct-55{width:55%}
+.pct-60{width:60%} .pct-65{width:65%} .pct-70{width:70%} .pct-75{width:75%} .pct-80{width:80%} .pct-85{width:85%}
+.pct-90{width:90%} .pct-95{width:95%} .pct-100{width:100%}
+
 /* Administration */
 .admin-page {padding:10px 6px 24px; font-size:13px; line-height:18px;}
 .admin-page h1,.admin-page h2 {margin-bottom:12px;}

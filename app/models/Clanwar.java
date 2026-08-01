@@ -173,22 +173,33 @@ public class Clanwar extends Model {
   }
   
   public String getColor() {
-    String result = this.getResult();
-    if(result == null) {
-      return "#FF5706";
+    String outcome = this.getOutcome();
+    if ("win".equals(outcome)) {
+      return "#00B900";
+    } else if ("loss".equals(outcome)) {
+      return "#C10000";
     }
-    
+
+    return "#FF5706";
+  }
+
+  public String getOutcome() {
+    String result = this.getResult();
+    if (result == null) {
+      return null;
+    }
+
     String[] splits = result.split(":");
     Integer dwc = Integer.valueOf(splits[0]);
     Integer enemy = Integer.valueOf(splits[1]);
-    
-    if (dwc < enemy) {
-      return "#C10000";
-    } else if (dwc > enemy) {
-      return "#00B900";
+
+    if (dwc > enemy) {
+      return "win";
+    } else if (dwc < enemy) {
+      return "loss";
     }
-    
-    return "#FF5706";
+
+    return "draw";
   }
   
   public String toString() {

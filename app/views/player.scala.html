@@ -1,4 +1,4 @@
-@(member: User)
+@(member: User, wins: Int, draws: Int, losses: Int, winPct: Int, drawPct: Int, lossPct: Int, longTenureMember: Boolean)
 
 @main(member.getNick() + " - Spielerprofil", "Profil des Doomwarriors-Spielers " + member.getNick() + ".", controllers.routes.HomeController.player(member.getId()).url) {
 <div class="mitteContent">
@@ -9,7 +9,15 @@
     <br />
     <img class="bordered-image" src="@routes.HomeController.lineupImage(member.getImage())" width="76" height="103" alt="@member.getNick()"><br />
     <br />
-    <br />
+    @if(java.lang.Boolean.TRUE.equals(member.getFounder()) || java.lang.Boolean.TRUE.equals(member.getClanLeader()) || java.lang.Boolean.TRUE.equals(member.getHonoraryMember()) || longTenureMember) {
+        <div class="player-badges">
+            @if(java.lang.Boolean.TRUE.equals(member.getFounder())) { <span class="badge badge-founder">Gr&uuml;nder</span> }
+            @if(java.lang.Boolean.TRUE.equals(member.getClanLeader())) { <span class="badge badge-leader">Clanleader</span> }
+            @if(java.lang.Boolean.TRUE.equals(member.getHonoraryMember())) { <span class="badge badge-honorary">Ehrenmitglied</span> }
+            @if(longTenureMember) { <span class="badge badge-longtenure">Langj&auml;hriges Mitglied</span> }
+        </div>
+        <br />
+    }
     nick: @member.getNick()<br />
     realname: @member.getRealname()<br />
     city: @member.getCity()<br />
@@ -20,7 +28,34 @@
     <!--birthday: @member.getBirthDate()<br />-->
     job: @member.getJob()<br />
     quote: @member.getQuote()<br />
-    email: @member.getEmail()<br />
-    clanwars: @if(member.getLineups() != null) {@member.getLineups().size()} else {0}<br />
+    <br />
+    <div class="player-stats">
+        <b><u>Clanwar-Statistik</u></b><br /><br />
+        <div class="stat-cards">
+            <div class="stat-card stat-total">
+                <span class="stat-value">@(wins + draws + losses)</span>
+                <span class="stat-label">Clanwars</span>
+            </div>
+            <div class="stat-card stat-win">
+                <span class="stat-value">@wins</span>
+                <span class="stat-label">Siege</span>
+            </div>
+            <div class="stat-card stat-draw">
+                <span class="stat-value">@draws</span>
+                <span class="stat-label">Unentschieden</span>
+            </div>
+            <div class="stat-card stat-loss">
+                <span class="stat-value">@losses</span>
+                <span class="stat-label">Niederlagen</span>
+            </div>
+        </div>
+        @if(wins + draws + losses > 0) {
+            <div class="stat-bar">
+                <div class="stat-bar-win pct-@winPct"></div>
+                <div class="stat-bar-draw pct-@drawPct"></div>
+                <div class="stat-bar-loss pct-@lossPct"></div>
+            </div>
+        }
+    </div>
 </div>
 }
