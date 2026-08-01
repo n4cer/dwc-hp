@@ -166,6 +166,7 @@ public class HomeController extends Controller {
     }
 
     private static final int LONG_TENURE_YEARS = 5;
+    private static final int LONG_TENURE_MIN_CLANWARS = 25;
 
     @Cached(key = "halloffame", duration = 600)
     public Result hallOfFame() {
@@ -183,7 +184,7 @@ public class HomeController extends Controller {
             if (Boolean.TRUE.equals(member.getHonoraryMember())) {
                 honorary.add(member);
             }
-            if (membershipYears(member) >= LONG_TENURE_YEARS) {
+            if (isLongTenureMember(member)) {
                 longTenure.add(member);
             }
         }
@@ -200,6 +201,14 @@ public class HomeController extends Controller {
         LocalDate start = toLocalDate(member.getSince());
         LocalDate end = member.getExitDate() != null ? toLocalDate(member.getExitDate()) : LocalDate.now();
         return ChronoUnit.YEARS.between(start, end);
+    }
+
+    private static int clanwarCount(User member) {
+        return member.getLineups() != null ? member.getLineups().size() : 0;
+    }
+
+    private static boolean isLongTenureMember(User member) {
+        return membershipYears(member) >= LONG_TENURE_YEARS && clanwarCount(member) >= LONG_TENURE_MIN_CLANWARS;
     }
 
     private static LocalDate toLocalDate(Date date) {
@@ -220,7 +229,36 @@ public class HomeController extends Controller {
         User player = User.find.byId(id);
         if (player == null) return notFound("Spieler nicht gefunden");
 
-        return ok(views.html.player.render(player));
+        int wins = 0;
+        int draws = 0;
+        int losses = 0;
+        if (player.getLineups() != null) {
+            for (MatchLineup entry : player.getLineups()) {
+                Clanwar match = entry.getMatch();
+                String outcome = match != null ? match.getOutcome() : null;
+                if ("win".equals(outcome)) {
+                    wins++;
+                } else if ("draw".equals(outcome)) {
+                    draws++;
+                } else if ("loss".equals(outcome)) {
+                    losses++;
+                }
+            }
+        }
+
+        int total = wins + draws + losses;
+        int winPct = roundToStep(wins, total);
+        int drawPct = roundToStep(draws, total);
+        int lossPct = roundToStep(losses, total);
+
+        return ok(views.html.player.render(player, wins, draws, losses, winPct, drawPct, lossPct, isLongTenureMember(player)));
+    }
+
+    private static final int STAT_BAR_STEP = 5;
+
+    private static int roundToStep(int value, int total) {
+        if (total == 0) return 0;
+        return Math.round(value * 100f / total / STAT_BAR_STEP) * STAT_BAR_STEP;
     }
     
     @Cached(key = "contact", duration = 2400)
