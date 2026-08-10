@@ -1,6 +1,6 @@
-@(request: Http.Request, item: News, users: List[User], error: String)
+@(request: Http.Request, item: News, users: List[User], error: String, messages: play.i18n.Messages)
 
-@main(if(item == null) "Add news" else "Edit news", noindex = true) {
+@main(if(item == null) "Add news" else "Edit news", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.newsIndex()">&laquo; Back to news</a></p>
         <h1>@if(item == null) { Add news } else { Edit news }</h1>

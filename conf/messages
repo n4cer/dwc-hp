@@ -1,0 +1,125 @@
+# Default language (German)
+
+meta.defaultDescription = Doomwarriors: deutscher Gaming-Clan mit News, Spielerprofilen und Clanwar-Archiv.
+layout.empty = leer
+layout.randomImageAlt = Zufälliges Clanbild
+
+index.title = Deutscher Gaming-Clan
+index.description = Doomwarriors: News, Clanwars, Spieler und Geschichte des deutschen Gaming-Clans.
+index.welcome = Willkommen beim Doomwarriors Clan
+
+news.description = Neuigkeiten, Termine und Berichte des Doomwarriors Clans.
+news.by = von
+news.pagination.ariaLabel = News-Seiten
+news.pagination.prev = « Zurück
+news.pagination.pageOf = Seite {0} von {1}
+news.pagination.next = Weiter »
+
+clanwars.title = Clanwar-Archiv
+clanwars.description = Ergebnisse und Berichte vergangener Clanwars der Doomwarriors.
+
+clanwar.title = Clanwar gegen {0}
+clanwar.description = Ergebnis, Lineup, Maps und Bericht zum Clanwar der Doomwarriors gegen {0}.
+clanwar.screenshotAlt = Screenshot des Clanwars gegen {0}
+clanwar.noScreenshot = kein Screenshot vorhanden :-(
+
+lineup.title = Spieler und Lineup
+lineup.description = Spieler, Mitglieder und Squads des Doomwarriors Clans.
+
+halloffame.description = Gründer, Clanleader, Ehrenmitglieder und besonders langjährige Mitglieder des Doomwarriors Clans.
+halloffame.founders = Gründer
+halloffame.honorary = Ehrenmitglieder
+halloffame.longtenure = Besonders langjährige Mitglieder
+
+player.titleSuffix = Spielerprofil
+player.description = Profil des Doomwarriors-Spielers {0}.
+player.back = zurück
+player.badge.honorary = Ehrenmitglied
+player.badge.longtenure = Langjähriges Mitglied
+player.stats.title = Clanwar-Statistik
+player.stats.wins = Siege
+player.stats.draws = Unentschieden
+player.stats.losses = Niederlagen
+
+history.title = Geschichte
+history.description = Die Geschichte und Entwicklung des Doomwarriors Clans.
+history.heading = Geschichte des Doomwarriors Clans
+
+contact.title = Kontakt
+contact.description = Kontakt zum Doomwarriors Clan und zum gemeinsamen Discord-Server.
+contact.heading = Kontakt zum Doomwarriors Clan
+contact.discordLogoAlt = Discord-Logo
+contact.findUsPrefix = Ihr findet uns auf
+
+imprint.title = Impressum
+imprint.description = Impressum und Anbieterkennzeichnung der Doomwarriors-Website.
+
+privacy.title = Datenschutzerklärung
+privacy.description = Informationen zum Datenschutz auf der Website des Doomwarriors Clans.
+privacy.kicker = Datenschutz bei Doomwarriors
+privacy.intro = Hier erfahren Sie kompakt und verständlich, welche personenbezogenen Daten beim Besuch dieser Website verarbeitet werden und welche Rechte Sie haben.
+privacy.updated = Stand: Juli 2026
+privacy.emailLabel = E-Mail:
+privacy.moreInfoLabel = Weitere Angaben:
+
+privacy.s1.heading = 1. Verantwortlicher
+privacy.s2.heading = 2. Allgemeine Hinweise
+privacy.s2.p1 = Wir verarbeiten personenbezogene Daten nur, soweit dies für den Betrieb dieser Website, die Darstellung der Clan-Inhalte, die Sicherheit des Angebots oder die Bearbeitung von Anfragen erforderlich ist. Personenbezogene Daten sind alle Informationen, die sich auf eine identifizierte oder identifizierbare Person beziehen.
+
+privacy.s3.heading = 3. Bereitstellung der Website und Server-Protokolle
+privacy.s3.p1 = Beim Aufruf der Website werden technisch erforderliche Daten an den Webserver übermittelt. Dazu können insbesondere IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite oder Datei, übertragene Datenmenge, Referrer-URL, Browsertyp und -version, Betriebssystem sowie der anfragende Internetzugangsanbieter gehören.
+privacy.s3.p2 = Die Verarbeitung erfolgt zur sicheren und stabilen Bereitstellung der Website, zur Fehleranalyse und zur Abwehr von Missbrauch. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse liegt im sicheren und funktionsfähigen Betrieb des Angebots. Protokolldaten werden gelöscht, sobald sie für diese Zwecke nicht mehr erforderlich sind. Sicherheitsrelevante Daten können bis zur abschließenden Klärung eines Vorfalls länger aufbewahrt werden.
+privacy.s3.p3 = Soweit ein Hosting-Dienstleister eingesetzt wird, verarbeitet dieser Daten in unserem Auftrag nach Art. 28 DSGVO. Angaben zum konkreten Hosting-Anbieter können unter der oben genannten Kontaktadresse angefragt werden.
+
+privacy.s4.heading = 4. Technisch erforderliche Cookies und Sitzungsdaten
+privacy.s4.p1 = Der öffentlich zugängliche Teil dieser Website verwendet keine Cookies zu Analyse-, Marketing- oder Werbezwecken. Im geschützten Administrationsbereich können technisch erforderliche Sitzungs- und Sicherheitsinformationen gespeichert werden. Sie dienen der Anmeldung, der Absicherung von Formularen gegen missbräuchliche Anfragen und dem Schutz des Angebots.
+privacy.s4.p2 = Der Zugriff auf das Endgerät ist insoweit nach § 25 Abs. 2 Nr. 2 TDDDG zulässig. Soweit dabei personenbezogene Daten verarbeitet werden, beruht dies auf Art. 6 Abs. 1 lit. f DSGVO; bei einer Nutzung zur Erfüllung einer Vereinbarung zusätzlich auf Art. 6 Abs. 1 lit. b DSGVO. Sitzungsinformationen werden grundsätzlich beim Abmelden oder mit Ablauf der jeweiligen Sitzung ungültig. Da keine einwilligungsbedürftigen Tracking-Technologien eingesetzt werden, ist kein Einwilligungsbanner erforderlich.
+
+privacy.s5.heading = 5. Clan- und Mitgliederprofile
+privacy.s5.p1 = Auf der Website können Angaben zu Clan-Mitgliedern veröffentlicht werden, insbesondere Nickname, Name, Wohnort, Beruf, Eintrittsdatum, Profilbild, Zitat, E-Mail-Adresse sowie die Teilnahme an Clanwars. Die Veröffentlichung dient der Darstellung des Clans, seiner Mitglieder und seiner Aktivitäten.
+privacy.s5.p2 = Die Veröffentlichung erfolgt auf Grundlage einer Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO. Eine Einwilligung kann jederzeit mit Wirkung für die Zukunft widerrufen werden. Nach einem Widerruf werden die betroffenen Profildaten entfernt, soweit keine andere Rechtsgrundlage oder Aufbewahrungspflicht entgegensteht. Für die Entfernung genügt eine Nachricht an die oben angegebene E-Mail-Adresse.
+
+privacy.s6.heading = 6. Kontaktaufnahme
+privacy.s6.p1 = Bei einer Kontaktaufnahme per E-Mail verarbeiten wir die mitgeteilten Kontaktdaten und den Inhalt der Nachricht, um die Anfrage zu beantworten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, sofern es um eine Vereinbarung oder vorvertragliche Maßnahmen geht, andernfalls Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse liegt in der Bearbeitung und Dokumentation von Anfragen. Die Daten werden gelöscht, sobald die Anfrage abschließend bearbeitet ist und keine gesetzlichen Aufbewahrungspflichten oder berechtigten Gründe für eine weitere Speicherung bestehen.
+
+privacy.s7.heading = 7. Externe Links
+privacy.s7.p1 = Diese Website enthält Links zu Angeboten Dritter, insbesondere zu Discord und zu verlinkten Partnerseiten. Beim bloßen Aufruf unserer Website werden über diese Links keine Daten an die jeweiligen Anbieter übertragen. Erst wenn ein Link angeklickt wird, ruft der Browser das externe Angebot auf. Dabei erhält dessen Anbieter insbesondere die IP-Adresse und gegebenenfalls weitere technische Zugriffsdaten. Für die anschließende Verarbeitung ist der jeweilige Anbieter verantwortlich; es gilt dessen Datenschutzerklärung.
+
+privacy.s8.heading = 8. Empfänger und Übermittlungen in Drittländer
+privacy.s8.p1 = Daten erhalten nur Personen und Dienstleister, die sie für die genannten Zwecke benötigen. Eine Weitergabe erfolgt außerdem, wenn wir gesetzlich dazu verpflichtet sind oder Sie eingewilligt haben. Eine aktive Übermittlung in Staaten außerhalb der Europäischen Union oder des Europäischen Wirtschaftsraums findet durch den Betrieb dieser Website nach aktuellem Stand nicht statt. Beim Aufruf extern verlinkter Angebote kann der jeweilige Anbieter Daten in Drittländern verarbeiten.
+
+privacy.s9.heading = 9. Speicherdauer
+privacy.s9.p1 = Soweit in dieser Erklärung keine besondere Dauer genannt ist, speichern wir personenbezogene Daten nur so lange, wie sie für den jeweiligen Zweck erforderlich sind. Anschließend werden sie gelöscht oder anonymisiert, sofern keine gesetzlichen Aufbewahrungspflichten oder die Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen eine weitere Speicherung erfordern.
+
+privacy.s10.heading = 10. Ihre Rechte
+privacy.s10.intro = Sie haben nach Maßgabe der gesetzlichen Voraussetzungen insbesondere das Recht auf:
+privacy.s10.li1 = Auskunft über Ihre verarbeiteten Daten (Art. 15 DSGVO),
+privacy.s10.li2 = Berichtigung unrichtiger Daten (Art. 16 DSGVO),
+privacy.s10.li3 = Löschung Ihrer Daten (Art. 17 DSGVO),
+privacy.s10.li4 = Einschränkung der Verarbeitung (Art. 18 DSGVO),
+privacy.s10.li5 = Datenübertragbarkeit (Art. 20 DSGVO),
+privacy.s10.li6 = Widerspruch gegen eine Verarbeitung nach Art. 6 Abs. 1 lit. e oder f DSGVO (Art. 21 DSGVO) und
+privacy.s10.li7 = Widerruf einer Einwilligung mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO).
+privacy.s10.outro = Zur Ausübung Ihrer Rechte können Sie sich an die oben genannte E-Mail-Adresse wenden. Außerdem haben Sie nach Art. 77 DSGVO das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Sie können sich insbesondere an die Aufsichtsbehörde Ihres gewöhnlichen Aufenthaltsorts, Ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes wenden.
+
+privacy.s11.heading = 11. Datensicherheit
+privacy.s11.p1 = Wir treffen angemessene technische und organisatorische Maßnahmen, um personenbezogene Daten vor Verlust, Manipulation und unbefugtem Zugriff zu schützen. Dazu gehören insbesondere eine verschlüsselte Übertragung per HTTPS, Zugriffsbeschränkungen für den Administrationsbereich und Sicherheitsmaßnahmen gegen missbräuchliche Anmeldeversuche.
+
+privacy.s12.heading = 12. Änderungen dieser Datenschutzerklärung
+privacy.s12.p1 = Wir passen diese Datenschutzerklärung an, wenn sich die Website, die eingesetzten Verfahren oder die rechtlichen Anforderungen ändern. Es gilt die jeweils auf dieser Seite veröffentlichte Fassung.
+
+pickup.title = Quake 3 Pickup
+pickup.description = Feste und spontane Quake-3-Spieltermine der Doomwarriors.
+pickup.heading = q3 pickup / spontan
+pickup.fixedTitle = Feste Termine
+pickup.fixedText = Für Q3 TDM und CTF findet ihr diese in den jeweiligen topics der Discord channel. Pi mal Daumen alle 2 Wochen ab 20 Uhr.
+pickup.spontanTitle = Spontan
+pickup.spontanPrefix = Für alle spontan Liebhaber gibt es im
+pickup.spontanMiddle1 = den #q3-pickup channel. Dort haben wir einen Bot, der wie damals in #spontanctf euch zu den jeweiligen pickups added (
+pickup.spontanMiddle2 = ) und die Spiele dann startet. Wir haben eigene Server auf denen dann gespielt wird.
+pickup.commandsPrefix = Alle Bot Commands findet ihr hier:
+
+todo.text = JAJA, wir sind dabei...
+
+notFound.clanwar = Clanwar nicht gefunden
+notFound.player = Spieler nicht gefunden

@@ -1,7 +1,7 @@
-@(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], error: String)
+@(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], error: String, messages: play.i18n.Messages)
 @import scala.jdk.CollectionConverters._
 
-@main(if(item == null) "Add clanwar" else "Edit clanwar", noindex = true) {
+@main(if(item == null) "Add clanwar" else "Edit clanwar", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.clanwarIndex()">&laquo; Back to clanwars</a></p>
         <h1>@if(item == null) { Add clanwar } else { Edit clanwar }</h1>

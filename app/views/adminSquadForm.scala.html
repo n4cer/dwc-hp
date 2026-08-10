@@ -1,6 +1,6 @@
-@(request: Http.Request, item: Squad, games: List[Game], error: String)
+@(request: Http.Request, item: Squad, games: List[Game], error: String, messages: play.i18n.Messages)
 
-@main(if(item == null) "Add squad" else "Edit squad", noindex = true) {
+@main(if(item == null) "Add squad" else "Edit squad", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.squadIndex()">&laquo; Back to squads</a></p>
         <h1>@if(item == null) { Add squad } else { Edit squad }</h1>

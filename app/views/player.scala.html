@@ -1,20 +1,20 @@
-@(member: User, wins: Int, draws: Int, losses: Int, winPct: Int, drawPct: Int, lossPct: Int, winRatio: Int, longTenureMember: Boolean)
+@(member: User, wins: Int, draws: Int, losses: Int, winPct: Int, drawPct: Int, lossPct: Int, winRatio: Int, longTenureMember: Boolean, messages: play.i18n.Messages)
 
-@main(member.getNick() + " - Spielerprofil", "Profil des Doomwarriors-Spielers " + member.getNick() + ".", controllers.routes.HomeController.player(member.getId()).url) {
+@main(member.getNick() + " - " + messages.at("player.titleSuffix"), messages, messages.at("player.description", member.getNick()), controllers.routes.HomeController.player(member.getId()).url) {
 <div class="mitteContent">
     <h1>@member.getNick()</h1>
     <div>
-        <a href="@controllers.routes.HomeController.lineup">&gt;&gt;zur&uuml;ck&lt;&lt;</a>
+        <a href="@controllers.routes.HomeController.lineup">&gt;&gt;@messages.at("player.back")&lt;&lt;</a>
     </div>
     <br />
     <img class="bordered-image" src="@routes.HomeController.lineupImage(member.getImage())" width="76" height="103" alt="@member.getNick()"><br />
     <br />
     @if(java.lang.Boolean.TRUE.equals(member.getFounder()) || java.lang.Boolean.TRUE.equals(member.getClanLeader()) || java.lang.Boolean.TRUE.equals(member.getHonoraryMember()) || longTenureMember) {
         <div class="player-badges">
-            @if(java.lang.Boolean.TRUE.equals(member.getFounder())) { <span class="badge badge-founder">Gr&uuml;nder</span> }
+            @if(java.lang.Boolean.TRUE.equals(member.getFounder())) { <span class="badge badge-founder">@messages.at("halloffame.founders")</span> }
             @if(java.lang.Boolean.TRUE.equals(member.getClanLeader())) { <span class="badge badge-leader">Clanleader</span> }
-            @if(java.lang.Boolean.TRUE.equals(member.getHonoraryMember())) { <span class="badge badge-honorary">Ehrenmitglied</span> }
-            @if(longTenureMember) { <span class="badge badge-longtenure">Langj&auml;hriges Mitglied</span> }
+            @if(java.lang.Boolean.TRUE.equals(member.getHonoraryMember())) { <span class="badge badge-honorary">@messages.at("player.badge.honorary")</span> }
+            @if(longTenureMember) { <span class="badge badge-longtenure">@messages.at("player.badge.longtenure")</span> }
         </div>
         <br />
     }
@@ -30,7 +30,7 @@
     quote: @member.getQuote()<br />
     <br />
     <div class="player-stats">
-        <b><u>Clanwar-Statistik</u></b><br /><br />
+        <b><u>@messages.at("player.stats.title")</u></b><br /><br />
         <div class="stat-cards">
             <div class="stat-card stat-total">
                 <span class="stat-value">@(wins + draws + losses)</span>
@@ -38,15 +38,15 @@
             </div>
             <div class="stat-card stat-win">
                 <span class="stat-value">@wins</span>
-                <span class="stat-label">Siege</span>
+                <span class="stat-label">@messages.at("player.stats.wins")</span>
             </div>
             <div class="stat-card stat-draw">
                 <span class="stat-value">@draws</span>
-                <span class="stat-label">Unentschieden</span>
+                <span class="stat-label">@messages.at("player.stats.draws")</span>
             </div>
             <div class="stat-card stat-loss">
                 <span class="stat-value">@losses</span>
-                <span class="stat-label">Niederlagen</span>
+                <span class="stat-label">@messages.at("player.stats.losses")</span>
             </div>
             <div class="stat-card stat-ratio">
                 <span class="stat-value">@if(wins + draws + losses > 0) {@winRatio%} else {-}</span>

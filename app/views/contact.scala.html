@@ -1,11 +1,11 @@
-@()
+@(messages: play.i18n.Messages)
 
-@main("Kontakt", "Kontakt zum Doomwarriors Clan und zum gemeinsamen Discord-Server.", controllers.routes.HomeController.contact.url) {
+@main(messages.at("contact.title"), messages, messages.at("contact.description"), controllers.routes.HomeController.contact.url) {
     <div class="mitteContent">
-        <h1>Kontakt zum Doomwarriors Clan</h1>
+        <h1>@messages.at("contact.heading")</h1>
         <a href="https://discordapp.com/download" target="_blank" rel="noopener noreferrer">
-            <img src="@controllers.routes.Assets.versioned("images/3rd/discord_full.png")" width="125" alt="Discord-Logo" /><br>
+            <img src="@controllers.routes.Assets.versioned("images/3rd/discord_full.png")" width="125" alt="@messages.at("contact.discordLogoAlt")" /><br>
         </a>
-        Ihr findet uns auf <a href="https://discord.gg/kDfC7rB">Discord</a>!
+        @messages.at("contact.findUsPrefix") <a href="https://discord.gg/kDfC7rB">Discord</a>!
     </div>
 }

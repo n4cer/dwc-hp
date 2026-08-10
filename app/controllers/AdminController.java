@@ -17,6 +17,9 @@ import models.UserSquad;
 import play.api.Configuration;
 import play.cache.AsyncCacheApi;
 import play.filters.csrf.AddCSRFToken;
+import play.i18n.Lang;
+import play.i18n.Messages;
+import play.i18n.MessagesApi;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -39,21 +42,32 @@ public class AdminController extends Controller {
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ISO_LOCAL_DATE;
 
+    // The admin area is only used by clan staff and is intentionally kept German-only,
+    // regardless of the visiting browser's language preference.
+    private static final List<String> PUBLIC_CACHE_LANGS = List.of("de", "en");
+
     private final Configuration configuration;
     private final AsyncCacheApi cache;
     private final LoginRateLimiter loginRateLimiter;
+    private final MessagesApi messagesApi;
 
     @Inject
-    public AdminController(Configuration configuration, AsyncCacheApi cache, LoginRateLimiter loginRateLimiter) {
+    public AdminController(Configuration configuration, AsyncCacheApi cache, LoginRateLimiter loginRateLimiter,
+            MessagesApi messagesApi) {
         this.configuration = configuration;
         this.cache = cache;
         this.loginRateLimiter = loginRateLimiter;
+        this.messagesApi = messagesApi;
+    }
+
+    private Messages messages() {
+        return messagesApi.preferred(List.of(Lang.forCode("de")));
     }
 
     @AddCSRFToken
     public Result login(Http.Request request) {
         if (isAuthenticated(request)) return redirect(routes.AdminController.index());
-        return ok(views.html.adminLogin.render(request, credentialsConfigured(), null));
+        return ok(views.html.adminLogin.render(request, credentialsConfigured(), null, messages()));
     }
 
     public Result authenticate(Http.Request request) {
@@ -68,7 +82,7 @@ public class AdminController extends Controller {
                 || !secureEquals(password, configured("admin.password"))) {
             limit = loginRateLimiter.recordFailure(client);
             if (limit.blocked()) return rateLimited(request, limit);
-            return unauthorized(views.html.adminLogin.render(request, credentialsConfigured(), "Invalid username or password."));
+            return unauthorized(views.html.adminLogin.render(request, credentialsConfigured(), "Invalid username or password.", messages()));
         }
         loginRateLimiter.reset(client);
         return redirect(routes.AdminController.index()).addingToSession(request, ADMIN_SESSION, username);
@@ -76,7 +90,7 @@ public class AdminController extends Controller {
 
     private Result rateLimited(Http.Request request, LoginRateLimiter.LimitStatus limit) {
         return status(TOO_MANY_REQUESTS, views.html.adminLogin.render(request, credentialsConfigured(),
-                "Too many failed login attempts. Please try again later."))
+                "Too many failed login attempts. Please try again later.", messages()))
                 .withHeader("Retry-After", Long.toString(limit.retryAfterSeconds()));
     }
 
@@ -97,7 +111,7 @@ public class AdminController extends Controller {
         long gameCount = Game.find.query().findCount();
         long gameTypeCount = GameType.find.query().findCount();
         return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount,
-                mapCount, leagueCount, gameCount, gameTypeCount));
+                mapCount, leagueCount, gameCount, gameTypeCount, messages()));
     }
 
     @AddCSRFToken
@@ -105,7 +119,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<News> news = News.find.query().orderBy().desc("timestamp").findList();
-        return ok(views.html.adminNewsList.render(request, news));
+        return ok(views.html.adminNewsList.render(request, news, messages()));
     }
 
     @AddCSRFToken
@@ -113,7 +127,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
-        return ok(views.html.adminClanwarList.render(request, clanwars));
+        return ok(views.html.adminClanwarList.render(request, clanwars, messages()));
     }
 
     @AddCSRFToken
@@ -121,7 +135,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<User> lineup = User.find.query().orderBy().asc("nick").findList();
-        return ok(views.html.adminLineupList.render(request, lineup));
+        return ok(views.html.adminLineupList.render(request, lineup, messages()));
     }
 
     @AddCSRFToken
@@ -129,7 +143,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<Squad> squads = Squad.find.query().orderBy().asc("description").findList();
-        return ok(views.html.adminSquadList.render(request, squads));
+        return ok(views.html.adminSquadList.render(request, squads, messages()));
     }
 
     @AddCSRFToken
@@ -162,7 +176,7 @@ public class AdminController extends Controller {
     public Result newNews(Http.Request request) {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
-        return ok(views.html.adminNewsForm.render(request, null, User.find.all(), null));
+        return ok(views.html.adminNewsForm.render(request, null, User.find.all(), null, messages()));
     }
 
     @AddCSRFToken
@@ -171,7 +185,7 @@ public class AdminController extends Controller {
         if (denied != null) return denied;
         News news = News.find.byId(id);
         if (news == null) return notFound("News item not found.");
-        return ok(views.html.adminNewsForm.render(request, news, User.find.all(), null));
+        return ok(views.html.adminNewsForm.render(request, news, User.find.all(), null, messages()));
     }
 
     public Result createNews(Http.Request request) {
@@ -255,7 +269,7 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html squadForm(Http.Request request, Squad squad, String error) {
-        return views.html.adminSquadForm.render(request, squad, Game.find.all(), error);
+        return views.html.adminSquadForm.render(request, squad, Game.find.all(), error, messages());
     }
 
     @AddCSRFToken
@@ -263,7 +277,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<models.Map> maps = models.Map.find.query().orderBy().asc("map").findList();
-        return ok(views.html.adminMapList.render(request, maps));
+        return ok(views.html.adminMapList.render(request, maps, messages()));
     }
 
     @AddCSRFToken
@@ -310,7 +324,7 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html mapForm(Http.Request request, models.Map map, String error) {
-        return views.html.adminMapForm.render(request, map, Game.find.all(), error);
+        return views.html.adminMapForm.render(request, map, Game.find.all(), error, messages());
     }
 
     @AddCSRFToken
@@ -318,7 +332,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<League> leagues = League.find.query().orderBy().asc("league").findList();
-        return ok(views.html.adminLeagueList.render(request, leagues));
+        return ok(views.html.adminLeagueList.render(request, leagues, messages()));
     }
 
     @AddCSRFToken
@@ -363,7 +377,7 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html leagueForm(Http.Request request, League league, String error) {
-        return views.html.adminLeagueForm.render(request, league, error);
+        return views.html.adminLeagueForm.render(request, league, error, messages());
     }
 
     @AddCSRFToken
@@ -371,7 +385,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<Game> games = Game.find.query().orderBy().asc("description").findList();
-        return ok(views.html.adminGameList.render(request, games));
+        return ok(views.html.adminGameList.render(request, games, messages()));
     }
 
     @AddCSRFToken
@@ -417,7 +431,7 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html gameForm(Http.Request request, Game game, String error) {
-        return views.html.adminGameForm.render(request, game, error);
+        return views.html.adminGameForm.render(request, game, error, messages());
     }
 
     @AddCSRFToken
@@ -425,7 +439,7 @@ public class AdminController extends Controller {
         Result denied = requireAdmin(request);
         if (denied != null) return denied;
         List<GameType> gameTypes = GameType.find.query().orderBy().asc("gameType").findList();
-        return ok(views.html.adminGameTypeList.render(request, gameTypes));
+        return ok(views.html.adminGameTypeList.render(request, gameTypes, messages()));
     }
 
     @AddCSRFToken
@@ -470,7 +484,7 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html gameTypeForm(Http.Request request, GameType gameType, String error) {
-        return views.html.adminGameTypeForm.render(request, gameType, error);
+        return views.html.adminGameTypeForm.render(request, gameType, error, messages());
     }
 
     private Result saveNews(Http.Request request, News news) {
@@ -483,7 +497,7 @@ public class AdminController extends Controller {
         Date timestamp = parseDate(value(data, "timestamp"));
         if (topic.isBlank() || content.isBlank() || author == null || timestamp == null) {
             return badRequest(views.html.adminNewsForm.render(request, news.getId() == null ? null : news,
-                    User.find.all(), "Please complete all required fields correctly."));
+                    User.find.all(), "Please complete all required fields correctly.", messages()));
         }
         news.setTopic(topic);
         news.setContent(ContentSanitizer.sanitizeHtml(content));
@@ -523,7 +537,9 @@ public class AdminController extends Controller {
         if (clanwar.getId() == null) clanwar.save(); else clanwar.update();
         syncClanwarRelations(clanwar, data);
         clearPublicCaches();
-        cache.remove(HomeController.clanwarCacheKey(clanwar.getId()));
+        for (String lang : PUBLIC_CACHE_LANGS) {
+            cache.remove(HomeController.clanwarCacheKey(clanwar.getId(), lang));
+        }
         return redirect(routes.AdminController.clanwarIndex()).flashing("success", "Clanwar saved successfully.");
     }
 
@@ -597,12 +613,12 @@ public class AdminController extends Controller {
 
     private play.twirl.api.Html lineupForm(Http.Request request, User member, String error) {
         return views.html.adminLineupForm.render(request, member,
-                Squad.find.query().orderBy().asc("description").findList(), error);
+                Squad.find.query().orderBy().asc("description").findList(), error, messages());
     }
 
     private play.twirl.api.Html clanwarForm(Http.Request request, Clanwar clanwar, String error) {
         return views.html.adminClanwarForm.render(request, clanwar, Game.find.all(), GameType.find.all(),
-                League.find.all(), Country.find.all(), models.Map.find.all(), User.find.all(), error);
+                League.find.all(), Country.find.all(), models.Map.find.all(), User.find.all(), error, messages());
     }
 
     private String validateClanwarRelations(Map<String, String[]> data, Clanwar clanwar) {
@@ -695,11 +711,12 @@ public class AdminController extends Controller {
     }
 
     private void clearPublicCaches() {
-        cache.remove("index");
-        cache.remove("news");
-        cache.remove("clanwars");
-        cache.remove("lineup");
-        cache.remove("halloffame");
+        for (String lang : PUBLIC_CACHE_LANGS) {
+            cache.remove("index_" + lang);
+            cache.remove("clanwars_" + lang);
+            cache.remove("lineup_" + lang);
+            cache.remove("halloffame_" + lang);
+        }
     }
 
     private Result requireAdmin(Http.Request request) {

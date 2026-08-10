@@ -1,9 +1,9 @@
-@(name : String, street : String, city : String, email : String)
+@(name : String, street : String, city : String, email : String, messages: play.i18n.Messages)
 
-@main("Impressum", "Impressum und Anbieterkennzeichnung der Doomwarriors-Website.", controllers.routes.HomeController.imprint().url) {
+@main(messages.at("imprint.title"), messages, messages.at("imprint.description"), controllers.routes.HomeController.imprint().url) {
     <div class="container">
         <header>
-            <h1>Impressum</h1>
+            <h1>@messages.at("imprint.title")</h1>
         </header>
         <p>@name<br/>
         @street<br/>

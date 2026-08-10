@@ -1,6 +1,6 @@
-@(request: Http.Request, news: List[News])
+@(request: Http.Request, news: List[News], messages: play.i18n.Messages)
 
-@main("News administration", noindex = true) {
+@main("News administration", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
         <div class="admin-header"><h1>News</h1><a class="admin-button" href="@controllers.routes.AdminController.newNews()">Add news</a></div>

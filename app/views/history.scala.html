@@ -1,8 +1,8 @@
-@(entries : List[History])
+@(entries : List[History], messages: play.i18n.Messages)
 
-@main("Geschichte", "Die Geschichte und Entwicklung des Doomwarriors Clans.", controllers.routes.HomeController.history.url) {
+@main(messages.at("history.title"), messages, messages.at("history.description"), controllers.routes.HomeController.history.url) {
     <div class="mitteContent">
-        <h1>Geschichte des Doomwarriors Clans</h1>
+        <h1>@messages.at("history.heading")</h1>
         @for(entry <- entries) {
         <div class="mitteContent">
             <p>@Html(ContentSanitizer.sanitizeHtml(entry.getContent()))</p>

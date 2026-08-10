@@ -1,6 +1,6 @@
-@(request: Http.Request, leagues: List[League])
+@(request: Http.Request, leagues: List[League], messages: play.i18n.Messages)
 
-@main("League administration", noindex = true) {
+@main("League administration", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
         <div class="admin-header"><h1>Leagues</h1><a class="admin-button" href="@controllers.routes.AdminController.newLeague()">Add league</a></div>

@@ -1,6 +1,6 @@
-@(request: Http.Request, configured: Boolean, error: String)
+@(request: Http.Request, configured: Boolean, error: String, messages: play.i18n.Messages)
 
-@main("Admin Login", noindex = true) {
+@main("Admin Login", messages, noindex = true) {
     <div class="admin-page admin-login">
         <h1>Administration</h1>
         @if(configured) {

@@ -1,0 +1,125 @@
+# English language file
+
+meta.defaultDescription = Doomwarriors: German gaming clan with news, player profiles and a clan-war archive.
+layout.empty = empty
+layout.randomImageAlt = Random clan image
+
+index.title = German Gaming Clan
+index.description = Doomwarriors: news, clan wars, players and history of the German gaming clan.
+index.welcome = Welcome to the Doomwarriors clan
+
+news.description = News, dates and reports from the Doomwarriors clan.
+news.by = by
+news.pagination.ariaLabel = News pages
+news.pagination.prev = « Previous
+news.pagination.pageOf = Page {0} of {1}
+news.pagination.next = Next »
+
+clanwars.title = Clan-War Archive
+clanwars.description = Results and reports of past Doomwarriors clan wars.
+
+clanwar.title = Clan war vs. {0}
+clanwar.description = Result, lineup, maps and report for the Doomwarriors clan war vs. {0}.
+clanwar.screenshotAlt = Screenshot of the clan war vs. {0}
+clanwar.noScreenshot = no screenshot available :-(
+
+lineup.title = Players and Lineup
+lineup.description = Players, members and squads of the Doomwarriors clan.
+
+halloffame.description = Founders, clan leaders, honorary members and long-standing members of the Doomwarriors clan.
+halloffame.founders = Founders
+halloffame.honorary = Honorary members
+halloffame.longtenure = Long-standing members
+
+player.titleSuffix = Player profile
+player.description = Profile of Doomwarriors player {0}.
+player.back = back
+player.badge.honorary = Honorary member
+player.badge.longtenure = Long-standing member
+player.stats.title = Clan war statistics
+player.stats.wins = Wins
+player.stats.draws = Draws
+player.stats.losses = Losses
+
+history.title = History
+history.description = The history and development of the Doomwarriors clan.
+history.heading = History of the Doomwarriors clan
+
+contact.title = Contact
+contact.description = Contact the Doomwarriors clan and our shared Discord server.
+contact.heading = Contact the Doomwarriors clan
+contact.discordLogoAlt = Discord logo
+contact.findUsPrefix = You can find us on
+
+imprint.title = Legal Notice
+imprint.description = Legal notice and provider identification for the Doomwarriors website.
+
+privacy.title = Privacy Policy
+privacy.description = Information about privacy on the Doomwarriors website.
+privacy.kicker = Privacy at Doomwarriors
+privacy.intro = Here you can find out, in a compact and understandable way, which personal data is processed when visiting this website and what rights you have.
+privacy.updated = Last updated: July 2026
+privacy.emailLabel = Email:
+privacy.moreInfoLabel = More information:
+
+privacy.s1.heading = 1. Controller
+privacy.s2.heading = 2. General information
+privacy.s2.p1 = We process personal data only to the extent necessary to operate this website, present the clan's content, ensure the security of the site, or handle inquiries. Personal data is any information relating to an identified or identifiable individual.
+
+privacy.s3.heading = 3. Provision of the website and server log files
+privacy.s3.p1 = When you access the website, technically required data is transmitted to the web server. This can include, in particular, the IP address, date and time of access, the page or file accessed, the amount of data transferred, the referrer URL, browser type and version, operating system, and the requesting internet access provider.
+privacy.s3.p2 = This processing serves the secure and stable provision of the website, error analysis, and the prevention of misuse. The legal basis is Art. 6 (1)(f) GDPR. Our legitimate interest lies in the secure and functional operation of the site. Log data is deleted as soon as it is no longer required for these purposes. Security-relevant data may be retained longer until an incident has been conclusively clarified.
+privacy.s3.p3 = If a hosting provider is used, it processes data on our behalf under Art. 28 GDPR. Details of the specific hosting provider can be requested at the contact address given above.
+
+privacy.s4.heading = 4. Technically necessary cookies and session data
+privacy.s4.p1 = The publicly accessible part of this website does not use cookies for analytics, marketing, or advertising purposes. Within the protected administration area, technically necessary session and security information may be stored. It is used for logging in, protecting forms against abusive requests, and safeguarding the site.
+privacy.s4.p2 = Access to the end device is permitted in this respect under Section 25 (2) No. 2 TDDDG. Insofar as personal data is processed in this context, this is based on Art. 6 (1)(f) GDPR; where used to fulfil an agreement, additionally on Art. 6 (1)(b) GDPR. Session information generally becomes invalid upon logout or expiry of the respective session. Since no consent-requiring tracking technologies are used, no consent banner is required.
+
+privacy.s5.heading = 5. Clan and member profiles
+privacy.s5.p1 = The website may publish information about clan members, in particular nickname, name, place of residence, occupation, join date, profile picture, quote, email address, and participation in clan wars. Publication serves to present the clan, its members, and its activities.
+privacy.s5.p2 = Publication is based on consent under Art. 6 (1)(a) GDPR. Consent can be withdrawn at any time with effect for the future. After withdrawal, the affected profile data is removed, unless another legal basis or retention obligation applies. To request removal, a message to the email address given above is sufficient.
+
+privacy.s6.heading = 6. Contacting us
+privacy.s6.p1 = When you contact us by email, we process the contact details you provide and the content of the message in order to respond to your inquiry. The legal basis is Art. 6 (1)(b) GDPR where the inquiry relates to an agreement or pre-contractual measures, otherwise Art. 6 (1)(f) GDPR. Our legitimate interest lies in processing and documenting inquiries. The data is deleted once the inquiry has been fully handled and no statutory retention obligations or legitimate reasons for further storage exist.
+
+privacy.s7.heading = 7. External links
+privacy.s7.p1 = This website contains links to third-party offerings, in particular to Discord and to linked partner sites. Merely visiting our website does not transmit any data to those providers via these links. Only when a link is clicked does the browser access the external offering. In doing so, that provider receives, in particular, the IP address and possibly further technical access data. The respective provider is responsible for any subsequent processing; its own privacy policy applies.
+
+privacy.s8.heading = 8. Recipients and transfers to third countries
+privacy.s8.p1 = Data is only disclosed to persons and service providers who need it for the purposes stated. Disclosure also occurs where we are legally obliged to do so or where you have given consent. As things currently stand, operating this website does not involve any active transfer of data to countries outside the European Union or the European Economic Area. When externally linked offerings are accessed, the respective provider may process data in third countries.
+
+privacy.s9.heading = 9. Storage period
+privacy.s9.p1 = Unless a specific duration is stated in this policy, we only store personal data for as long as necessary for the respective purpose. It is then deleted or anonymised, unless statutory retention obligations or the assertion, exercise, or defence of legal claims require further storage.
+
+privacy.s10.heading = 10. Your rights
+privacy.s10.intro = Subject to the statutory requirements, you have in particular the right to:
+privacy.s10.li1 = access to your processed data (Art. 15 GDPR),
+privacy.s10.li2 = correction of inaccurate data (Art. 16 GDPR),
+privacy.s10.li3 = erasure of your data (Art. 17 GDPR),
+privacy.s10.li4 = restriction of processing (Art. 18 GDPR),
+privacy.s10.li5 = data portability (Art. 20 GDPR),
+privacy.s10.li6 = object to processing under Art. 6 (1)(e) or (f) GDPR (Art. 21 GDPR), and
+privacy.s10.li7 = withdraw consent with effect for the future (Art. 7 (3) GDPR).
+privacy.s10.outro = To exercise your rights, you can contact us at the email address given above. You also have the right under Art. 77 GDPR to lodge a complaint with a data protection supervisory authority, in particular the authority for your habitual residence, place of work, or the place of the alleged infringement.
+
+privacy.s11.heading = 11. Data security
+privacy.s11.p1 = We take appropriate technical and organisational measures to protect personal data against loss, manipulation, and unauthorised access. These include, in particular, encrypted transmission via HTTPS, access restrictions for the administration area, and security measures against abusive login attempts.
+
+privacy.s12.heading = 12. Changes to this privacy policy
+privacy.s12.p1 = We update this privacy policy whenever the website, the procedures used, or the legal requirements change. The version published on this page at any given time applies.
+
+pickup.title = Quake 3 Pickup
+pickup.description = Regular and spontaneous Quake 3 play sessions with the Doomwarriors.
+pickup.heading = q3 pickup / spontaneous
+pickup.fixedTitle = Fixed sessions
+pickup.fixedText = For Q3 TDM and CTF you'll find these in the respective topics in the Discord channels. Roughly every 2 weeks, starting around 8pm.
+pickup.spontanTitle = Spontaneous
+pickup.spontanPrefix = For everyone who loves spontaneous matches, we have the
+pickup.spontanMiddle1 = channel #q3-pickup. There's a bot there that adds you to the respective pickups, just like #spontanctf used to (
+pickup.spontanMiddle2 = ) and then starts the games. We have our own servers where the games are played.
+pickup.commandsPrefix = You can find all bot commands here:
+
+todo.text = Yep, we're on it...
+
+notFound.clanwar = Clan war not found
+notFound.player = Player not found

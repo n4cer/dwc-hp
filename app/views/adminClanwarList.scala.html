@@ -1,6 +1,6 @@
-@(request: Http.Request, clanwars: List[Clanwar])
+@(request: Http.Request, clanwars: List[Clanwar], messages: play.i18n.Messages)
 
-@main("Clanwar administration", noindex = true) {
+@main("Clanwar administration", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
         <div class="admin-header"><h1>Clanwars</h1><a class="admin-button" href="@controllers.routes.AdminController.newClanwar()">Add clanwar</a></div>

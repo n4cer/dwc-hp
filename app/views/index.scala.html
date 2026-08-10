@@ -1,7 +1,7 @@
-@(clanwars: Seq[Clanwar], news: Seq[News])
+@(clanwars: Seq[Clanwar], news: Seq[News], messages: play.i18n.Messages)
 
-@main("Deutscher Gaming-Clan", "Doomwarriors: News, Clanwars, Spieler und Geschichte des deutschen Gaming-Clans.", controllers.routes.HomeController.index.url) {
-    <h1>Willkommen beim Doomwarriors Clan</h1>
+@main(messages.at("index.title"), messages, messages.at("index.description"), controllers.routes.HomeController.index.url) {
+    <h1>@messages.at("index.welcome")</h1>
     <br>
     <div class="mitteContent">
         <b>Latest Wars</b>
@@ -46,7 +46,7 @@
             @for(n <- news) {
                 <br />
                 <div>
-                    <b>@n.getTopic() --- @n.getTimestamp().format(if (n.getTimestamp().format("HH:mm") == "00:00") "dd.MM.yyyy" else "dd.MM.yyyy HH:mm") by @n.getUsername()</b>
+                    <b>@n.getTopic() --- @n.getTimestamp().format(if (n.getTimestamp().format("HH:mm") == "00:00") "dd.MM.yyyy" else "dd.MM.yyyy HH:mm") @messages.at("news.by") @n.getUsername()</b>
                 </div>
                 <div class="text-justify">
                     @Html(ContentSanitizer.sanitizeHtml(n.getContent()))
