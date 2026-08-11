@@ -23,6 +23,10 @@ clanwar.title = Clanwar gegen {0}
 clanwar.description = Ergebnis, Lineup, Maps und Bericht zum Clanwar der Doomwarriors gegen {0}.
 clanwar.screenshotAlt = Screenshot des Clanwars gegen {0}
 clanwar.noScreenshot = kein Screenshot vorhanden :-(
+clanwar.report = Bericht
+clanwar.outcome.win = Sieg
+clanwar.outcome.loss = Niederlage
+clanwar.outcome.draw = Unentschieden
 
 lineup.title = Spieler und Lineup
 lineup.description = Spieler, Mitglieder und Squads des Doomwarriors Clans.

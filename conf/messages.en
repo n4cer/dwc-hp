@@ -23,6 +23,10 @@ clanwar.title = Clan war vs. {0}
 clanwar.description = Result, lineup, maps and report for the Doomwarriors clan war vs. {0}.
 clanwar.screenshotAlt = Screenshot of the clan war vs. {0}
 clanwar.noScreenshot = no screenshot available :-(
+clanwar.report = Report
+clanwar.outcome.win = Win
+clanwar.outcome.loss = Loss
+clanwar.outcome.draw = Draw
 
 lineup.title = Players and Lineup
 lineup.description = Players, members and squads of the Doomwarriors clan.
