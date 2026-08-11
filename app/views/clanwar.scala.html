@@ -18,7 +18,7 @@
     <br />
     <div>
         @clanwar.getDate().format("dd.MM.yyyy") - @clanwar.getLeague() vs. @clanwar.getEnemy()<br>
-        lineup: @for(l <- clanwar.getLineups()) { @l.getMember().getNick() } <br><br>
+        lineup: @for(l <- clanwar.getLineups()) { <a href="@controllers.routes.HomeController.player(l.getMember().getId())">@l.getMember().getNick()</a> } <br><br>
         @for(score <- clanwar.getScores()) {
             <div>
                 map: @score.getMap()<br>
