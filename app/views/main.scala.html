@@ -31,6 +31,23 @@
                     </div>
 
                     <div id="blockLeft">
+                        @if(canonicalPath.nonEmpty) {
+                            <div class="linksTop"></div>
+                            <div class="links">
+                                <div class="linksContent">
+                                    <strong>@messages.at("layout.langSwitch.label")</strong><br />
+                                    <p class="lang-switch">
+                                        @if(messages.lang().code() == "de") {
+                                            <strong>Deutsch</strong> | <a href="@controllers.routes.HomeController.setLanguage("en", canonicalPath)">English</a>
+                                        } else {
+                                            <a href="@controllers.routes.HomeController.setLanguage("de", canonicalPath)">Deutsch</a> | <strong>English</strong>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="linksBottom"></div>
+                            <br />
+                        }
                         <div class="linksTop"></div>
                         <div class="links">
                             @navigation()

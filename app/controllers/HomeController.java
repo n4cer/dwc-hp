@@ -33,6 +33,7 @@ import models.UserSquad;
 import play.api.Configuration;
 import play.cache.Cached;
 import play.cache.SyncCacheApi;
+import play.i18n.Lang;
 import play.i18n.Messages;
 import play.i18n.MessagesApi;
 import play.libs.Json;
@@ -46,9 +47,19 @@ public class HomeController extends Controller {
     private static final int NEWS_PAGE_SIZE = 10;
     private static final int CLANWAR_CACHE_DURATION = 1200;
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
+    private static final Set<String> SUPPORTED_LANGS = Set.of("de", "en");
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
     @Inject MessagesApi messagesApi;
+
+    public Result setLanguage(String code, String to) {
+      Result result = redirect(isSafeRedirectTarget(to) ? to : "/");
+      return SUPPORTED_LANGS.contains(code) ? messagesApi.setLang(result, Lang.forCode(code)) : result;
+    }
+
+    private static boolean isSafeRedirectTarget(String to) {
+      return to != null && to.startsWith("/") && !to.startsWith("//") && !to.contains("://");
+    }
 
     private Result cachedPage(String baseKey, Messages messages, int duration, java.util.function.Supplier<Html> render) {
       String key = baseKey + "_" + messages.lang().code();
