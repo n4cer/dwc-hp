@@ -1,6 +1,6 @@
-@(request: Http.Request, gameTypes: List[GameType])
+@(request: Http.Request, gameTypes: List[GameType], messages: play.i18n.Messages)
 
-@main("Game type administration", noindex = true) {
+@main("Game type administration", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
         <div class="admin-header"><h1>Game types</h1><a class="admin-button" href="@controllers.routes.AdminController.newGameType()">Add game type</a></div>

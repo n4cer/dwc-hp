@@ -1,8 +1,8 @@
-@(clanwar: Clanwar, isAdmin: Boolean, previous: Clanwar, next: Clanwar)
+@(clanwar: Clanwar, isAdmin: Boolean, previous: Clanwar, next: Clanwar, messages: play.i18n.Messages)
 
-@main("Clanwar gegen " + clanwar.getEnemy(), "Ergebnis, Lineup, Maps und Bericht zum Clanwar der Doomwarriors gegen " + clanwar.getEnemy() + ".", controllers.routes.HomeController.clanwar(clanwar.getId()).url) {
+@main(messages.at("clanwar.title", clanwar.getEnemy()), messages, messages.at("clanwar.description", clanwar.getEnemy()), controllers.routes.HomeController.clanwar(clanwar.getId()).url) {
 <div class="mitteContent">
-    <h1>Clanwar gegen @clanwar.getEnemy()</h1>
+    <h1>@messages.at("clanwar.title", clanwar.getEnemy())</h1>
     @if(isAdmin) {
         <p><a href="@controllers.routes.AdminController.editClanwar(clanwar.getId())">Edit</a></p>
     }
@@ -23,13 +23,13 @@
             <div>
                 map: @score.getMap()<br>
                 <b>result:</b> @score.getDwcScore() : @score.getEnemyScore()<br>
-                
+
                 @if(score.getImages() != null) {
                     @for(image <- score.getImages()) {
-                    <img class="clanwar_pic bordered-image" src="@routes.HomeController.clanwarImage(image.getImage())" alt="Screenshot des Clanwars gegen @clanwar.getEnemy()" /><br>
+                    <img class="clanwar_pic bordered-image" src="@routes.HomeController.clanwarImage(image.getImage())" alt="@messages.at("clanwar.screenshotAlt", clanwar.getEnemy())" /><br>
                     }
                 } else {
-                kein Screenshot vorhanden :-(
+                @messages.at("clanwar.noScreenshot")
                 }
                 <br><br>
             </div>

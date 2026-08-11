@@ -1,7 +1,7 @@
-@(request: Http.Request, lineup: List[User])
+@(request: Http.Request, lineup: List[User], messages: play.i18n.Messages)
 @import scala.jdk.CollectionConverters._
 
-@main("Lineup administration", noindex = true) {
+@main("Lineup administration", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
         <div class="admin-header"><h1>Lineup</h1><a class="admin-button" href="@controllers.routes.AdminController.newLineupMember()">Add member</a></div>

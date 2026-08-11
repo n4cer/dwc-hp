@@ -33,6 +33,8 @@ import models.UserSquad;
 import play.api.Configuration;
 import play.cache.Cached;
 import play.cache.SyncCacheApi;
+import play.i18n.Messages;
+import play.i18n.MessagesApi;
 import play.libs.Json;
 import play.mvc.*;
 import play.twirl.api.Html;
@@ -46,16 +48,29 @@ public class HomeController extends Controller {
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
-    
-    @Cached(key = "index", duration = 600)
-    public Result index() {
+    @Inject MessagesApi messagesApi;
+
+    private Result cachedPage(String baseKey, Messages messages, int duration, java.util.function.Supplier<Html> render) {
+      String key = baseKey + "_" + messages.lang().code();
+      Optional<Html> hit = cache.get(key);
+      if (hit.isPresent()) return ok(hit.get());
+
+      Html html = render.get();
+      cache.set(key, html, duration);
+      return ok(html);
+    }
+
+    public Result index(Http.Request request) {
+        Messages messages = messagesApi.preferred(request);
         List<Clanwar> clanwars = Clanwar.find.query().setMaxRows(2).orderBy().desc("date").findList();
         List<News> news = News.find.query().setMaxRows(2).orderBy().desc(CONST_TIMESTAMP).findList();
-        
-        return ok(views.html.index.render(asScala(clanwars), asScala(news)));
+
+        return cachedPage("index", messages, 600,
+                () -> views.html.index.render(asScala(clanwars), asScala(news), messages));
     }
     
     public Result news(Http.Request request, int page) {
+      Messages messages = messagesApi.preferred(request);
       int newsCount = News.find.query().findCount();
       int pageCount = Math.max(1, (newsCount + NEWS_PAGE_SIZE - 1) / NEWS_PAGE_SIZE);
       int currentPage = Math.min(Math.max(page, 1), pageCount);
@@ -66,25 +81,27 @@ public class HomeController extends Controller {
               .findList();
       boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
 
-      return ok(views.html.news.render(news, currentPage, pageCount, isAdmin));
+      return ok(views.html.news.render(news, currentPage, pageCount, isAdmin, messages));
     }
-    
-    @Cached(key = "clanwars", duration = 1200)
-    public Result clanwars() {
+
+    public Result clanwars(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
       List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
-      
-      return ok(views.html.clanwars.render(asScala(clanwars)));
+
+      return cachedPage("clanwars", messages, 1200,
+              () -> views.html.clanwars.render(asScala(clanwars), messages));
     }
-    
+
     public Result clanwar(Http.Request request, Long id) {
+      Messages messages = messagesApi.preferred(request);
       boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
       if (!isAdmin) {
-        Optional<Html> cached = cache.get(clanwarCacheKey(id));
+        Optional<Html> cached = cache.get(clanwarCacheKey(id, messages.lang().code()));
         if (cached.isPresent()) return ok(cached.get());
       }
 
       Clanwar clanwar = Clanwar.find.byId(id);
-      if (clanwar == null) return notFound("Clanwar nicht gefunden");
+      if (clanwar == null) return notFound(messages.at("notFound.clanwar"));
 
       List<Clanwar> ordered = Clanwar.find.query().select("id, date, enemy").orderBy("date desc, id desc").findList();
       int index = -1;
@@ -94,14 +111,14 @@ public class HomeController extends Controller {
       Clanwar previous = index >= 0 && index + 1 < ordered.size() ? ordered.get(index + 1) : null;
       Clanwar next = index > 0 ? ordered.get(index - 1) : null;
 
-      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next);
-      if (!isAdmin) cache.set(clanwarCacheKey(id), html, CLANWAR_CACHE_DURATION);
+      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next, messages);
+      if (!isAdmin) cache.set(clanwarCacheKey(id, messages.lang().code()), html, CLANWAR_CACHE_DURATION);
 
       return ok(html);
     }
 
-    public static String clanwarCacheKey(Long id) {
-      return "clanwar_" + id;
+    public static String clanwarCacheKey(Long id, String langCode) {
+      return "clanwar_" + id + "_" + langCode;
     }
 
     private static final DateTimeFormatter CLANWAR_JSON_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -154,22 +171,22 @@ public class HomeController extends Controller {
       return node;
     }
 
-    @Cached(key = "lineup", duration = 600)
-    public Result lineup() {
+    public Result lineup(Http.Request request) {
+        Messages messages = messagesApi.preferred(request);
         List<Squad> squads = Squad.find.all();
         for (Squad squad : squads) {
             List<UserSquad> members = squad.getMembers();
             if (members != null) members.sort((a, b) -> compareMembershipDurationDesc(a.getMember(), b.getMember()));
         }
 
-        return ok(views.html.lineup.render(squads));
+        return cachedPage("lineup", messages, 600, () -> views.html.lineup.render(squads, messages));
     }
 
     private static final int LONG_TENURE_YEARS = 5;
     private static final int LONG_TENURE_MIN_CLANWARS = 25;
 
-    @Cached(key = "halloffame", duration = 600)
-    public Result hallOfFame() {
+    public Result hallOfFame(Http.Request request) {
+        Messages messages = messagesApi.preferred(request);
         List<User> founders = new ArrayList<>();
         List<User> leaders = new ArrayList<>();
         List<User> honorary = new ArrayList<>();
@@ -193,7 +210,8 @@ public class HomeController extends Controller {
         honorary.sort(HomeController::compareMembershipDurationDesc);
         longTenure.sort(HomeController::compareMembershipDurationDesc);
 
-        return ok(views.html.hallOfFame.render(founders, leaders, honorary, longTenure));
+        return cachedPage("halloffame", messages, 600,
+                () -> views.html.hallOfFame.render(founders, leaders, honorary, longTenure, messages));
     }
 
     private static long membershipYears(User member) {
@@ -225,9 +243,10 @@ public class HomeController extends Controller {
         return end.getTime() - member.getSince().getTime();
     }
 
-    public Result player(Long id) {
+    public Result player(Http.Request request, Long id) {
+        Messages messages = messagesApi.preferred(request);
         User player = User.find.byId(id);
-        if (player == null) return notFound("Spieler nicht gefunden");
+        if (player == null) return notFound(messages.at("notFound.player"));
 
         int wins = 0;
         int draws = 0;
@@ -252,7 +271,8 @@ public class HomeController extends Controller {
         int lossPct = roundToStep(losses, total);
         int winRatio = total > 0 ? Math.round(wins * 100f / total) : 0;
 
-        return ok(views.html.player.render(player, wins, draws, losses, winPct, drawPct, lossPct, winRatio, isLongTenureMember(player)));
+        return ok(views.html.player.render(player, wins, draws, losses, winPct, drawPct, lossPct, winRatio,
+                isLongTenureMember(player), messages));
     }
 
     private static final int STAT_BAR_STEP = 5;
@@ -262,45 +282,49 @@ public class HomeController extends Controller {
         return Math.round(value * 100f / total / STAT_BAR_STEP) * STAT_BAR_STEP;
     }
     
-    @Cached(key = "contact", duration = 2400)
-    public Result contact() {
-      return ok(views.html.contact.render());
+    public Result contact(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
+      return cachedPage("contact", messages, 2400, () -> views.html.contact.render(messages));
     }
-    
-    @Cached(key = "history", duration = 2400)
-    public Result history() {
+
+    public Result history(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
       List<History> entries = History.find.query().orderBy().desc(CONST_TIMESTAMP).findList();
-      
-      return ok(views.html.history.render(entries));
+
+      return cachedPage("history", messages, 2400, () -> views.html.history.render(entries, messages));
     }
-    
-    @Cached(key = "imprint", duration = 2400)
-    public Result imprint() {
+
+    public Result imprint(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
       String name = configuration.underlying().getString("owner.name");
       String street = configuration.underlying().getString("owner.street");
       String city = configuration.underlying().getString("owner.city");
       String email = configuration.underlying().getString("owner.email");
-      String emailEncoded = "";
-      for (int i = 0; i < email.length(); i++) {
-        emailEncoded += ("&#" + email.codePointAt(i) + ";");
-      }
-      
-      return ok(views.html.imprint.render(name, street, city, emailEncoded));
+      String emailEncoded = htmlEncodeEmail(email);
+
+      return cachedPage("imprint", messages, 2400,
+              () -> views.html.imprint.render(name, street, city, emailEncoded, messages));
     }
-    
-    @Cached(key = "privacy", duration = 2400)
-    public Result privacy() {
+
+    private static String htmlEncodeEmail(String email) {
+      StringBuilder encoded = new StringBuilder();
+      for (int i = 0; i < email.length(); i++) {
+        encoded.append("&#").append(email.codePointAt(i)).append(";");
+      }
+      return encoded.toString();
+    }
+
+    public Result privacy(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
       String name = configuration.underlying().getString("owner.name");
       String street = configuration.underlying().getString("owner.street");
       String city = configuration.underlying().getString("owner.city");
       String country = configuration.underlying().getString("privacy.country");
       String email = configuration.underlying().getString("privacy.email");
-      String emailEncoded = "";
-      for (int i = 0; i < email.length(); i++) {
-        emailEncoded += ("&#" + email.codePointAt(i) + ";");
-      }
-      
-      return ok(views.html.privacy.render(name, street, city, country, emailEncoded));
+      String emailEncoded = htmlEncodeEmail(email);
+
+      return cachedPage("privacy", messages, 2400,
+              () -> views.html.privacy.render(name, street, city, country, emailEncoded, messages));
     }
     
     @Cached(key = "randomPic", duration = 300)
@@ -353,14 +377,14 @@ public class HomeController extends Controller {
               && IMAGE_EXTENSIONS.contains(name.substring(separator + 1).toLowerCase(Locale.ROOT));
     }
     
-    @Cached(key = "pickup", duration = 2400)
-    public Result pickup() {
-      return ok(views.html.pickup.render());
+    public Result pickup(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
+      return cachedPage("pickup", messages, 2400, () -> views.html.pickup.render(messages));
     }
-    
-    @Cached(key = "todo", duration = 2400)
-    public Result todo() {
-        return ok(views.html.todo.render());
+
+    public Result todo(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
+      return cachedPage("todo", messages, 2400, () -> views.html.todo.render(messages));
     }
 
     @Cached(key = "robots", duration = 86400)

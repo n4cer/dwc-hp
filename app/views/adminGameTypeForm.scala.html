@@ -1,6 +1,6 @@
-@(request: Http.Request, item: GameType, error: String)
+@(request: Http.Request, item: GameType, error: String, messages: play.i18n.Messages)
 
-@main(if(item == null) "Add game type" else "Edit game type", noindex = true) {
+@main(if(item == null) "Add game type" else "Edit game type", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.gameTypeIndex()">&laquo; Back to game types</a></p>
         <h1>@if(item == null) { Add game type } else { Edit game type }</h1>

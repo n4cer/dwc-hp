@@ -1,6 +1,6 @@
-@(request: Http.Request, maps: List[models.Map])
+@(request: Http.Request, maps: List[models.Map], messages: play.i18n.Messages)
 
-@main("Map administration", noindex = true) {
+@main("Map administration", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
         <div class="admin-header"><h1>Maps</h1><a class="admin-button" href="@controllers.routes.AdminController.newMap()">Add map</a></div>

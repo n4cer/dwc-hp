@@ -1,12 +1,13 @@
-@(title: String, description: String = "Doomwarriors: deutscher Gaming-Clan mit News, Spielerprofilen und Clanwar-Archiv.", canonicalPath: String = "", noindex: Boolean = false)(content: Html)
+@(title: String, messages: play.i18n.Messages, description: String = "", canonicalPath: String = "", noindex: Boolean = false)(content: Html)
 
+@defining(if (description.nonEmpty) description else messages.at("meta.defaultDescription")) { resolvedDescription =>
 <!DOCTYPE html>
-<html lang="de">
+<html lang="@messages.lang().code()">
     <head>
         <title>Doomwarriors Clan - @title</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="@description" />
+        <meta name="description" content="@resolvedDescription" />
         @if(noindex) {
             <meta name="robots" content="noindex, nofollow" />
         }
@@ -17,18 +18,18 @@
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Doomwarriors Clan" />
         <meta property="og:title" content="Doomwarriors Clan - @title" />
-        <meta property="og:description" content="@description" />
+        <meta property="og:description" content="@resolvedDescription" />
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="icon" type="image/svg+xml" href="@routes.Assets.versioned("images/favicon.svg")">
     </head>
     <body id="body">
-        <div id="blockMain">    
+        <div id="blockMain">
             <div id="blockFullDocument">
                 <div id="blockMainInner">
                     <div id="blockTop">
                         <img src="@controllers.routes.Assets.versioned("images/dwc_header.jpg")" alt="Doomwarriors Clan" width="562" height="90" />
                     </div>
-                    
+
                     <div id="blockLeft">
                         <div class="linksTop"></div>
                         <div class="links">
@@ -48,7 +49,7 @@
                         </div>
                         <div class="linksBottom"></div>
                     </div>
-                    
+
                     <div id="blockMiddle">
                         <div class="mitteTop"></div>
                         <div class="mitte">
@@ -73,7 +74,7 @@
                                 <strong>Random Pics</strong><br />
                                 <br />
                                 <p class="text-center">
-                                    <a href="@routes.HomeController.randomPic" target="_blank" rel="noopener noreferrer"><img class="bordered-image" src="@routes.HomeController.randomPic" width="125" alt="Zufälliges Clanbild" /></a>
+                                    <a href="@routes.HomeController.randomPic" target="_blank" rel="noopener noreferrer"><img class="bordered-image" src="@routes.HomeController.randomPic" width="125" alt="@messages.at("layout.randomImageAlt")" /></a>
                                 </p>
                                 <br />
                             </div>
@@ -83,7 +84,7 @@
                         <div class="rechtsTop"></div>
                         <div class="rechts">
                             <div class="rechtsContent">
-                                leer
+                                @messages.at("layout.empty")
                             </div>
                         </div>
                         <div class="rechtsBottom"></div>
@@ -94,3 +95,4 @@
         <script src="@routes.Assets.versioned("javascripts/main.js")"></script>
     </body>
 </html>
+}

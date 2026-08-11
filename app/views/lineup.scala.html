@@ -1,9 +1,9 @@
-@(squads: List[Squad])
+@(squads: List[Squad], messages: play.i18n.Messages)
 
-@main("Spieler und Lineup", "Spieler, Mitglieder und Squads des Doomwarriors Clans.", controllers.routes.HomeController.lineup.url) {
+@main(messages.at("lineup.title"), messages, messages.at("lineup.description"), controllers.routes.HomeController.lineup.url) {
 <div class="mitteContent">
     <div>
-        <h1>Spieler und Lineup</h1>
+        <h1>@messages.at("lineup.title")</h1>
         <br /><br />
     </div>
     @for(squad <- squads) {

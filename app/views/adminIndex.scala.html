@@ -1,6 +1,6 @@
-@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long)
+@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long, messages: play.i18n.Messages)
 
-@main("Administration", noindex = true) {
+@main("Administration", messages, noindex = true) {
     <div class="admin-page">
         <div class="admin-header">
             <h1>Administration</h1>

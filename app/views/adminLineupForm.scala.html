@@ -1,7 +1,7 @@
-@(request: Http.Request, item: User, squads: List[Squad], error: String)
+@(request: Http.Request, item: User, squads: List[Squad], error: String, messages: play.i18n.Messages)
 @import scala.jdk.CollectionConverters._
 
-@main(if(item == null) "Add lineup member" else "Edit lineup member", noindex = true) {
+@main(if(item == null) "Add lineup member" else "Edit lineup member", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.lineupIndex()">&laquo; Back to lineup</a></p>
         <h1>@if(item == null) {Add lineup member} else {Edit lineup member}</h1>

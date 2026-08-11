@@ -3,25 +3,25 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET     /                           controllers.HomeController.index
+GET     /                           controllers.HomeController.index(request: Request)
 GET     /robots.txt                controllers.HomeController.robots
 GET     /sitemap.xml               controllers.HomeController.sitemap
 GET     /news                       controllers.HomeController.news(request: Request, page: Int ?= 1)
-GET     /clanwars                   controllers.HomeController.clanwars
+GET     /clanwars                   controllers.HomeController.clanwars(request: Request)
 GET     /clanwars.json               controllers.HomeController.clanwarsJson
 GET     /clanwar/:id                controllers.HomeController.clanwar(request: Request, id: Long)
-GET     /history                    controllers.HomeController.history
-GET     /lineup                     controllers.HomeController.lineup
-GET     /hall-of-fame                controllers.HomeController.hallOfFame
-GET     /player/:id                 controllers.HomeController.player(id: Long)
-GET     /contact                    controllers.HomeController.contact
-GET     /imprint                    controllers.HomeController.imprint()
-GET     /privacy                    controllers.HomeController.privacy()
-GET     /todo                       controllers.HomeController.todo
+GET     /history                    controllers.HomeController.history(request: Request)
+GET     /lineup                     controllers.HomeController.lineup(request: Request)
+GET     /hall-of-fame                controllers.HomeController.hallOfFame(request: Request)
+GET     /player/:id                 controllers.HomeController.player(request: Request, id: Long)
+GET     /contact                    controllers.HomeController.contact(request: Request)
+GET     /imprint                    controllers.HomeController.imprint(request: Request)
+GET     /privacy                    controllers.HomeController.privacy(request: Request)
+GET     /todo                       controllers.HomeController.todo(request: Request)
 GET     /random                     controllers.HomeController.randomPic
 GET     /images/clanwars/:file      controllers.HomeController.clanwarImage(file: String)
 GET     /images/lineup/:file        controllers.HomeController.lineupImage(file: String)
-GET     /q3pickup                   controllers.HomeController.pickup
+GET     /q3pickup                   controllers.HomeController.pickup(request: Request)
 
 # Administration
 GET     /admin/login                controllers.AdminController.login(request: Request)
