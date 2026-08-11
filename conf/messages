@@ -3,6 +3,7 @@
 meta.defaultDescription = Doomwarriors: deutscher Gaming-Clan mit News, Spielerprofilen und Clanwar-Archiv.
 layout.empty = leer
 layout.randomImageAlt = Zufälliges Clanbild
+layout.langSwitch.label = Sprache
 
 index.title = Deutscher Gaming-Clan
 index.description = Doomwarriors: News, Clanwars, Spieler und Geschichte des deutschen Gaming-Clans.

@@ -4,6 +4,7 @@
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index(request: Request)
+GET     /lang/:code                controllers.HomeController.setLanguage(code: String, to: String ?= "/")
 GET     /robots.txt                controllers.HomeController.robots
 GET     /sitemap.xml               controllers.HomeController.sitemap
 GET     /news                       controllers.HomeController.news(request: Request, page: Int ?= 1)
