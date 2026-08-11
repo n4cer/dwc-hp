@@ -2,43 +2,68 @@
 
 @main(messages.at("clanwar.title", clanwar.getEnemy()), messages, messages.at("clanwar.description", clanwar.getEnemy()), controllers.routes.HomeController.clanwar(clanwar.getId()).url) {
 <div class="mitteContent">
-    <h1>@messages.at("clanwar.title", clanwar.getEnemy())</h1>
     @if(isAdmin) {
         <p><a href="@controllers.routes.AdminController.editClanwar(clanwar.getId())">Edit</a></p>
     }
     <div class="clanwar-nav">
-        @if(previous != null) {
-            <a href="@controllers.routes.HomeController.clanwar(previous.getId())">&laquo; @previous.getDate().format("dd.MM.yyyy") vs. @previous.getEnemy()</a>
-        }
-        @if(previous != null && next != null) { | }
-        @if(next != null) {
-            <a href="@controllers.routes.HomeController.clanwar(next.getId())">@next.getDate().format("dd.MM.yyyy") vs. @next.getEnemy() &raquo;</a>
+        <div>
+            @if(previous != null) {
+                <a href="@controllers.routes.HomeController.clanwar(previous.getId())">&laquo; @previous.getDate().format("dd.MM.yyyy") vs. @previous.getEnemy()</a>
+            }
+        </div>
+        <div>
+            @if(next != null) {
+                <a href="@controllers.routes.HomeController.clanwar(next.getId())">@next.getDate().format("dd.MM.yyyy") vs. @next.getEnemy() &raquo;</a>
+            }
+        </div>
+    </div>
+
+    <div class="clanwar-detail-header">
+        <img class="clanwar-detail-flag" src="@controllers.routes.Assets.versioned("images/flags/" + clanwar.getFlag())" alt="@clanwar.getCountry().getCountry()" title="@clanwar.getCountry().getCountry()" />
+        <div class="clanwar-detail-title">
+            <h1>@messages.at("clanwar.title", clanwar.getEnemy())</h1>
+            <div class="clanwar-detail-meta">
+                @clanwar.getDate().format("dd.MM.yyyy") &middot; @clanwar.getLeague() &middot; @clanwar.getGame() (@clanwar.getGametype())
+            </div>
+        </div>
+        <div class="clanwar-detail-result" data-result-color="@clanwar.getColor()">
+            @clanwar.getResult()
+            <span class="clanwar-outcome">@messages.at("clanwar.outcome." + clanwar.getOutcome())</span>
+        </div>
+    </div>
+
+    <div class="clanwar-lineup">
+        @for(l <- clanwar.getLineups()) {
+            <a href="@controllers.routes.HomeController.player(l.getMember().getId())">@l.getMember().getNick()</a>
         }
     </div>
-    <br />
-    <div>
-        @clanwar.getDate().format("dd.MM.yyyy") - @clanwar.getLeague() vs. @clanwar.getEnemy()<br>
-        lineup: @for(l <- clanwar.getLineups()) { <a href="@controllers.routes.HomeController.player(l.getMember().getId())">@l.getMember().getNick()</a> } <br><br>
-        @for(score <- clanwar.getScores()) {
-            <div>
-                map: @score.getMap()<br>
-                <b>result:</b> @score.getDwcScore() : @score.getEnemyScore()<br>
 
-                @if(score.getImages() != null) {
-                    @for(image <- score.getImages()) {
-                    <img class="clanwar_pic bordered-image" src="@routes.HomeController.clanwarImage(image.getImage())" alt="@messages.at("clanwar.screenshotAlt", clanwar.getEnemy())" /><br>
-                    }
-                } else {
-                @messages.at("clanwar.noScreenshot")
-                }
-                <br><br>
+    <div class="clanwar-scores">
+    @for(score <- clanwar.getScores()) {
+        <div class="clanwar-score-card">
+            <div class="clanwar-score-head">
+                <span class="clanwar-score-map">@score.getMap()</span>
+                <span class="clanwar-score-value" data-result-color="@{
+                    if (score.getDwcScore() > score.getEnemyScore()) "#00B900"
+                    else if (score.getDwcScore() < score.getEnemyScore()) "#C10000"
+                    else "#FF5706"
+                }">@score.getDwcScore() : @score.getEnemyScore()</span>
             </div>
-        }
-        <br>
-        <div>
-            <b>report:</b><br />
-            <p>@clanwar.getReport()</p>
+
+            @if(score.getImages() != null) {
+                @for(image <- score.getImages()) {
+                <img class="clanwar_pic bordered-image" src="@routes.HomeController.clanwarImage(image.getImage())" alt="@messages.at("clanwar.screenshotAlt", clanwar.getEnemy())" /><br>
+                }
+            } else {
+            <p class="clanwar-no-screenshot">@messages.at("clanwar.noScreenshot")</p>
+            }
         </div>
+    }
+    </div>
+
+    <div class="clanwar-report">
+        <h2>@messages.at("clanwar.report")</h2>
+        <p>@clanwar.getReport()</p>
     </div>
 </div>
 }

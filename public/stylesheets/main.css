@@ -212,3 +212,37 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .admin-image-row {display:flex;align-items:center;gap:10px;margin:5px 0;}
 .admin-image-row input {margin:0;}
 .admin-images button,.remove-new-score {margin-top:6px;}
+
+/* Clanwar-Detailansicht */
+.clanwar-nav {display:flex;justify-content:space-between;gap:10px;margin:10px 0 14px;font-size:11px;}
+.clanwar-nav a {display:inline-block;padding:4px 9px;border:1px solid #ccc;background:#fafafa;}
+.clanwar-nav a:hover {border-color:#E2A612;}
+
+.clanwar-detail-header {display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border:1px solid #ccc;background:#fafafa;}
+.clanwar-detail-flag {height:32px;box-shadow:0 0 0 1px #ccc;flex-shrink:0;}
+.clanwar-detail-title {flex:1;min-width:0;}
+.clanwar-detail-title h1 {margin:0 0 4px;font-size:19px;}
+.clanwar-detail-meta {color:#555;font-size:11px;}
+.clanwar-detail-result {flex-shrink:0;text-align:center;padding:8px 18px;color:#fff;font-weight:bold;font-size:22px;line-height:1.1;min-width:80px;}
+.clanwar-detail-result .clanwar-outcome {display:block;margin-top:3px;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:.05em;}
+.clanwar-detail-result[data-result-color="#C10000"] {background-color:#C10000;}
+.clanwar-detail-result[data-result-color="#00B900"] {background-color:#00B900;}
+.clanwar-detail-result[data-result-color="#FF5706"] {background-color:#FF5706;}
+
+.clanwar-lineup {display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;}
+.clanwar-lineup a {display:inline-block;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:bold;background:#E2A612;color:#111;text-decoration:none;}
+.clanwar-lineup a:hover {background:#F2B622;color:#111;text-decoration:none;}
+
+.clanwar-scores {display:flex;flex-direction:column;gap:10px;margin:0 0 16px;}
+.clanwar-score-card {border:1px solid #ccc;background:#fafafa;padding:10px 12px;}
+.clanwar-score-head {display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.clanwar-score-map {font-weight:bold;}
+.clanwar-score-value {display:inline-block;padding:2px 10px;color:#fff;font-weight:bold;}
+.clanwar-score-value[data-result-color="#C10000"] {background-color:#C10000;}
+.clanwar-score-value[data-result-color="#00B900"] {background-color:#00B900;}
+.clanwar-score-value[data-result-color="#FF5706"] {background-color:#FF5706;}
+.clanwar-no-screenshot {color:#666;}
+
+.clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;background:#fafafa;}
+.clanwar-report h2 {margin:0 0 8px;font-size:14px;}
+.clanwar-report p {white-space:pre-line;}
