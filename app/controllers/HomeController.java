@@ -27,6 +27,7 @@ import models.History;
 import models.MatchLineup;
 import models.News;
 import models.Score;
+import models.ScoreImage;
 import models.Squad;
 import models.User;
 import models.UserSquad;
@@ -166,6 +167,15 @@ public class HomeController extends Controller {
           scoreNode.put("map", score.getMap() != null ? score.getMap().getMap() : null);
           scoreNode.put("dwcScore", score.getDwcScore());
           scoreNode.put("enemyScore", score.getEnemyScore());
+
+          ArrayNode screenshots = Json.newArray();
+          if (score.getImages() != null) {
+            for (ScoreImage image : score.getImages()) {
+              screenshots.add(routes.HomeController.clanwarImage(image.getImage()).url());
+            }
+          }
+          scoreNode.set("screenshots", screenshots);
+
           scores.add(scoreNode);
         }
       }
