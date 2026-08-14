@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.inject.Inject;
 
 import models.Clanwar;
+import models.ClanwarStats;
 import models.History;
 import models.MatchLineup;
 import models.News;
@@ -99,9 +100,10 @@ public class HomeController extends Controller {
     public Result clanwars(Http.Request request) {
       Messages messages = messagesApi.preferred(request);
       List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
+      ClanwarStats stats = ClanwarStats.from(clanwars);
 
       return cachedPage("clanwars", messages, 1200,
-              () -> views.html.clanwars.render(asScala(clanwars), messages));
+              () -> views.html.clanwars.render(asScala(clanwars), stats, messages));
     }
 
     public Result clanwar(Http.Request request, Long id) {

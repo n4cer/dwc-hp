@@ -18,6 +18,18 @@ news.pagination.next = Next »
 
 clanwars.title = Clan-War Archive
 clanwars.description = Results and reports of past Doomwarriors clan wars.
+clanwars.stats.title = Statistics
+clanwars.stats.category = Category
+clanwars.stats.overall = Overall
+clanwars.stats.byGame = By game
+clanwars.stats.byGametype = By game type
+clanwars.stats.game = Game
+clanwars.stats.gametype = Game type
+clanwars.stats.wins = Wins
+clanwars.stats.losses = Losses
+clanwars.stats.draws = Draws
+clanwars.stats.total = Matches
+clanwars.stats.winrate = Win rate
 
 clanwar.title = Clan war vs. {0}
 clanwar.description = Result, lineup, maps and report for the Doomwarriors clan war vs. {0}.
