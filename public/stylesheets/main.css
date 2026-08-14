@@ -130,6 +130,10 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-table .result[data-result-color="#C10000"] {background-color:#C10000;}
 .clanwar-table .result[data-result-color="#00B900"] {background-color:#00B900;}
 .clanwar-table .result[data-result-color="#FF5706"] {background-color:#FF5706;}
+.clanwar-stats {margin-bottom:15px;}
+.clanwar-stats td,.clanwar-stats th {text-align:center;}
+.clanwar-stats th:first-child,.clanwar-stats td:first-child {text-align:left;}
+.clanwar-stats-overall {font-weight:bold;}
 .visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .member-inactive {color:#999;opacity:0.6;}
 .member-inactive a {color:#999;}

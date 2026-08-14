@@ -1,9 +1,76 @@
-@(clanwars: Seq[Clanwar], messages: play.i18n.Messages)
+@(clanwars: Seq[Clanwar], stats: ClanwarStats, messages: play.i18n.Messages)
+
+@statsRow(entry: ClanwarStats.Entry) = {
+    <tr>
+        <td>@entry.getLabel()</td>
+        <td>@entry.getWins()</td>
+        <td>@entry.getLosses()</td>
+        <td>@entry.getDraws()</td>
+        <td>@entry.getTotal()</td>
+        <td>@entry.getWinRate()%</td>
+    </tr>
+}
 
 @main(messages.at("clanwars.title"), messages, messages.at("clanwars.description"), controllers.routes.HomeController.clanwars.url) {
     <h1>@messages.at("clanwars.title")</h1>
     <div class="mitteContent">
         <div class="mitteContent">
+            <h2>@messages.at("clanwars.stats.title")</h2>
+            <table class="text clanwar-table clanwar-stats">
+                <thead><tr>
+                    <th scope="col">@messages.at("clanwars.stats.category")</th>
+                    <th scope="col">@messages.at("clanwars.stats.wins")</th>
+                    <th scope="col">@messages.at("clanwars.stats.losses")</th>
+                    <th scope="col">@messages.at("clanwars.stats.draws")</th>
+                    <th scope="col">@messages.at("clanwars.stats.total")</th>
+                    <th scope="col">@messages.at("clanwars.stats.winrate")</th>
+                </tr></thead>
+                <tbody>
+                    <tr class="clanwar-stats-overall">
+                        <td>@messages.at("clanwars.stats.overall")</td>
+                        <td>@stats.getOverall.getWins()</td>
+                        <td>@stats.getOverall.getLosses()</td>
+                        <td>@stats.getOverall.getDraws()</td>
+                        <td>@stats.getOverall.getTotal()</td>
+                        <td>@stats.getOverall.getWinRate()%</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>@messages.at("clanwars.stats.byGame")</h3>
+            <table class="text clanwar-table clanwar-stats">
+                <thead><tr>
+                    <th scope="col">@messages.at("clanwars.stats.game")</th>
+                    <th scope="col">@messages.at("clanwars.stats.wins")</th>
+                    <th scope="col">@messages.at("clanwars.stats.losses")</th>
+                    <th scope="col">@messages.at("clanwars.stats.draws")</th>
+                    <th scope="col">@messages.at("clanwars.stats.total")</th>
+                    <th scope="col">@messages.at("clanwars.stats.winrate")</th>
+                </tr></thead>
+                <tbody>
+                @for(entry <- stats.getByGame) {
+                    @statsRow(entry)
+                }
+                </tbody>
+            </table>
+
+            <h3>@messages.at("clanwars.stats.byGametype")</h3>
+            <table class="text clanwar-table clanwar-stats">
+                <thead><tr>
+                    <th scope="col">@messages.at("clanwars.stats.gametype")</th>
+                    <th scope="col">@messages.at("clanwars.stats.wins")</th>
+                    <th scope="col">@messages.at("clanwars.stats.losses")</th>
+                    <th scope="col">@messages.at("clanwars.stats.draws")</th>
+                    <th scope="col">@messages.at("clanwars.stats.total")</th>
+                    <th scope="col">@messages.at("clanwars.stats.winrate")</th>
+                </tr></thead>
+                <tbody>
+                @for(entry <- stats.getByGametype) {
+                    @statsRow(entry)
+                }
+                </tbody>
+            </table>
+
             <table class="text clanwar-table">
                 <thead><tr>
                     <th scope="col">date</th>
