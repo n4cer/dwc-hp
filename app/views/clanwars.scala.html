@@ -15,7 +15,8 @@
     <h1>@messages.at("clanwars.title")</h1>
     <div class="mitteContent">
         <div class="mitteContent">
-            <h2>@messages.at("clanwars.stats.title")</h2>
+            <details class="clanwar-stats-section">
+            <summary class="clanwar-stats-summary">@messages.at("clanwars.stats.title")</summary>
             <table class="text clanwar-table clanwar-stats">
                 <thead><tr>
                     <th scope="col">@messages.at("clanwars.stats.category")</th>
@@ -70,6 +71,7 @@
                 }
                 </tbody>
             </table>
+            </details>
 
             <table class="text clanwar-table">
                 <thead><tr>

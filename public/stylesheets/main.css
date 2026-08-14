@@ -130,6 +130,8 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-table .result[data-result-color="#C10000"] {background-color:#C10000;}
 .clanwar-table .result[data-result-color="#00B900"] {background-color:#00B900;}
 .clanwar-table .result[data-result-color="#FF5706"] {background-color:#FF5706;}
+.clanwar-stats-section {margin-bottom:15px;}
+.clanwar-stats-summary {font-size:1.3em;font-weight:bold;cursor:pointer;margin:10px 0;}
 .clanwar-stats {margin-bottom:15px;}
 .clanwar-stats td,.clanwar-stats th {text-align:center;}
 .clanwar-stats th:first-child,.clanwar-stats td:first-child {text-align:left;}
