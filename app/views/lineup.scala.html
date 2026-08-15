@@ -1,6 +1,6 @@
 @(squads: List[Squad], messages: play.i18n.Messages)
 
-@main(messages.at("lineup.title"), messages, messages.at("lineup.description"), controllers.routes.HomeController.lineup.url) {
+@main(messages.at("lineup.title"), messages, messages.at("lineup.description"), controllers.routes.HomeController.lineup().url) {
 <div class="mitteContent">
     <div>
         <h1>@messages.at("lineup.title")</h1>

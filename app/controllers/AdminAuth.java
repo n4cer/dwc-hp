@@ -12,7 +12,7 @@ public final class AdminAuth {
     private AdminAuth() { }
 
     public static boolean isAuthenticated(Http.Request request, Configuration configuration) {
-        return credentialsConfigured(configuration) && request.session().getOptional(ADMIN_SESSION)
+        return credentialsConfigured(configuration) && request.session().get(ADMIN_SESSION)
                 .filter(value -> secureEquals(value, configured(configuration, "admin.username"))).isPresent();
     }
 

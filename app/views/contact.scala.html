@@ -1,6 +1,6 @@
 @(messages: play.i18n.Messages)
 
-@main(messages.at("contact.title"), messages, messages.at("contact.description"), controllers.routes.HomeController.contact.url) {
+@main(messages.at("contact.title"), messages, messages.at("contact.description"), controllers.routes.HomeController.contact().url) {
     <div class="mitteContent">
         <h1>@messages.at("contact.heading")</h1>
         <a href="https://discordapp.com/download" target="_blank" rel="noopener noreferrer">

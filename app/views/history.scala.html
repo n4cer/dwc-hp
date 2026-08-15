@@ -1,6 +1,6 @@
 @(entries : List[History], messages: play.i18n.Messages)
 
-@main(messages.at("history.title"), messages, messages.at("history.description"), controllers.routes.HomeController.history.url) {
+@main(messages.at("history.title"), messages, messages.at("history.description"), controllers.routes.HomeController.history().url) {
     <div class="mitteContent">
         <h1>@messages.at("history.heading")</h1>
         @for(entry <- entries) {

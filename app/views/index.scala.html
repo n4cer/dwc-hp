@@ -1,6 +1,6 @@
 @(clanwars: Seq[Clanwar], news: Seq[News], messages: play.i18n.Messages)
 
-@main(messages.at("index.title"), messages, messages.at("index.description"), controllers.routes.HomeController.index.url) {
+@main(messages.at("index.title"), messages, messages.at("index.description"), controllers.routes.HomeController.index().url) {
     <h1>@messages.at("index.welcome")</h1>
     <br>
     <div class="mitteContent">
