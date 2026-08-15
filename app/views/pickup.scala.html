@@ -1,6 +1,6 @@
 @(messages: play.i18n.Messages)
 
-@main(messages.at("pickup.title"), messages, messages.at("pickup.description"), controllers.routes.HomeController.pickup.url) {
+@main(messages.at("pickup.title"), messages, messages.at("pickup.description"), controllers.routes.HomeController.pickup().url) {
   <div class="mitteContent">
     <h1>@messages.at("pickup.heading")</h1>
     <br><br>
@@ -11,7 +11,7 @@
     <br>
     <h2>@messages.at("pickup.spontanTitle")</h2>
     <br>
-    <p>@messages.at("pickup.spontanPrefix") <a href="@routes.HomeController.contact">Discord</a> @messages.at("pickup.spontanMiddle1")<b>!add duel/tdm/ctf</b>@messages.at("pickup.spontanMiddle2")<br>
+    <p>@messages.at("pickup.spontanPrefix") <a href="@routes.HomeController.contact()">Discord</a> @messages.at("pickup.spontanMiddle1")<b>!add duel/tdm/ctf</b>@messages.at("pickup.spontanMiddle2")<br>
         <br>
         @messages.at("pickup.commandsPrefix") <a target="_blank" rel="noopener noreferrer" href="https://gitlab.com/pubobot-discord/PUBobot-discord/blob/master/commands.md">commands</a></p>
   </div>

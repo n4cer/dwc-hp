@@ -4,7 +4,7 @@
 <div class="mitteContent">
     <h1>@member.getNick()</h1>
     <div>
-        <a href="@controllers.routes.HomeController.lineup">&gt;&gt;@messages.at("player.back")&lt;&lt;</a>
+        <a href="@controllers.routes.HomeController.lineup()">&gt;&gt;@messages.at("player.back")&lt;&lt;</a>
     </div>
     <br />
     <img class="bordered-image" src="@routes.HomeController.lineupImage(member.getImage())" width="76" height="103" alt="@member.getNick()"><br />

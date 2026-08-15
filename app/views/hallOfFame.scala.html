@@ -1,6 +1,6 @@
 @(founders: List[User], leaders: List[User], honorary: List[User], longTenure: List[User], messages: play.i18n.Messages)
 
-@main("Hall of Fame", messages, messages.at("halloffame.description"), controllers.routes.HomeController.hallOfFame.url) {
+@main("Hall of Fame", messages, messages.at("halloffame.description"), controllers.routes.HomeController.hallOfFame().url) {
 <div class="mitteContent">
     <div>
         <h1>Hall of Fame</h1>
