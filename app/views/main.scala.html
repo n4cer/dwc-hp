@@ -4,6 +4,7 @@
 <!DOCTYPE html>
 <html lang="@messages.lang().code()">
     <head>
+        <script src="@routes.Assets.versioned("javascripts/theme-init.js")"></script>
         <title>Doomwarriors Clan - @title</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,6 +32,17 @@
                     </div>
 
                     <div id="blockLeft">
+                        <div class="linksTop"></div>
+                        <div class="links">
+                            <div class="linksContent">
+                                <strong>@messages.at("layout.themeSwitch.label")</strong><br />
+                                <p class="theme-switch">
+                                    <a href="#" data-theme-choice="auto">@messages.at("layout.themeSwitch.auto")</a> | <a href="#" data-theme-choice="light">@messages.at("layout.themeSwitch.light")</a> | <a href="#" data-theme-choice="dark">@messages.at("layout.themeSwitch.dark")</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="linksBottom"></div>
+                        <br />
                         @if(canonicalPath.nonEmpty) {
                             <div class="linksTop"></div>
                             <div class="links">

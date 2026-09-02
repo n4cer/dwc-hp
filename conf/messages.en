@@ -4,6 +4,10 @@ meta.defaultDescription = Doomwarriors: German gaming clan with news, player pro
 layout.empty = empty
 layout.randomImageAlt = Random clan image
 layout.langSwitch.label = Language
+layout.themeSwitch.label = Appearance
+layout.themeSwitch.auto = Auto
+layout.themeSwitch.light = Light
+layout.themeSwitch.dark = Dark
 
 index.title = German Gaming Clan
 index.description = Doomwarriors: news, clan wars, players and history of the German gaming clan.
