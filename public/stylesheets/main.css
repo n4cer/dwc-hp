@@ -2,9 +2,83 @@
 
 *                    {margin:0px 0px 0px 0px;padding:0px 0px 0px 0px;}
 
-#body                {background-color:#6c6c6c; height:100%;}
+/* Theme tokens - light (default) */
+:root {
+    --dwc-bg-page: #6c6c6c;
+    --dwc-bg-main: #E2E2E2;
+    --dwc-surface: #ffffff;
+    --dwc-surface-alt: #fafafa;
+    --dwc-box-underlay: transparent;
+    --dwc-box-img-small-top: url(../images/white_small_top.gif);
+    --dwc-box-img-small-main: url(../images/white_small_main.gif);
+    --dwc-box-img-small-bottom: url(../images/white_small_bottom.gif);
+    --dwc-box-img-big-top: url(../images/white_big_top.gif);
+    --dwc-box-img-big-main: url(../images/white_big_main.gif);
+    --dwc-box-img-big-bottom: url(../images/white_big_bottom.gif);
+    --dwc-text: #292929;
+    --dwc-text-muted: #666666;
+    --dwc-border: #cccccc;
+    --dwc-border-strong: #aaaaaa;
+    --dwc-hr: #AEA794;
+    --dwc-input-bg: #ffffff;
+    --dwc-q3-black: #000000;
+    --dwc-error-bg: #f9dddd;
+    --dwc-success-bg: #e0f2df;
+}
 
-body                 {font-family:Arial, Sans-serif, Helvetica;font-size:11px;font-weight:normal;line-height:14px}
+/* Theme tokens - dark, automatic via OS/browser preference (unless overridden) */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --dwc-bg-page: #101010;
+        --dwc-bg-main: #181818;
+        --dwc-surface: #242424;
+        --dwc-surface-alt: #2c2c2c;
+        --dwc-box-underlay: var(--dwc-surface);
+        --dwc-box-img-small-top: none;
+        --dwc-box-img-small-main: none;
+        --dwc-box-img-small-bottom: none;
+        --dwc-box-img-big-top: none;
+        --dwc-box-img-big-main: none;
+        --dwc-box-img-big-bottom: none;
+        --dwc-text: #dcdcdc;
+        --dwc-text-muted: #9a9a9a;
+        --dwc-border: #3a3a3a;
+        --dwc-border-strong: #555555;
+        --dwc-hr: #3a3a3a;
+        --dwc-input-bg: #1c1c1c;
+        --dwc-q3-black: #e8e8e8;
+        --dwc-error-bg: #3a1f1f;
+        --dwc-success-bg: #1f3a20;
+    }
+}
+
+/* Theme tokens - dark, explicit choice via the theme switcher (overrides the OS preference either way) */
+:root[data-theme="dark"] {
+    --dwc-bg-page: #101010;
+    --dwc-bg-main: #181818;
+    --dwc-surface: #242424;
+    --dwc-surface-alt: #2c2c2c;
+    --dwc-box-underlay: var(--dwc-surface);
+    --dwc-box-img-small-top: none;
+    --dwc-box-img-small-main: none;
+    --dwc-box-img-small-bottom: none;
+    --dwc-box-img-big-top: none;
+    --dwc-box-img-big-main: none;
+    --dwc-box-img-big-bottom: none;
+    --dwc-text: #dcdcdc;
+    --dwc-text-muted: #9a9a9a;
+    --dwc-border: #3a3a3a;
+    --dwc-border-strong: #555555;
+    --dwc-hr: #3a3a3a;
+    --dwc-input-bg: #1c1c1c;
+    --dwc-q3-black: #e8e8e8;
+    --dwc-error-bg: #3a1f1f;
+    --dwc-success-bg: #1f3a20;
+}
+
+#body                {background-color:var(--dwc-bg-page); height:100%;}
+
+body                 {font-family:Arial, Sans-serif, Helvetica;font-size:11px;font-weight:normal;line-height:14px;color:var(--dwc-text);}
 
 div                  {}
 span                 {}
@@ -12,7 +86,7 @@ iframe               {border:none}
 h1                   {margin: 5px 0;}
 
 /* Horizontale Linien */
-hr                   {background-color:#AEA794;color:#AEA794;height:1px;border-style:none}
+hr                   {background-color:var(--dwc-hr);color:var(--dwc-hr);height:1px;border-style:none}
 
 /* Links */
 
@@ -26,7 +100,7 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 /* Grundgerüst */
 
 #blockFullDocument   {width:100%;height:100%; vertical-align:middle;}
-#blockMain           {width:1160px;min-height:1024px;background-color:#E2E2E2;margin:0 auto;}
+#blockMain           {width:1160px;min-height:1024px;background-color:var(--dwc-bg-main);margin:0 auto;}
 #blockMainInner      {padding-left:20px; padding-right:10px;}
 #blockTop            {width:1130px;height:157px;}
 #blockTop img        {margin: auto; display: block;}
@@ -35,24 +109,28 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 #blockRight          {float:left;width:160px;min-height:662px;}
 #blockFooter         {width:1150px;height:40px;margin:0 auto;text-align:right;padding-top:10px;}
 
+/* Theme switcher / language switch */
+.lang-switch strong  {color:var(--dwc-text);}
+.theme-switch a.active {color:var(--dwc-text);font-weight:bold;text-decoration:none;cursor:default;}
+
 /* links */
-.linksTop               {width:150px;height:10px;background:url(../images/white_small_top.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
-.links                  {width:150px;background:url(../images/white_small_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.linksTop               {width:150px;height:10px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-small-top);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.links                  {width:150px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-small-main);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
 .linksContent           {width:140px;padding-left:3px;padding-right:7px;}
-.linksBottom            {width:150px;height:10px;background:url(../images/white_small_bottom.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.linksBottom            {width:150px;height:10px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-small-bottom);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
 
 /* mitte */
-.mitteTop               {width:790px;height:10px;background:url(../images/white_big_top.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
-.mitte                  {width:790px;min-height:524px;background:url(../images/white_big_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:auto;}
-.mittesmall             {width:790px;background:url(../images/white_big_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:auto;}
+.mitteTop               {width:790px;height:10px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-big-top);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.mitte                  {width:790px;min-height:524px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-big-main);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:auto;}
+.mittesmall             {width:790px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-big-main);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:auto;}
 .mitteContent           {width:755px;padding-left:3px;padding-right:7px;}
-.mitteBottom            {width:790px;height:10px;background:url(../images/white_big_bottom.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.mitteBottom            {width:790px;height:10px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-big-bottom);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
 
 /* rechts */
-.rechtsTop               {width:150px;height:10px;background:url(../images/white_small_top.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
-.rechts                  {width:150px;background:url(../images/white_small_main.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.rechtsTop               {width:150px;height:10px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-small-top);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.rechts                  {width:150px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-small-main);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
 .rechtsContent           {width:140px;padding-left:3px;padding-right:7px;}
-.rechtsBottom            {width:150px;height:10px;background:url(../images/white_small_bottom.gif);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
+.rechtsBottom            {width:150px;height:10px;background-color:var(--dwc-box-underlay);background-image:var(--dwc-box-img-small-bottom);background-repeat:repeat-y;margin: 0px 0px 0px 0px;overflow:hidden;}
 
 .container {
     min-height: 100%;
@@ -68,7 +146,7 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .privacy-page {
     box-sizing:border-box;
     padding:12px 18px 28px;
-    color:#292929;
+    color:var(--dwc-text);
     font-size:13px;
     line-height:1.55;
 }
@@ -76,7 +154,7 @@ a:hover              {color:#F2B622;text-decoration:underline;}
     margin:0 0 24px;
     padding:20px 22px;
     border-top:4px solid #E2A612;
-    background:#f2f2f2;
+    background:var(--dwc-surface-alt);
     box-shadow:0 1px 3px rgba(0,0,0,.12);
 }
 .privacy-kicker {
@@ -90,17 +168,17 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 }
 .privacy-page .privacy-header h1 {
     margin:0 0 9px;
-    color:#222;
+    color:var(--dwc-text);
     font-size:27px;
     line-height:1.15;
 }
 .privacy-intro {max-width:650px;font-size:14px;line-height:1.55;}
-.privacy-updated {margin-top:10px;color:#666;font-size:11px;}
+.privacy-updated {margin-top:10px;color:var(--dwc-text-muted);font-size:11px;}
 .privacy-page h2 {
     margin:25px 0 10px;
     padding:5px 0 5px 10px;
     border-left:4px solid #E2A612;
-    color:#333;
+    color:var(--dwc-text);
     font-size:17px;
     line-height:1.3;
 }
@@ -111,9 +189,9 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .privacy-rights {
     margin-top:28px;
     padding:1px 18px 10px;
-    border:1px solid #d5d5d5;
+    border:1px solid var(--dwc-border);
     border-radius:3px;
-    background:#fafafa;
+    background:var(--dwc-surface-alt);
 }
 .privacy-rights h2 {margin-top:15px;}
 
@@ -122,7 +200,7 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .text-center {text-align:center;}
 .text-justify {text-align:justify;}
 .pagination {display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0 10px;font-weight:bold;}
-.pagination span {color:#555;}
+.pagination span {color:var(--dwc-text-muted);}
 .clanwar-table {border-collapse:separate;border-spacing:1px;width:100%;}
 .clanwar-table th,.clanwar-table td {padding:2px;}
 .clanwar-table th {text-align:left;}
@@ -137,11 +215,11 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-stats th:first-child,.clanwar-stats td:first-child {text-align:left;}
 .clanwar-stats-overall {font-weight:bold;}
 .visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-.member-inactive {color:#999;opacity:0.6;}
-.member-inactive a {color:#999;}
+.member-inactive {color:var(--dwc-text-muted);opacity:0.6;}
+.member-inactive a {color:var(--dwc-text-muted);}
 .member-inactive a:hover {color:#777;}
 
-.q3.black {color: black;}
+.q3.black {color: var(--dwc-q3-black);}
 .q3.red {color: red;}
 .q3.green {color: green;}
 .q3.yellow {color: #E2A612;}
@@ -163,14 +241,14 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 
 .player-stats {margin-top:6px;}
 .stat-cards {display:flex;flex-wrap:wrap;gap:10px;margin:6px 0;}
-.stat-card {min-width:90px;padding:10px 14px;border:1px solid #ccc;background:#fafafa;text-align:center;}
+.stat-card {min-width:90px;padding:10px 14px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);text-align:center;}
 .stat-card .stat-value {display:block;font-size:22px;font-weight:bold;}
-.stat-card .stat-label {display:block;font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.03em;}
+.stat-card .stat-label {display:block;font-size:10px;color:var(--dwc-text-muted);text-transform:uppercase;letter-spacing:.03em;}
 .stat-card.stat-win .stat-value {color:#00B900;}
 .stat-card.stat-draw .stat-value {color:#E2A612;}
 .stat-card.stat-loss .stat-value {color:#C10000;}
 .stat-card.stat-ratio .stat-value {color:#E2A612;}
-.stat-bar {display:flex;width:100%;max-width:400px;height:10px;overflow:hidden;border:1px solid #ccc;margin-top:6px;}
+.stat-bar {display:flex;width:100%;max-width:400px;height:10px;overflow:hidden;border:1px solid var(--dwc-border);margin-top:6px;}
 .stat-bar > div {height:100%;}
 .stat-bar-win {background:#00B900;}
 .stat-bar-draw {background:#FF5706;}
@@ -187,31 +265,31 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .admin-page section {margin-top:28px;}
 .admin-header {display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .admin-page label {display:block;font-weight:bold;margin:12px 0;}
-.admin-page input,.admin-page select,.admin-page textarea {box-sizing:border-box;display:block;width:100%;margin-top:4px;padding:7px;border:1px solid #aaa;background:#fff;font:inherit;}
+.admin-page input,.admin-page select,.admin-page textarea {box-sizing:border-box;display:block;width:100%;margin-top:4px;padding:7px;border:1px solid var(--dwc-border-strong);background:var(--dwc-input-bg);color:var(--dwc-text);font:inherit;}
 .admin-page textarea {resize:vertical;}
 .admin-grid {display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
 .admin-page button,.admin-button {display:inline-block;border:0;background:#E2A612;color:#111;padding:7px 12px;font-weight:bold;cursor:pointer;}
-.admin-page button.secondary {background:#ddd;}
+.admin-page button.secondary {background:var(--dwc-border);color:var(--dwc-text);}
 .admin-actions {display:flex;align-items:center;gap:16px;margin-top:16px;}
 .admin-table {border-collapse:collapse;width:100%;}
-.admin-table th,.admin-table td {border-bottom:1px solid #ccc;padding:6px;text-align:left;vertical-align:top;}
+.admin-table th,.admin-table td {border-bottom:1px solid var(--dwc-border);padding:6px;text-align:left;vertical-align:top;}
 .admin-message {margin:10px 0;padding:8px;border:1px solid;}
-.admin-message.error {background:#f9dddd;border-color:#b33;}
-.admin-message.success {background:#e0f2df;border-color:#4b8b45;}
-.admin-hint {color:#666;font-size:11px;}
+.admin-message.error {background:var(--dwc-error-bg);border-color:#b33;}
+.admin-message.success {background:var(--dwc-success-bg);border-color:#4b8b45;}
+.admin-hint {color:var(--dwc-text-muted);font-size:11px;}
 .admin-login {max-width:420px;}
 .admin-back {margin-bottom:16px;}
 .admin-dashboard {display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:20px;}
-.admin-card {display:block;border:1px solid #ccc;background:#fafafa;padding:14px;text-decoration:none;color:inherit;}
+.admin-card {display:block;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);padding:14px;text-decoration:none;color:inherit;}
 .admin-card:hover {border-color:#E2A612;}
 .admin-card h2 {margin:0 0 6px;font-size:14px;}
 .admin-card-count {margin:0;font-size:24px;font-weight:bold;}
-.admin-fieldset {border:1px solid #bbb;margin:20px 0;padding:12px;}
+.admin-fieldset {border:1px solid var(--dwc-border-strong);margin:20px 0;padding:12px;}
 .admin-fieldset legend {font-weight:bold;padding:0 6px;}
 .admin-check-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:4px 12px;}
 .admin-page label.admin-check {display:flex;align-items:center;gap:5px;margin:3px 0;font-weight:normal;}
 .admin-page .admin-check input {display:inline-block;width:auto;margin:0;}
-.admin-score-row {border-bottom:1px solid #bbb;margin-bottom:15px;padding-bottom:15px;}
+.admin-score-row {border-bottom:1px solid var(--dwc-border-strong);margin-bottom:15px;padding-bottom:15px;}
 .admin-score-fields {grid-template-columns:2fr 1fr 1fr auto;align-items:end;}
 .admin-delete {padding-bottom:8px;}
 .admin-images {margin:5px 0 10px;}
@@ -221,14 +299,14 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 
 /* Clanwar-Detailansicht */
 .clanwar-nav {display:flex;justify-content:space-between;gap:10px;margin:10px 0 14px;font-size:11px;}
-.clanwar-nav a {display:inline-block;padding:4px 9px;border:1px solid #ccc;background:#fafafa;}
+.clanwar-nav a {display:inline-block;padding:4px 9px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);}
 .clanwar-nav a:hover {border-color:#E2A612;}
 
-.clanwar-detail-header {display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border:1px solid #ccc;background:#fafafa;}
-.clanwar-detail-flag {height:32px;box-shadow:0 0 0 1px #ccc;flex-shrink:0;}
+.clanwar-detail-header {display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);}
+.clanwar-detail-flag {height:32px;box-shadow:0 0 0 1px var(--dwc-border);flex-shrink:0;}
 .clanwar-detail-title {flex:1;min-width:0;}
 .clanwar-detail-title h1 {margin:0 0 4px;font-size:19px;}
-.clanwar-detail-meta {color:#555;font-size:11px;}
+.clanwar-detail-meta {color:var(--dwc-text-muted);font-size:11px;}
 .clanwar-detail-result {flex-shrink:0;text-align:center;padding:8px 18px;color:#fff;font-weight:bold;font-size:22px;line-height:1.1;min-width:80px;}
 .clanwar-detail-result .clanwar-outcome {display:block;margin-top:3px;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:.05em;}
 .clanwar-detail-result[data-result-color="#C10000"] {background-color:#C10000;}
@@ -240,15 +318,15 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-lineup a:hover {background:#F2B622;color:#111;text-decoration:none;}
 
 .clanwar-scores {display:flex;flex-direction:column;gap:10px;margin:0 0 16px;}
-.clanwar-score-card {border:1px solid #ccc;background:#fafafa;padding:10px 12px;}
+.clanwar-score-card {border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);padding:10px 12px;}
 .clanwar-score-head {display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .clanwar-score-map {font-weight:bold;}
 .clanwar-score-value {display:inline-block;padding:2px 10px;color:#fff;font-weight:bold;}
 .clanwar-score-value[data-result-color="#C10000"] {background-color:#C10000;}
 .clanwar-score-value[data-result-color="#00B900"] {background-color:#00B900;}
 .clanwar-score-value[data-result-color="#FF5706"] {background-color:#FF5706;}
-.clanwar-no-screenshot {color:#666;}
+.clanwar-no-screenshot {color:var(--dwc-text-muted);}
 
-.clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;background:#fafafa;}
+.clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;background:var(--dwc-surface-alt);}
 .clanwar-report h2 {margin:0 0 8px;font-size:14px;}
 .clanwar-report p {white-space:pre-line;}

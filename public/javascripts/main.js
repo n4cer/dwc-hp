@@ -26,3 +26,34 @@
         if (removeButton) removeButton.closest('.new-score-row').remove();
     });
 })();
+
+(() => {
+    const choices = document.querySelectorAll('[data-theme-choice]');
+    if (!choices.length) return;
+
+    const applyActiveState = () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'auto';
+        choices.forEach(choice => {
+            choice.classList.toggle('active', choice.dataset.themeChoice === current);
+        });
+    };
+
+    choices.forEach(choice => {
+        choice.addEventListener('click', event => {
+            event.preventDefault();
+            const value = choice.dataset.themeChoice;
+            try {
+                if (value === 'auto') {
+                    localStorage.removeItem('theme');
+                    document.documentElement.removeAttribute('data-theme');
+                } else {
+                    localStorage.setItem('theme', value);
+                    document.documentElement.setAttribute('data-theme', value);
+                }
+            } catch (e) {}
+            applyActiveState();
+        });
+    });
+
+    applyActiveState();
+})();
