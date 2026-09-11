@@ -7,7 +7,7 @@ DWC_ADMIN_PASSWORD=replace-me-too
 # Must equal QUAKE3CTL_TOKEN in quake3ctl.env
 DWC_QUAKE3_TOKEN=replace-with-a-long-random-value
 # Public address shown in the site sidebar; leave unset to hide it entirely.
-DWC_QUAKE3_PUBLIC_HOST=quake.doomwarriors.de
+DWC_QUAKE3_PUBLIC_HOST=doomwarriors.de
 DWC_QUAKE3_DUEL_PORT=27960
 DWC_QUAKE3_TDM_PORT=27961
 DWC_QUAKE3_CTF_PORT=27962
