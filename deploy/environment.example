@@ -4,3 +4,5 @@ DWC_DB_USERNAME=dwc
 DWC_DB_PASSWORD=replace-me
 DWC_ADMIN_USERNAME=admin
 DWC_ADMIN_PASSWORD=replace-me-too
+# Must equal QUAKE3CTL_TOKEN in quake3ctl.env
+DWC_QUAKE3_TOKEN=replace-with-a-long-random-value
