@@ -8,6 +8,9 @@ layout.themeSwitch.label = Appearance
 layout.themeSwitch.auto = Auto
 layout.themeSwitch.light = Light
 layout.themeSwitch.dark = Dark
+layout.quake3.title = Quake 3 servers
+layout.quake3.offline = offline
+layout.quake3.players = players
 
 index.title = German Gaming Clan
 index.description = Doomwarriors: news, clan wars, players and history of the German gaming clan.

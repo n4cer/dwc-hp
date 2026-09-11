@@ -194,6 +194,23 @@ public class HomeController extends Controller {
       return node;
     }
 
+    // Deliberately not @Cached: the sidebar box on every page (including
+    // long-cached ones) fetches this client-side so the status stays live.
+    public Result quake3Status() {
+      ArrayNode result = Json.newArray();
+      for (Quake3StatusBoard.ServerStatus server : Quake3StatusBoard.current()) {
+        ObjectNode node = Json.newObject();
+        node.put("id", server.id());
+        node.put("label", server.label());
+        node.put("online", server.online());
+        node.put("address", server.online() ? server.address() : null);
+        node.put("players", server.players());
+        node.put("maxPlayers", server.maxPlayers());
+        result.add(node);
+      }
+      return ok(result);
+    }
+
     public Result lineup(Http.Request request) {
         Messages messages = messagesApi.preferred(request);
         List<Squad> squads = Squad.find.all();
