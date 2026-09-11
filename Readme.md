@@ -189,6 +189,35 @@ reviewers to the GitHub environment if deployments need approval. Keep using
 your existing TLS setup (for example Certbot); the nginx template contains the
 reverse-proxy portion only.
 
+### Quake 3 server control (admin panel)
+
+The admin panel's "Quake 3 servers" page starts/stops the Duel/TDM/CTF
+docker-compose stacks. The `dwc` web process itself is never given Docker or
+systemd rights for this: it only talks over `localhost` to a small
+root-owned sidecar (`deploy/quake3ctl.py`) that is the sole thing allowed to
+start/stop three hardcoded `quake3@<name>.service` units.
+
+One-time setup on the host (adjust `WorkingDirectory` in
+`deploy/quake3@.service` to wherever the quake3-docker-compose project's
+`duel`/`tdm`/`ctf` folders actually live):
+
+```bash
+install -o root -g root -m 0755 deploy/quake3ctl.py /usr/local/sbin/quake3ctl.py
+install -o root -g root -m 0644 deploy/quake3ctl.service /etc/systemd/system/quake3ctl.service
+install -o root -g root -m 0644 "deploy/quake3@.service" "/etc/systemd/system/quake3@.service"
+cp deploy/quake3ctl.env.example /etc/dwc/quake3ctl.env
+chown root:root /etc/dwc/quake3ctl.env
+chmod 0600 /etc/dwc/quake3ctl.env
+systemctl daemon-reload
+systemctl enable --now quake3ctl.service
+```
+
+Generate a random token with `openssl rand -hex 32`, set it as
+`QUAKE3CTL_TOKEN` in `/etc/dwc/quake3ctl.env`, and set the *same* value as
+`DWC_QUAKE3_TOKEN` in `/etc/dwc/environment` before restarting both
+`quake3ctl.service` and `dwc.service`. The admin page stays hidden/disabled
+until this token is configured.
+
 ### Manual package
 
 Create a deployable package with:

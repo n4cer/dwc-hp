@@ -1,0 +1,44 @@
+@(request: Http.Request, statuses: java.util.List[controllers.Quake3ControlClient.Status], error: String, messages: play.i18n.Messages)
+
+@main("Quake 3 servers", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Quake 3 servers</h1></div>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        @request.flash().get("error").map { message =>
+            <div class="admin-message error">@message</div>
+        }
+        @if(error != null) {
+            <div class="admin-message error">@error</div>
+        } else {
+            <table class="admin-table"><thead><tr>
+                <th scope="col">Server</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr></thead><tbody>
+            @for(status <- statuses) {
+                <tr>
+                    <td>@status.server().label</td>
+                    <td>
+                        @if(status.error() != null) {
+                            <span class="admin-status admin-status-unknown">@status.error()</span>
+                        } else {
+                            <span class="admin-status @if(status.active()) {admin-status-active} else {admin-status-inactive}">@status.state()</span>
+                        }
+                    </td>
+                    <td class="admin-actions">
+                        <form method="post" action="@controllers.routes.AdminQuake3Controller.start(status.server().id)">
+                            @helper.CSRF.formField(request.asScala())
+                            <button type="submit">Start</button>
+                        </form>
+                        <form method="post" action="@controllers.routes.AdminQuake3Controller.stop(status.server().id)">
+                            @helper.CSRF.formField(request.asScala())
+                            <button type="submit" class="secondary">Stop</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody></table>
+        }
+    </div>
+}

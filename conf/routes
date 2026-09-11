@@ -69,6 +69,9 @@ GET     /admin/gametypes/new         controllers.AdminController.newGameType(req
 GET     /admin/gametypes/:id/edit    controllers.AdminController.editGameType(request: Request, id: Long)
 POST    /admin/gametypes             controllers.AdminController.createGameType(request: Request)
 POST    /admin/gametypes/:id         controllers.AdminController.updateGameType(request: Request, id: Long)
+GET     /admin/quake3                controllers.AdminQuake3Controller.index(request: Request)
+POST    /admin/quake3/:name/start    controllers.AdminQuake3Controller.start(request: Request, name: String)
+POST    /admin/quake3/:name/stop     controllers.AdminQuake3Controller.stop(request: Request, name: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
