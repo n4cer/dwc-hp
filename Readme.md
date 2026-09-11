@@ -218,6 +218,17 @@ Generate a random token with `openssl rand -hex 32`, set it as
 `quake3ctl.service` and `dwc.service`. The admin page stays hidden/disabled
 until this token is configured.
 
+#### Public server status in the site sidebar
+
+Independently of the admin control above, every page's right-hand sidebar
+shows a "Quake 3 servers" box with each server's address and player count
+once `DWC_QUAKE3_PUBLIC_HOST` and the `DWC_QUAKE3_{DUEL,TDM,CTF}_PORT`
+variables are set in `/etc/dwc/environment` (see
+`deploy/environment.example`). This queries the servers' own UDP query
+protocol directly from `dwc.service` (no sidecar involved) and is fetched
+client-side so it stays live even on pages that are cached for minutes.
+Leave the host unset to hide the box (it falls back to "empty").
+
 ### Manual package
 
 Create a deployable package with:

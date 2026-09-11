@@ -10,6 +10,7 @@ GET     /sitemap.xml               controllers.HomeController.sitemap
 GET     /news                       controllers.HomeController.news(request: Request, page: Int ?= 1)
 GET     /clanwars                   controllers.HomeController.clanwars(request: Request)
 GET     /clanwars.json               controllers.HomeController.clanwarsJson
+GET     /quake3-status.json          controllers.HomeController.quake3Status
 GET     /clanwar/:id                controllers.HomeController.clanwar(request: Request, id: Long)
 GET     /history                    controllers.HomeController.history(request: Request)
 GET     /lineup                     controllers.HomeController.lineup(request: Request)

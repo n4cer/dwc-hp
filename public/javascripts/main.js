@@ -57,3 +57,47 @@
 
     applyActiveState();
 })();
+
+(() => {
+    const box = document.getElementById('quake3-status');
+    if (!box) return;
+
+    fetch('/quake3-status.json')
+        .then(response => response.ok ? response.json() : [])
+        .then(servers => {
+            if (!Array.isArray(servers) || servers.length === 0) return;
+            box.textContent = '';
+
+            const title = document.createElement('strong');
+            title.textContent = box.dataset.quake3Title;
+            box.append(title, document.createElement('br'), document.createElement('br'));
+
+            const list = document.createElement('ul');
+            list.className = 'quake3-status-list';
+            servers.forEach(server => {
+                const item = document.createElement('li');
+                const dot = document.createElement('span');
+                dot.className = 'quake3-status-dot ' + (server.online ? 'quake3-online' : 'quake3-offline');
+                item.append(dot, server.label, document.createElement('br'));
+
+                const detail = document.createElement('span');
+                detail.className = 'admin-hint';
+                if (server.online) {
+                    detail.textContent = server.address;
+                    item.append(detail);
+                    if (typeof server.players === 'number') {
+                        const players = document.createElement('span');
+                        players.className = 'admin-hint';
+                        players.textContent = server.players + (typeof server.maxPlayers === 'number' ? '/' + server.maxPlayers : '') + ' ' + box.dataset.quake3Players;
+                        item.append(document.createElement('br'), players);
+                    }
+                } else {
+                    detail.textContent = box.dataset.quake3Offline;
+                    item.append(detail);
+                }
+                list.appendChild(item);
+            });
+            box.appendChild(list);
+        })
+        .catch(() => {});
+})();
