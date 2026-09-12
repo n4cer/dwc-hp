@@ -7,11 +7,11 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-# Adjust to wherever the existing quake3-docker-compose project keeps this
-# stack's docker-compose.yml (one subfolder per game type: duel/tdm/ctf).
-WorkingDirectory=/opt/quake3/%i
-ExecStart=/usr/bin/docker compose up -d
-ExecStop=/usr/bin/docker compose down
+# All three game types are services in one docker-compose.yml, so start/stop
+# target just the one service (q3server-%i) instead of the whole project.
+WorkingDirectory=/home/micha/docker/q3-osp-server
+ExecStart=/usr/bin/docker compose up -d q3server-%i
+ExecStop=/usr/bin/docker compose stop q3server-%i
 TimeoutStartSec=120
 TimeoutStopSec=60
 

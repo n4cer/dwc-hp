@@ -197,9 +197,14 @@ systemd rights for this: it only talks over `localhost` to a small
 root-owned sidecar (`deploy/quake3ctl.py`) that is the sole thing allowed to
 start/stop three hardcoded `quake3@<name>.service` units.
 
-One-time setup on the host (adjust `WorkingDirectory` in
-`deploy/quake3@.service` to wherever the quake3-docker-compose project's
-`duel`/`tdm`/`ctf` folders actually live):
+All three game types are services (`q3server-duel`/`q3server-tdm`/`q3server-ctf`)
+in the one docker-compose.yml at `/home/micha/docker/q3-osp-server`; the
+`quake3@.service` template targets that fixed path and just the one service
+(`q3server-%i`), not the whole compose project, so starting/stopping one
+game type doesn't touch the others. Adjust the path in
+`deploy/quake3@.service` if that project ever moves.
+
+One-time setup on the host:
 
 ```bash
 install -o root -g root -m 0755 deploy/quake3ctl.py /usr/local/sbin/quake3ctl.py
