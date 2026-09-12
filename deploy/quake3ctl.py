@@ -34,8 +34,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
         sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
 
     def _unauthorized(self):
-        self.send_response(401)
-        self.end_headers()
+        reason = "no token configured" if not TOKEN else "token mismatch"
+        self._respond_text(401, "unauthorized: " + reason + "\n")
 
     def _authorized(self):
         if not TOKEN:
