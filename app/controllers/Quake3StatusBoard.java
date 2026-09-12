@@ -11,7 +11,7 @@ import java.util.List;
  * through every view.
  */
 public final class Quake3StatusBoard {
-    public record ServerStatus(String id, String label, String address, boolean online, Integer players, Integer maxPlayers) { }
+    public record ServerStatus(String id, String label, String address, boolean online, Integer players, Integer maxPlayers, String map) { }
 
     private static volatile List<ServerStatus> current = List.of();
 

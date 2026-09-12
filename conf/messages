@@ -11,6 +11,7 @@ layout.themeSwitch.dark = Dunkel
 layout.quake3.title = Quake 3 Server
 layout.quake3.offline = offline
 layout.quake3.players = Spieler
+layout.quake3.map = Map
 
 index.title = Deutscher Gaming-Clan
 index.description = Doomwarriors: News, Clanwars, Spieler und Geschichte des deutschen Gaming-Clans.

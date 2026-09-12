@@ -72,9 +72,9 @@ final class Quake3StatusScheduler {
             socket.receive(response);
             Map<String, String> info = parseInfoResponse(buffer, response.getLength());
             return new Quake3StatusBoard.ServerStatus(config.id(), config.label(), address, true,
-                    parseInt(info.get("clients")), parseInt(info.get("sv_maxclients")));
+                    parseInt(info.get("clients")), parseInt(info.get("sv_maxclients")), info.get("mapname"));
         } catch (IOException e) {
-            return new Quake3StatusBoard.ServerStatus(config.id(), config.label(), address, false, null, null);
+            return new Quake3StatusBoard.ServerStatus(config.id(), config.label(), address, false, null, null, null);
         }
     }
 

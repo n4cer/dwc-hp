@@ -206,6 +206,7 @@ public class HomeController extends Controller {
         node.put("address", server.online() ? server.address() : null);
         node.put("players", server.players());
         node.put("maxPlayers", server.maxPlayers());
+        node.put("map", server.online() ? server.map() : null);
         result.add(node);
       }
       return ok(result);

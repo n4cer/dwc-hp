@@ -91,6 +91,12 @@
                         players.textContent = server.players + (typeof server.maxPlayers === 'number' ? '/' + server.maxPlayers : '') + ' ' + box.dataset.quake3Players;
                         item.append(document.createElement('br'), players);
                     }
+                    if (server.map) {
+                        const map = document.createElement('span');
+                        map.className = 'admin-hint';
+                        map.textContent = box.dataset.quake3Map + ': ' + server.map;
+                        item.append(document.createElement('br'), map);
+                    }
                 } else {
                     detail.textContent = box.dataset.quake3Offline;
                     item.append(detail);
