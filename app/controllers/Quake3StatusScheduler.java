@@ -109,6 +109,14 @@ final class Quake3StatusScheduler {
     }
 
     private static int intConfigured(Configuration configuration, String path) {
-        return configuration.underlying().hasPath(path) ? configuration.underlying().getInt(path) : 0;
+        // Values substituted from environment variables (${?VAR}) are always
+        // typed as STRING by Typesafe Config, even when numeric, so getInt()
+        // would throw ConfigException.WrongType here; parse it ourselves.
+        if (!configuration.underlying().hasPath(path)) return 0;
+        try {
+            return Integer.parseInt(configuration.underlying().getString(path).trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 }
