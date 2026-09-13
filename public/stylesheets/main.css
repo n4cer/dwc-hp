@@ -339,3 +339,79 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;background:var(--dwc-surface-alt);}
 .clanwar-report h2 {margin:0 0 8px;font-size:14px;}
 .clanwar-report p {white-space:pre-line;}
+
+/* Responsive shell: header scales fluidly at every width, everything else
+   switches to a stacked, drawer-based layout below 900px. */
+#blockTop img {max-width:100%;height:auto;}
+.table-scroll {width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+
+.nav-toggle {display:none;}
+.mobileTopbar {display:none;}
+.navScrim {display:none;}
+.drawerClose {display:none;}
+
+@media (max-width:900px) {
+    #blockMain {width:100%;min-height:0;}
+    #blockMainInner {padding-left:0;padding-right:0;}
+    #blockFullDocument {position:relative;}
+
+    .mobileTopbar {
+        display:flex;align-items:center;gap:10px;
+        position:sticky;top:0;z-index:20;
+        padding:10px 14px;
+        background:var(--dwc-surface);
+        border-bottom:1px solid var(--dwc-border);
+    }
+    .mobileBurger {
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+        width:32px;height:32px;flex-shrink:0;
+        border:1px solid var(--dwc-border-strong);border-radius:6px;
+        background:var(--dwc-surface-alt);cursor:pointer;
+    }
+    .mobileBurger span {width:16px;height:2px;background:var(--dwc-text);display:block;}
+    .mobileBrand {font-weight:bold;font-size:14px;color:var(--dwc-text);}
+
+    #blockTop {width:100%;height:auto;margin-bottom:10px;}
+
+    #blockLeft,#blockMiddle,#blockRight {float:none;width:100%;min-height:0;}
+
+    #blockLeft {
+        position:fixed;top:0;bottom:0;left:0;z-index:30;
+        width:82%;max-width:300px;overflow-y:auto;
+        background:var(--dwc-bg-main);
+        padding:14px;
+        box-shadow:2px 0 18px rgba(0,0,0,.25);
+        transform:translateX(-100%);
+        transition:transform .22s ease;
+    }
+    #nav-toggle:checked ~ #blockLeft {transform:translateX(0);}
+    .drawerClose {
+        display:flex;align-items:center;justify-content:center;
+        width:26px;height:26px;margin:0 0 10px auto;
+        border:1px solid var(--dwc-border-strong);border-radius:6px;
+        background:var(--dwc-surface-alt);color:var(--dwc-text);
+        font-size:15px;line-height:1;text-decoration:none;
+    }
+    #nav-toggle:checked ~ .navScrim {
+        display:block;position:fixed;inset:0;z-index:25;
+        background:rgba(0,0,0,.45);
+    }
+
+    .linksTop,.linksBottom,.rechtsTop,.rechtsBottom,.mitteTop,.mitteBottom {display:none;}
+    .links,.rechts,.mitte,.mittesmall {
+        width:auto;background-image:none;background-color:var(--dwc-surface-alt);
+        border:1px solid var(--dwc-border);border-radius:8px;
+        margin-bottom:10px;
+    }
+    .linksContent,.rechtsContent,.mitteContent {width:auto;padding:12px 14px;}
+    .mitte,.mittesmall {min-height:0;}
+
+    #blockLeft {font-size:14px;line-height:1.5;}
+    #blockLeft ul {list-style:none;margin:0;padding:0;}
+    #blockLeft ul li a {display:block;padding:8px 2px;}
+
+    .clanwar-nav,.clanwar-detail-header {flex-wrap:wrap;}
+
+    .admin-grid {grid-template-columns:1fr;}
+    .admin-score-fields {grid-template-columns:1fr 1fr;}
+}

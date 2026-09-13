@@ -27,11 +27,21 @@
         <div id="blockMain">
             <div id="blockFullDocument">
                 <div id="blockMainInner">
+                    <input type="checkbox" id="nav-toggle" class="nav-toggle" />
+                    <div class="mobileTopbar">
+                        <label for="nav-toggle" class="mobileBurger" aria-label="@messages.at("layout.menu.open")">
+                            <span></span><span></span><span></span>
+                        </label>
+                        <span class="mobileBrand">Doomwarriors</span>
+                    </div>
+                    <label for="nav-toggle" class="navScrim" aria-hidden="true"></label>
+
                     <div id="blockTop">
                         <img src="@controllers.routes.Assets.versioned("images/dwc_header.jpg")" alt="Doomwarriors Clan" width="562" height="90" />
                     </div>
 
                     <div id="blockLeft">
+                        <label for="nav-toggle" class="drawerClose" aria-label="@messages.at("layout.menu.close")">&times;</label>
                         <div class="linksTop"></div>
                         <div class="links">
                             <div class="linksContent">
