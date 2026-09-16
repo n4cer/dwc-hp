@@ -3,8 +3,19 @@
 
   <conversionRule conversionWord="coloredLevel" class="play.api.libs.logback.ColoredLevel" />
 
-  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+  <!-- RollingFileAppender, nicht FileAppender: Letzterer rotiert nicht, die
+       Datei wuchs seit dem ersten Start unbegrenzt. totalSizeCap ist der
+       wichtige Teil - eine harte Obergrenze unabhaengig davon, wie viele
+       Tage tatsaechlich anfallen. -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${application.home:-.}/logs/application.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${application.home:-.}/logs/application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+      <maxFileSize>20MB</maxFileSize>
+      <maxHistory>14</maxHistory>
+      <totalSizeCap>500MB</totalSizeCap>
+      <cleanHistoryOnStart>true</cleanHistoryOnStart>
+    </rollingPolicy>
     <encoder>
       <pattern>%date [%level] from %logger in %thread - %message%n%xException</pattern>
     </encoder>
