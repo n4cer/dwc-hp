@@ -211,7 +211,7 @@ Copy the originals into the folder and run the conversion on the server:
 
 ```bash
 apt install -y ffmpeg
-./transcode-videos.sh /var/lib/dwc/videos
+bash transcode-videos.sh /var/lib/dwc/videos
 chmod -R a+rX /var/lib/dwc/videos
 ```
 
