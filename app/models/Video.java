@@ -27,6 +27,8 @@ public class Video extends Model {
   private Integer durationSeconds;
   private Integer sortOrder;
   private boolean published;
+  @ManyToOne
+  private User author;
 
   public Long getId() {
     return id;
@@ -106,6 +108,14 @@ public class Video extends Model {
 
   public void setPublished(boolean published) {
     this.published = published;
+  }
+
+  public User getAuthor() {
+    return author;
+  }
+
+  public void setAuthor(User author) {
+    this.author = author;
   }
 
   /** Runtime as m:ss, or an empty string when no duration was entered. */

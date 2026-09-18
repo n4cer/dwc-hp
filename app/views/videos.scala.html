@@ -26,8 +26,12 @@
               </span>
               <span class="video-card-title">@video.getTitle()</span>
             </a>
-            @if(video.getReleaseYear() != null) {
-              <span class="video-card-meta">@video.getReleaseYear()</span>
+            @if(video.getReleaseYear() != null || video.getAuthor() != null) {
+              <span class="video-card-meta">
+                @if(video.getReleaseYear() != null) { @video.getReleaseYear() }
+                @if(video.getReleaseYear() != null && video.getAuthor() != null) { &middot; }
+                @if(video.getAuthor() != null) { @messages.at("news.by") @video.getAuthor().getNick() }
+              </span>
             }
           </li>
         }

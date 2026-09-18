@@ -1,4 +1,4 @@
-@(request: Http.Request, item: models.Video, error: String, messages: play.i18n.Messages)
+@(request: Http.Request, item: models.Video, users: List[models.User], error: String, messages: play.i18n.Messages)
 
 @main(if(item == null) "Add video" else "Edit video", messages, noindex = true) {
     <div class="admin-page">
@@ -15,6 +15,9 @@
                 <label>Original for download<input type="text" name="originalFile" placeholder="VTS_01_1.mkv" value="@if(item != null && item.getOriginalFile() != null) {@item.getOriginalFile()}"></label>
                 <label>Duration in seconds<input type="number" name="durationSeconds" min="0" value="@if(item != null && item.getDurationSeconds() != null) {@item.getDurationSeconds()}"></label>
                 <label>Sort order<input type="number" name="sortOrder" value="@if(item != null && item.getSortOrder() != null) {@item.getSortOrder()} else {0}"></label>
+                <label>Author<select name="authorId"><option value="">Please select</option>
+                    @for(user <- users) { <option value="@user.getId()" @if(item != null && item.getAuthor() != null && item.getAuthor().getId() == user.getId()) {selected}>@user.getNick()</option> }
+                </select></label>
                 <label class="admin-check"><input type="checkbox" name="published" @if(item != null && item.isPublished()) {checked}> Published</label>
             </div>
             <label>Description<textarea name="description" rows="6">@if(item != null && item.getDescription() != null) {@item.getDescription()}</textarea></label>
