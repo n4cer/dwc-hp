@@ -12,8 +12,9 @@ and includes a protected administration area for managing news and clan wars.
 - News and clan-war archives with results, maps, line-ups, and screenshots
 - Player and squad overview
 - Clan history, contact page, legal notice, and privacy policy
+- Video archive with an in-browser player and download links
 - Random images served from a configurable directory
-- Administration area for creating and editing news and clan wars
+- Administration area for creating and editing news, clan wars, and videos
 - Historical data initialization using Play Evolutions
 
 ## Technology
@@ -108,6 +109,7 @@ sbt test
 | `DWC_ADMIN_USERNAME` | Administration-area username |
 | `DWC_ADMIN_PASSWORD` | Administration-area password |
 | `picture_folder` | Directory containing images served by `/random` |
+| `video_folder` | Directory containing the archive videos served by `/videos` |
 | `owner.*` | Contact and legal-notice details |
 | `privacy.*` | Privacy-policy details |
 
@@ -144,7 +146,7 @@ Copy the repository's `deploy` directory to the Ubuntu server and run as root
 apt update
 apt install -y openjdk-17-jre-headless nginx curl
 useradd --create-home --shell /bin/bash dwc-deploy
-install -d -o micha -g users -m 0755 /home/micha/dwc/releases /var/lib/dwc/pictures
+install -d -o micha -g users -m 0755 /home/micha/dwc/releases /var/lib/dwc/pictures /var/lib/dwc/videos
 install -d -o root -g root -m 0755 /etc/dwc
 install -o root -g root -m 0755 deploy/deploy-dwc /usr/local/sbin/deploy-dwc
 install -o root -g root -m 0644 deploy/dwc.service /etc/systemd/system/dwc.service
@@ -188,6 +190,43 @@ The first push to `master` installs and starts the application. Add required
 reviewers to the GitHub environment if deployments need approval. Keep using
 your existing TLS setup (for example Certbot); the nginx template contains the
 reverse-proxy portion only.
+
+### Video archive
+
+Browsers can only play a handful of containers and codecs, and none of the
+formats old clan videos usually arrive in are among them. MKV, AVI, WMV, and the
+MPEG-2 video inside a DVD rip all have to be converted once before a `<video>`
+element can show them. The originals are kept and offered as a download.
+
+`video_folder` (`/var/lib/dwc/videos` in production) is laid out like this:
+
+```text
+/var/lib/dwc/videos/
+  VTS_01_1.mkv         the untouched original, offered as a download
+  web/VTS_01_1.mp4     H.264/AAC, what the player streams
+  posters/VTS_01_1.jpg preview image shown before playback starts
+```
+
+Copy the originals into the folder and run the conversion on the server:
+
+```bash
+apt install -y ffmpeg
+./transcode-videos.sh /var/lib/dwc/videos
+chmod -R a+rX /var/lib/dwc/videos
+```
+
+The script deinterlaces DVD sources, converts non-square pixels so nothing
+appears stretched, writes MP4s with `+faststart` so playback can begin before
+the file has finished downloading, and grabs a poster frame. It skips files that
+have already been converted, so it is safe to re-run after adding more videos.
+When it finishes it prints the exact values for each video to enter under
+`/admin/videos`, where title, year, description, sort order, and the published
+flag are maintained. Videos stay invisible to visitors until published.
+
+The application streams the bytes itself and answers HTTP range requests, so
+seeking within a video works. The `location /videos/` block in
+`deploy/nginx.conf` passes those requests through unbuffered; without it nginx
+would spool entire videos to disk before sending them.
 
 ### Quake 3 server control (admin panel)
 

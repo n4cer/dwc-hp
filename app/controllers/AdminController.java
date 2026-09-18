@@ -14,6 +14,7 @@ import models.ScoreImage;
 import models.Squad;
 import models.User;
 import models.UserSquad;
+import models.Video;
 import play.api.Configuration;
 import play.cache.AsyncCacheApi;
 import play.filters.csrf.AddCSRFToken;
@@ -110,8 +111,9 @@ public class AdminController extends Controller {
         long leagueCount = League.find.query().findCount();
         long gameCount = Game.find.query().findCount();
         long gameTypeCount = GameType.find.query().findCount();
+        long videoCount = Video.find.query().findCount();
         return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount,
-                mapCount, leagueCount, gameCount, gameTypeCount, messages()));
+                mapCount, leagueCount, gameCount, gameTypeCount, videoCount, messages()));
     }
 
     @AddCSRFToken
@@ -270,6 +272,83 @@ public class AdminController extends Controller {
 
     private play.twirl.api.Html squadForm(Http.Request request, Squad squad, String error) {
         return views.html.adminSquadForm.render(request, squad, Game.find.all(), error, messages());
+    }
+
+    @AddCSRFToken
+    public Result videoIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<Video> videos = Video.find.query().orderBy("sortOrder asc, id asc").findList();
+        return ok(views.html.adminVideoList.render(request, videos, messages()));
+    }
+
+    @AddCSRFToken
+    public Result newVideo(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(videoForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editVideo(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Video video = Video.find.byId(id);
+        if (video == null) return notFound("Video not found.");
+        return ok(videoForm(request, video, null));
+    }
+
+    public Result createVideo(Http.Request request) {
+        return saveVideo(request, new Video());
+    }
+
+    public Result updateVideo(Http.Request request, Long id) {
+        Video video = Video.find.byId(id);
+        if (video == null) return notFound("Video not found.");
+        return saveVideo(request, video);
+    }
+
+    private Result saveVideo(Http.Request request, Video video) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String title = value(data, "title");
+        String file = value(data, "file");
+        Integer releaseYear = optionalInteger(value(data, "releaseYear"));
+        Integer durationSeconds = optionalInteger(value(data, "durationSeconds"));
+        Integer sortOrder = optionalInteger(value(data, "sortOrder"));
+
+        if (title.isBlank() || file.isBlank()
+                || (!value(data, "releaseYear").isBlank() && releaseYear == null)
+                || (!value(data, "durationSeconds").isBlank() && durationSeconds == null)
+                || (!value(data, "sortOrder").isBlank() && sortOrder == null)) {
+            return badRequest(videoForm(request, video.getId() == null ? null : video,
+                    "Please complete all required fields correctly."));
+        }
+
+        video.setTitle(title);
+        video.setDescription(ContentSanitizer.sanitizeHtml(value(data, "description")));
+        video.setReleaseYear(releaseYear);
+        video.setFile(file);
+        video.setPoster(emptyToNull(value(data, "poster")));
+        video.setOriginalFile(emptyToNull(value(data, "originalFile")));
+        video.setDurationSeconds(durationSeconds);
+        video.setSortOrder(sortOrder == null ? 0 : sortOrder);
+        video.setPublished(!value(data, "published").isBlank());
+        if (video.getId() == null) video.save(); else video.update();
+        clearPublicCaches();
+        clearVideoCaches(video);
+        return redirect(routes.AdminController.videoIndex()).flashing("success", "Video saved successfully.");
+    }
+
+    private play.twirl.api.Html videoForm(Http.Request request, Video video, String error) {
+        return views.html.adminVideoForm.render(request, video, error, messages());
+    }
+
+    private void clearVideoCaches(Video video) {
+        for (String lang : PUBLIC_CACHE_LANGS) {
+            cache.remove(HomeController.videoCacheKey(video.getId(), lang));
+        }
     }
 
     @AddCSRFToken
@@ -716,6 +795,7 @@ public class AdminController extends Controller {
             cache.remove("clanwars_" + lang);
             cache.remove("lineup_" + lang);
             cache.remove("halloffame_" + lang);
+            cache.remove("videos_" + lang);
         }
     }
 
@@ -756,6 +836,10 @@ public class AdminController extends Controller {
 
     private static Integer optionalInteger(String value) {
         return value.isBlank() ? null : integer(value);
+    }
+
+    private static String emptyToNull(String value) {
+        return value.isBlank() ? null : value;
     }
 
     private static Date parseDay(String value) {

@@ -146,7 +146,22 @@ pickup.spontanMiddle1 = channel #q3-pickup. There's a bot there that adds you to
 pickup.spontanMiddle2 = ) and then starts the games. We have our own servers where the games are played.
 pickup.commandsPrefix = You can find all bot commands here:
 
+videos.title = Videos
+videos.description = Old Doomwarriors videos from the clan's history, playable right in the browser.
+videos.heading = videos
+videos.intro = Dug out of the archive: old clan videos. Play them right here, or download them if you prefer.
+videos.empty = No videos are available at the moment.
+
+video.description = {0} - a video from the Doomwarriors archive.
+video.minutes = min
+video.unpublished = not published
+video.noPlayer = Your browser cannot play this video. You can download it instead.
+video.downloadWeb = Download video (MP4)
+video.downloadOriginal = Download original file
+video.backToList = Back to the overview
+
 todo.text = Yep, we're on it...
 
 notFound.clanwar = Clan war not found
 notFound.player = Player not found
+notFound.video = Video not found

@@ -53,15 +53,38 @@ public class HomeControllerTest extends WithApplication {
         assertTrue(body.contains("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"));
         assertTrue(body.contains("<loc>https://www.doomwarriors.de/</loc>"));
         assertTrue(body.contains("<loc>https://www.doomwarriors.de/clanwars</loc>"));
+        assertTrue(body.contains("<loc>https://www.doomwarriors.de/videos</loc>"));
+    }
+
+    @Test
+    public void testVideoOverviewRenders() {
+        Result result = route(app, new Http.RequestBuilder().method(GET).uri("/videos"));
+
+        assertEquals(OK, result.status());
+        assertTrue(contentAsString(result).contains("<link rel=\"canonical\" href=\"/videos\""));
+    }
+
+    @Test
+    public void testMissingVideoFilesReturn404() {
+        // Nothing outside the whitelist or the configured folder may be served.
+        Result traversal = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/..%2Fsecret.mp4"));
+        Result unknown = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/missing.mp4"));
+        Result wrongType = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/original.mkv"));
+
+        assertEquals(NOT_FOUND, traversal.status());
+        assertEquals(NOT_FOUND, unknown.status());
+        assertEquals(NOT_FOUND, wrongType.status());
     }
 
     @Test
     public void testMissingPublicEntitiesReturn404() {
         Result clanwar = route(app, new Http.RequestBuilder().method(GET).uri("/clanwar/999999999"));
         Result player = route(app, new Http.RequestBuilder().method(GET).uri("/player/999999999"));
+        Result video = route(app, new Http.RequestBuilder().method(GET).uri("/video/999999999"));
 
         assertEquals(NOT_FOUND, clanwar.status());
         assertEquals(NOT_FOUND, player.status());
+        assertEquals(NOT_FOUND, video.status());
     }
 
 }

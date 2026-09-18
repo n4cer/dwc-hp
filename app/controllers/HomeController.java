@@ -32,6 +32,7 @@ import models.ScoreImage;
 import models.Squad;
 import models.User;
 import models.UserSquad;
+import models.Video;
 import play.api.Configuration;
 import play.cache.Cached;
 import play.cache.SyncCacheApi;
@@ -49,6 +50,13 @@ public class HomeController extends Controller {
     private static final int NEWS_PAGE_SIZE = 10;
     private static final int CLANWAR_CACHE_DURATION = 1200;
     private static final Set<String> IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp");
+    // Containers every current browser can play natively; the originals are converted to these.
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm");
+    // Containers the originals may arrive in. They are only ever offered as a download,
+    // never handed to a <video> element, because browsers cannot decode most of them.
+    private static final Set<String> DOWNLOAD_EXTENSIONS =
+            Set.of("mkv", "avi", "mpg", "mpeg", "wmv", "mov", "mp4", "webm");
+    private static final int VIDEO_CACHE_DURATION = 2400;
     private static final Set<String> SUPPORTED_LANGS = Set.of("de", "en");
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
@@ -368,6 +376,109 @@ public class HomeController extends Controller {
               () -> views.html.privacy.render(name, street, city, country, emailEncoded, messages));
     }
     
+    public Result videos(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
+      List<Video> videos = publishedVideos();
+      return cachedPage("videos", messages, VIDEO_CACHE_DURATION,
+              () -> views.html.videos.render(asScala(videos), messages));
+    }
+
+    public Result video(Http.Request request, Long id) {
+      Messages messages = messagesApi.preferred(request);
+      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+      if (!isAdmin) {
+        Optional<Html> cached = cache.get(videoCacheKey(id, messages.lang().code()));
+        if (cached.isPresent()) return ok(cached.get());
+      }
+
+      Video video = Video.find.byId(id);
+      // Unpublished videos stay invisible to visitors but remain previewable for admins.
+      if (video == null || (!video.isPublished() && !isAdmin)) return notFound(messages.at("notFound.video"));
+
+      List<Video> ordered = publishedVideos();
+      int index = -1;
+      for (int i = 0; i < ordered.size(); i++) {
+        if (ordered.get(i).getId().equals(id)) { index = i; break; }
+      }
+      Video previous = index > 0 ? ordered.get(index - 1) : null;
+      Video next = index >= 0 && index + 1 < ordered.size() ? ordered.get(index + 1) : null;
+
+      Html html = views.html.video.render(video, downloadSizeLabel(video), previous, next, messages);
+      if (!isAdmin) cache.set(videoCacheKey(id, messages.lang().code()), html, VIDEO_CACHE_DURATION);
+
+      return ok(html);
+    }
+
+    public static String videoCacheKey(Long id, String langCode) {
+      return "video_" + id + "_" + langCode;
+    }
+
+    private static List<Video> publishedVideos() {
+      return Video.find.query().where().eq("published", true)
+              .orderBy("sortOrder asc, id asc").findList();
+    }
+
+    /**
+     * Streams the converted MP4. RangeResults answers HTTP range requests, without which
+     * browsers cannot seek within the video and have to download it before playback starts.
+     */
+    public Result videoStream(Http.Request request, String file) {
+      Path video = videoFile("web", file, VIDEO_EXTENSIONS);
+      if (video == null) return notFound("video not found");
+      return RangeResults.ofPath(request, video);
+    }
+
+    /** Hands out the untouched original as a download, for anyone who wants to keep it. */
+    public Result videoDownload(Http.Request request, String file) {
+      Path video = videoFile("", file, DOWNLOAD_EXTENSIONS);
+      if (video == null) return notFound("video not found");
+      return RangeResults.ofPath(request, video)
+              .withHeader(Http.HeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + file + "\"");
+    }
+
+    public Result videoPoster(String file) {
+      Path poster = videoFile("posters", file, IMAGE_EXTENSIONS);
+      if (poster == null) return notFound("image not found");
+      return ok(poster.toFile());
+    }
+
+    /**
+     * Resolves a file inside the video folder, rejecting anything that escapes it or
+     * carries an extension outside the whitelist. Mirrors {@link #pictureFile}.
+     */
+    private Path videoFile(String subfolder, String file, Set<String> allowedExtensions) {
+      if (file.contains("/") || file.contains("\\")) return null;
+      // Quotes and line breaks would break out of the Content-Disposition header
+      // that videoDownload builds from this name.
+      if (file.indexOf('"') >= 0 || file.indexOf('\r') >= 0 || file.indexOf('\n') >= 0) return null;
+
+      Path folder = videoFolder(subfolder);
+      Path resolved = folder.resolve(file).normalize();
+      if (!resolved.startsWith(folder)
+              || !hasExtension(resolved, allowedExtensions)
+              || !Files.isRegularFile(resolved, LinkOption.NOFOLLOW_LINKS)) {
+        return null;
+      }
+      return resolved;
+    }
+
+    private Path videoFolder(String subfolder) {
+      Path folder = Path.of(configuration.underlying().getString("video_folder"));
+      return subfolder.isEmpty() ? folder : folder.resolve(subfolder);
+    }
+
+    /** Size of the original download in MB, or an empty string when it is missing. */
+    private String downloadSizeLabel(Video video) {
+      if (video.getOriginalFile() == null || video.getOriginalFile().isBlank()) return "";
+      Path original = videoFile("", video.getOriginalFile(), DOWNLOAD_EXTENSIONS);
+      if (original == null) return "";
+      try {
+        return Math.max(1, Math.round(Files.size(original) / 1048576.0)) + " MB";
+      } catch (IOException ex) {
+        return "";
+      }
+    }
+
     @Cached(key = "randomPic", duration = 300)
     public Result randomPic() {
       Path folder = pictureSubfolder("random");
@@ -412,10 +523,14 @@ public class HomeController extends Controller {
     }
 
     static boolean hasAllowedImageExtension(Path path) {
+      return hasExtension(path, IMAGE_EXTENSIONS);
+    }
+
+    static boolean hasExtension(Path path, Set<String> allowedExtensions) {
       String name = path.getFileName().toString();
       int separator = name.lastIndexOf('.');
       return separator > 0 && separator < name.length() - 1
-              && IMAGE_EXTENSIONS.contains(name.substring(separator + 1).toLowerCase(Locale.ROOT));
+              && allowedExtensions.contains(name.substring(separator + 1).toLowerCase(Locale.ROOT));
     }
     
     public Result pickup(Http.Request request) {
@@ -456,12 +571,15 @@ public class HomeController extends Controller {
       addSitemapUrl(xml, baseUrl, routes.HomeController.lineup().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.hallOfFame().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.pickup().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.videos().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.contact().url());
 
       Clanwar.find.query().select("id").findEach(
               clanwar -> addSitemapUrl(xml, baseUrl, routes.HomeController.clanwar(clanwar.getId()).url()));
       User.find.query().select("id").findEach(
               player -> addSitemapUrl(xml, baseUrl, routes.HomeController.player(player.getId()).url()));
+      Video.find.query().select("id").where().eq("published", true).findEach(
+              video -> addSitemapUrl(xml, baseUrl, routes.HomeController.video(video.getId()).url()));
 
       xml.append("</urlset>\n");
       return ok(xml.toString()).as("application/xml; charset=utf-8");
