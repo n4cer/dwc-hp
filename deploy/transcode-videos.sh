@@ -62,6 +62,7 @@ for original in "${originals[@]}"; do
       -c:v libx264 -preset slow -crf 20 -profile:v high -pix_fmt yuv420p \
       -c:a aac -b:a 160k -ac 2 \
       -movflags +faststart \
+      -f mp4 \
       -y "$target.part"
     # Only now is the file complete: an interrupted encode leaves behind a
     # .part file, which the skip check above deliberately ignores.
