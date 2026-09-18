@@ -340,6 +340,24 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-report h2 {margin:0 0 8px;font-size:14px;}
 .clanwar-report p {white-space:pre-line;}
 
+/* Videoarchiv */
+.video-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin:0;padding:0;list-style:none;}
+.video-card {margin:0;}
+.video-card a {display:block;text-decoration:none;color:inherit;}
+.video-thumb {position:relative;display:block;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);}
+.video-thumb img {display:block;width:100%;height:auto;}
+.video-thumb-placeholder {display:flex;align-items:center;justify-content:center;height:110px;font-size:26px;color:var(--dwc-text-muted);}
+.video-duration {position:absolute;right:4px;bottom:4px;padding:1px 5px;background:rgba(0,0,0,.75);color:#fff;font-size:10px;}
+.video-card a:hover .video-thumb {border-color:#E2A612;}
+.video-card-title {display:block;margin-top:5px;font-weight:bold;}
+.video-card-meta {display:block;color:var(--dwc-text-muted);font-size:11px;}
+
+.video-meta {color:var(--dwc-text-muted);font-size:11px;}
+/* The player keeps the video's own aspect ratio and never overflows the column. */
+.video-player {display:block;width:100%;max-width:100%;height:auto;background:#000;border:1px solid var(--dwc-border);}
+.video-description {padding:12px 14px;border-left:4px solid #E2A612;background:var(--dwc-surface-alt);}
+.video-downloads {font-size:11px;}
+
 /* Responsive shell: header scales fluidly at every width, everything else
    switches to a stacked, drawer-based layout below 900px. */
 #blockTop img {max-width:100%;height:auto;}

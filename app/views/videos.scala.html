@@ -1,0 +1,37 @@
+@(videos: Seq[models.Video], messages: play.i18n.Messages)
+
+@main(messages.at("videos.title"), messages, messages.at("videos.description"), controllers.routes.HomeController.videos().url) {
+  <div class="mitteContent">
+    <h1>@messages.at("videos.heading")</h1>
+    <br>
+    <p>@messages.at("videos.intro")</p>
+    <br>
+
+    @if(videos.isEmpty) {
+      <p>@messages.at("videos.empty")</p>
+    } else {
+      <ul class="video-grid">
+        @for(video <- videos) {
+          <li class="video-card">
+            <a href="@controllers.routes.HomeController.video(video.getId())">
+              <span class="video-thumb">
+                @if(video.getPoster() != null && !video.getPoster().isBlank()) {
+                  <img src="@controllers.routes.HomeController.videoPoster(video.getPoster())" alt="" width="240" height="180" loading="lazy" />
+                } else {
+                  <span class="video-thumb-placeholder" aria-hidden="true">&#9654;</span>
+                }
+                @if(!video.getFormattedDuration().isEmpty) {
+                  <span class="video-duration">@video.getFormattedDuration()</span>
+                }
+              </span>
+              <span class="video-card-title">@video.getTitle()</span>
+            </a>
+            @if(video.getReleaseYear() != null) {
+              <span class="video-card-meta">@video.getReleaseYear()</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}

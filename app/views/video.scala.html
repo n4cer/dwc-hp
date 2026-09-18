@@ -1,0 +1,51 @@
+@(video: models.Video, downloadSize: String, previous: models.Video, next: models.Video, messages: play.i18n.Messages)
+
+@main(video.getTitle(), messages, messages.at("video.description", video.getTitle()), controllers.routes.HomeController.video(video.getId()).url) {
+  <div class="mitteContent">
+    <div class="clanwar-nav">
+      <div>
+        @if(previous != null) {
+          <a href="@controllers.routes.HomeController.video(previous.getId())">&laquo; @previous.getTitle()</a>
+        }
+      </div>
+      <div>
+        @if(next != null) {
+          <a href="@controllers.routes.HomeController.video(next.getId())">@next.getTitle() &raquo;</a>
+        }
+      </div>
+    </div>
+
+    <h1>@video.getTitle()</h1>
+    <div class="video-meta">
+      @if(video.getReleaseYear() != null) { @video.getReleaseYear() }
+      @if(video.getReleaseYear() != null && !video.getFormattedDuration().isEmpty) { &middot; }
+      @if(!video.getFormattedDuration().isEmpty) { @video.getFormattedDuration() @messages.at("video.minutes") }
+      @if(!video.isPublished()) { &middot; <strong>@messages.at("video.unpublished")</strong> }
+    </div>
+    <br>
+
+    @* preload="none" keeps the overview and this page cheap to open: the browser
+       fetches nothing but the poster until someone actually hits play. *@
+    <video class="video-player" controls preload="none" playsinline
+           @if(video.getPoster() != null && !video.getPoster().isBlank()) { poster="@controllers.routes.HomeController.videoPoster(video.getPoster())" }>
+      <source src="@controllers.routes.HomeController.videoStream(video.getFile())" type="video/mp4" />
+      @messages.at("video.noPlayer")
+    </video>
+
+    @if(video.getDescription() != null && !video.getDescription().isBlank()) {
+      <br>
+      <div class="video-description">@Html(video.getDescription())</div>
+    }
+
+    <br>
+    <p class="video-downloads">
+      <a href="@controllers.routes.HomeController.videoStream(video.getFile())" download>@messages.at("video.downloadWeb")</a>
+      @if(video.getOriginalFile() != null && !video.getOriginalFile().isBlank()) {
+        &middot;
+        <a href="@controllers.routes.HomeController.videoDownload(video.getOriginalFile())">@messages.at("video.downloadOriginal")@if(!downloadSize.isEmpty) { (@downloadSize)}</a>
+      }
+    </p>
+    <br>
+    <p><a href="@controllers.routes.HomeController.videos()">&laquo; @messages.at("video.backToList")</a></p>
+  </div>
+}
