@@ -27,7 +27,9 @@ mkdir -p "$web" "$posters"
 
 shopt -s nullglob nocaseglob
 originals=("$folder"/*.mkv "$folder"/*.avi "$folder"/*.mpg "$folder"/*.mpeg "$folder"/*.wmv "$folder"/*.mov "$folder"/*.vob)
-shopt -u nocaseglob
+# nullglob must go too: it would silently drop any argument that contains glob
+# characters and matches no file, such as ffmpeg's optional-stream "0:a:0?".
+shopt -u nullglob nocaseglob
 [[ ${#originals[@]} -gt 0 ]] || { echo "No source videos found in $folder" >&2; exit 1; }
 
 probe() { ffprobe -v error -select_streams v:0 -show_entries "$1" -of default=nw=1:nk=1 "$2" 2>/dev/null | head -1; }
@@ -55,12 +57,15 @@ for original in "${originals[@]}"; do
 
     echo "$name -> web/$base.mp4"
     ffmpeg -nostdin -loglevel warning -stats -i "$original" \
-      -map 0:v:0 -map 0:a:0? \
+      -map 0:v:0 -map "0:a:0?" \
       -vf "$filters" \
       -c:v libx264 -preset slow -crf 20 -profile:v high -pix_fmt yuv420p \
       -c:a aac -b:a 160k -ac 2 \
       -movflags +faststart \
-      -y "$target"
+      -y "$target.part"
+    # Only now is the file complete: an interrupted encode leaves behind a
+    # .part file, which the skip check above deliberately ignores.
+    mv -f "$target.part" "$target"
   fi
 
   if [[ -f "$poster" ]]; then

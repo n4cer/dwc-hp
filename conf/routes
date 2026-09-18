@@ -21,6 +21,7 @@ GET     /imprint                    controllers.HomeController.imprint(request: 
 GET     /privacy                    controllers.HomeController.privacy(request: Request)
 GET     /todo                       controllers.HomeController.todo(request: Request)
 GET     /videos                     controllers.HomeController.videos(request: Request)
+GET     /videos/                    controllers.HomeController.videosIndexSlash
 GET     /video/:id                  controllers.HomeController.video(request: Request, id: Long)
 GET     /videos/stream/:file        controllers.HomeController.videoStream(request: Request, file: String)
 GET     /videos/download/:file      controllers.HomeController.videoDownload(request: Request, file: String)

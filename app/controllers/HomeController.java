@@ -383,6 +383,11 @@ public class HomeController extends Controller {
               () -> views.html.videos.render(asScala(videos), messages));
     }
 
+    /** Play matches routes exactly, so /videos/ would otherwise be a dead end. */
+    public Result videosIndexSlash() {
+      return movedPermanently(routes.HomeController.videos().url());
+    }
+
     public Result video(Http.Request request, Long id) {
       Messages messages = messagesApi.preferred(request);
       boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
