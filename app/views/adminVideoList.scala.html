@@ -7,11 +7,12 @@
         @request.flash().get("success").map { message =>
             <div class="admin-message success">@message</div>
         }
-        <table class="admin-table"><thead><tr><th scope="col">Order</th><th scope="col">Title</th><th scope="col">Year</th><th scope="col">File</th><th scope="col">Published</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        <table class="admin-table"><thead><tr><th scope="col">Order</th><th scope="col">Title</th><th scope="col">Year</th><th scope="col">File</th><th scope="col">Author</th><th scope="col">Published</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
         @for(item <- videos) {
             <tr><td>@item.getSortOrder()</td><td>@item.getTitle()</td>
                 <td>@if(item.getReleaseYear() != null) {@item.getReleaseYear()}</td>
                 <td>@item.getFile()</td>
+                <td>@if(item.getAuthor() != null) {@item.getAuthor().getNick()}</td>
                 <td>@if(item.isPublished()) {yes} else {no}</td>
                 <td><a href="@controllers.routes.AdminController.editVideo(item.getId())">Edit</a> |
                     <a href="@controllers.routes.HomeController.video(item.getId())">View</a></td></tr>

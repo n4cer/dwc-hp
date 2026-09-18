@@ -335,6 +335,7 @@ public class AdminController extends Controller {
         video.setDurationSeconds(durationSeconds);
         video.setSortOrder(sortOrder == null ? 0 : sortOrder);
         video.setPublished(!value(data, "published").isBlank());
+        video.setAuthor(find(User.find, value(data, "authorId")));
         if (video.getId() == null) video.save(); else video.update();
         clearPublicCaches();
         clearVideoCaches(video);
@@ -342,7 +343,7 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html videoForm(Http.Request request, Video video, String error) {
-        return views.html.adminVideoForm.render(request, video, error, messages());
+        return views.html.adminVideoForm.render(request, video, User.find.all(), error, messages());
     }
 
     private void clearVideoCaches(Video video) {

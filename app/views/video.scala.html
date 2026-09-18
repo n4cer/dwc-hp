@@ -20,6 +20,7 @@
       @if(video.getReleaseYear() != null) { @video.getReleaseYear() }
       @if(video.getReleaseYear() != null && !video.getFormattedDuration().isEmpty) { &middot; }
       @if(!video.getFormattedDuration().isEmpty) { @video.getFormattedDuration() @messages.at("video.minutes") }
+      @if(video.getAuthor() != null) { &middot; @messages.at("news.by") @video.getAuthor().getNick() }
       @if(!video.isPublished()) { &middot; <strong>@messages.at("video.unpublished")</strong> }
     </div>
     <br>
