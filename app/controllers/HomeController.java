@@ -10,8 +10,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -24,6 +26,7 @@ import jakarta.inject.Inject;
 
 import models.Clanwar;
 import models.ClanwarStats;
+import models.Download;
 import models.History;
 import models.MatchLineup;
 import models.News;
@@ -57,6 +60,12 @@ public class HomeController extends Controller {
     private static final Set<String> DOWNLOAD_EXTENSIONS =
             Set.of("mkv", "avi", "mpg", "mpeg", "wmv", "mov", "mp4", "webm");
     private static final int VIDEO_CACHE_DURATION = 2400;
+    // Extensions the download section may hand out. Everything else in the folder stays
+    // unreachable, so a stray backup or private note is never served by accident.
+    private static final Set<String> FILE_EXTENSIONS =
+            Set.of("zip", "rar", "7z", "gz", "tgz", "pk3", "cfg", "txt", "pdf",
+                   "dm_68", "dm_67", "dm_66", "dm3", "jpg", "png", "mp3");
+    private static final int DOWNLOAD_CACHE_DURATION = 2400;
     private static final Set<String> SUPPORTED_LANGS = Set.of("de", "en");
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
@@ -472,18 +481,98 @@ public class HomeController extends Controller {
       return subfolder.isEmpty() ? folder : folder.resolve(subfolder);
     }
 
-    /** Size of the original download in MB, or an empty string when it is missing. */
+    /** Size of the original download, or an empty string when it is missing. */
     private String downloadSizeLabel(Video video) {
       if (video.getOriginalFile() == null || video.getOriginalFile().isBlank()) return "";
       Path original = videoFile("", video.getOriginalFile(), DOWNLOAD_EXTENSIONS);
-      if (original == null) return "";
+      return original == null ? "" : formatSize(original);
+    }
+
+    public Result downloads(Http.Request request) {
+      Messages messages = messagesApi.preferred(request);
+      List<Download> downloads = publishedDownloads();
+      return cachedPage("downloads", messages, DOWNLOAD_CACHE_DURATION,
+              () -> views.html.downloads.render(asScala(downloads), messages));
+    }
+
+    /** Play matches routes exactly, so /downloads/ would otherwise be a dead end. */
+    public Result downloadsIndexSlash() {
+      return movedPermanently(routes.HomeController.downloads().url());
+    }
+
+    /**
+     * Published entries with their categories grouped together, the admin's sort order
+     * kept inside each group and the uncategorised ones last. The size next to an entry
+     * is read from disk, so it can never drift away from the file actually served.
+     */
+    private List<Download> publishedDownloads() {
+      List<Download> downloads = Download.find.query().where().eq("published", true)
+              .orderBy("sortOrder asc, id asc").findList();
+      // LinkedHashMap keeps the categories in the order their first entry appears.
+      Map<String, List<Download>> byCategory = new LinkedHashMap<>();
+      List<Download> uncategorised = new ArrayList<>();
+      for (Download download : downloads) {
+        download.setSizeLabel(fileSizeLabel(configuration, download.getFile()));
+        if (download.getCategory() == null || download.getCategory().isBlank()) {
+          uncategorised.add(download);
+        } else {
+          byCategory.computeIfAbsent(download.getCategory(), key -> new ArrayList<>()).add(download);
+        }
+      }
+      List<Download> grouped = new ArrayList<>();
+      byCategory.values().forEach(grouped::addAll);
+      grouped.addAll(uncategorised);
+      return grouped;
+    }
+
+    /**
+     * Hands out a file from the download folder. RangeResults makes the transfer
+     * resumable, which matters for the larger archives on a slow connection.
+     */
+    public Result downloadFile(Http.Request request, String file) {
+      Path path = downloadPath(configuration, file);
+      if (path == null) return notFound("file not found");
+      return RangeResults.ofPath(request, path)
+              .withHeader(Http.HeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + file + "\"");
+    }
+
+    /**
+     * Resolves a file inside the download folder, rejecting anything that escapes it or
+     * carries an extension outside the whitelist. Mirrors {@link #videoFile}.
+     */
+    static Path downloadPath(Configuration configuration, String file) {
+      if (file.contains("/") || file.contains("\\")) return null;
+      // Quotes and line breaks would break out of the Content-Disposition header
+      // that downloadFile builds from this name.
+      if (file.indexOf('"') >= 0 || file.indexOf('\r') >= 0 || file.indexOf('\n') >= 0) return null;
+
+      Path folder = Path.of(configuration.underlying().getString("download_folder"));
+      Path resolved = folder.resolve(file).normalize();
+      if (!resolved.startsWith(folder)
+              || !hasExtension(resolved, FILE_EXTENSIONS)
+              || !Files.isRegularFile(resolved, LinkOption.NOFOLLOW_LINKS)) {
+        return null;
+      }
+      return resolved;
+    }
+
+    /** Size of an entry in the download folder, or an empty string when it is missing. */
+    static String fileSizeLabel(Configuration configuration, String file) {
+      Path path = downloadPath(configuration, file);
+      return path == null ? "" : formatSize(path);
+    }
+
+    /** Human-readable file size, or an empty string when the file cannot be read. */
+    private static String formatSize(Path path) {
       try {
-        return Math.max(1, Math.round(Files.size(original) / 1048576.0)) + " MB";
+        long bytes = Files.size(path);
+        if (bytes >= 1073741824L) return String.format(Locale.ROOT, "%.1f GB", bytes / 1073741824.0);
+        if (bytes >= 1048576L) return Math.max(1, Math.round(bytes / 1048576.0)) + " MB";
+        return Math.max(1, Math.round(bytes / 1024.0)) + " KB";
       } catch (IOException ex) {
         return "";
       }
     }
-
     @Cached(key = "randomPic", duration = 300)
     public Result randomPic() {
       Path folder = pictureSubfolder("random");
@@ -577,6 +666,7 @@ public class HomeController extends Controller {
       addSitemapUrl(xml, baseUrl, routes.HomeController.hallOfFame().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.pickup().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.videos().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.downloads().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.contact().url());
 
       Clanwar.find.query().select("id").findEach(

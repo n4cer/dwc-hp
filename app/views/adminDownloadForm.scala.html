@@ -1,0 +1,22 @@
+@(request: Http.Request, item: models.Download, error: String, messages: play.i18n.Messages)
+
+@main(if(item == null) "Add download" else "Edit download", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.downloadIndex()">&laquo; Back to downloads</a></p>
+        <h1>@if(item == null) { Add download } else { Edit download }</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createDownload()} else {@controllers.routes.AdminController.updateDownload(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Title *<input type="text" name="title" required value="@if(item != null) {@item.getTitle()}"></label>
+                <label>Category<input type="text" name="category" placeholder="Configs" value="@if(item != null && item.getCategory() != null) {@item.getCategory()}"></label>
+                <label>File in the download folder *<input type="text" name="file" required placeholder="dwc-configs.zip" value="@if(item != null) {@item.getFile()}"></label>
+                <label>Sort order<input type="number" name="sortOrder" value="@if(item != null && item.getSortOrder() != null) {@item.getSortOrder()} else {0}"></label>
+                <label class="admin-check"><input type="checkbox" name="published" @if(item != null && item.isPublished()) {checked}> Published</label>
+            </div>
+            <label>Description<textarea name="description" rows="4">@if(item != null && item.getDescription() != null) {@item.getDescription()}</textarea></label>
+            <p class="admin-hint">HTML is supported, as with the news items. Entries sharing a category are shown under a common heading, ordered by sort order.</p>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.downloadIndex()">Cancel</a></div>
+        </form>
+    </div>
+}

@@ -358,6 +358,17 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .video-description {padding:12px 14px;border-left:4px solid #E2A612;background:var(--dwc-surface-alt);}
 .video-downloads {font-size:11px;}
 
+/* Downloadbereich */
+.download-list {margin:0;padding:0;list-style:none;}
+.download-group {margin:14px 0 6px;}
+.download-group h2 {margin:0;font-size:13px;color:#E2A612;}
+.download-group:first-child {margin-top:0;}
+.download-item {padding:6px 0;border-bottom:1px dotted var(--dwc-border);}
+.download-name {font-weight:bold;}
+.download-meta {margin-left:6px;color:var(--dwc-text-muted);font-size:11px;}
+.download-type {padding:0 4px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);font-size:10px;}
+.download-description {margin-top:3px;font-size:11px;}
+
 /* Responsive shell: header scales fluidly at every width, everything else
    switches to a stacked, drawer-based layout below 900px. */
 #blockTop img {max-width:100%;height:auto;}

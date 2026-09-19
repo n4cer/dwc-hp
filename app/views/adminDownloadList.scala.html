@@ -1,0 +1,23 @@
+@(request: Http.Request, downloads: List[models.Download], messages: play.i18n.Messages)
+
+@main("Download administration", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Downloads</h1><a class="admin-button" href="@controllers.routes.AdminController.newDownload()">Add download</a></div>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        <table class="admin-table"><thead><tr><th scope="col">Order</th><th scope="col">Title</th><th scope="col">Category</th><th scope="col">File</th><th scope="col">Size</th><th scope="col">Published</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead><tbody>
+        @for(item <- downloads) {
+            <tr><td>@item.getSortOrder()</td><td>@item.getTitle()</td>
+                <td>@if(item.getCategory() != null) {@item.getCategory()}</td>
+                <td>@item.getFile()</td>
+                @* An empty size means the file is not in the download folder, or not one of the allowed types. *@
+                <td>@if(item.getSizeLabel().isEmpty) {<strong>missing</strong>} else {@item.getSizeLabel()}</td>
+                <td>@if(item.isPublished()) {yes} else {no}</td>
+                <td><a href="@controllers.routes.AdminController.editDownload(item.getId())">Edit</a> |
+                    <a href="@controllers.routes.HomeController.downloadFile(item.getFile())">Get</a></td></tr>
+        }
+        </tbody></table>
+    </div>
+}

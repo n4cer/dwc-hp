@@ -1,4 +1,4 @@
-@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long, videoCount: Long, messages: play.i18n.Messages)
+@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long, videoCount: Long, downloadCount: Long, messages: play.i18n.Messages)
 
 @main("Administration", messages, noindex = true) {
     <div class="admin-page">
@@ -32,6 +32,10 @@
             <a class="admin-card" href="@controllers.routes.AdminController.videoIndex()">
                 <h2>Videos</h2>
                 <p class="admin-card-count">@videoCount</p>
+            </a>
+            <a class="admin-card" href="@controllers.routes.AdminController.downloadIndex()">
+                <h2>Downloads</h2>
+                <p class="admin-card-count">@downloadCount</p>
             </a>
             <a class="admin-card" href="@controllers.routes.AdminController.mapIndex()">
                 <h2>Maps</h2>
