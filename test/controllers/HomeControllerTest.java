@@ -54,6 +54,7 @@ public class HomeControllerTest extends WithApplication {
         assertTrue(body.contains("<loc>https://www.doomwarriors.de/</loc>"));
         assertTrue(body.contains("<loc>https://www.doomwarriors.de/clanwars</loc>"));
         assertTrue(body.contains("<loc>https://www.doomwarriors.de/videos</loc>"));
+        assertTrue(body.contains("<loc>https://www.doomwarriors.de/downloads</loc>"));
     }
 
     @Test
@@ -70,6 +71,26 @@ public class HomeControllerTest extends WithApplication {
         Result traversal = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/..%2Fsecret.mp4"));
         Result unknown = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/missing.mp4"));
         Result wrongType = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/original.mkv"));
+
+        assertEquals(NOT_FOUND, traversal.status());
+        assertEquals(NOT_FOUND, unknown.status());
+        assertEquals(NOT_FOUND, wrongType.status());
+    }
+
+    @Test
+    public void testDownloadOverviewRenders() {
+        Result result = route(app, new Http.RequestBuilder().method(GET).uri("/downloads"));
+
+        assertEquals(OK, result.status());
+        assertTrue(contentAsString(result).contains("<link rel=\"canonical\" href=\"/downloads\""));
+    }
+
+    @Test
+    public void testMissingDownloadFilesReturn404() {
+        // Nothing outside the whitelist or the configured folder may be served.
+        Result traversal = route(app, new Http.RequestBuilder().method(GET).uri("/downloads/file/..%2Fsecret.zip"));
+        Result unknown = route(app, new Http.RequestBuilder().method(GET).uri("/downloads/file/missing.zip"));
+        Result wrongType = route(app, new Http.RequestBuilder().method(GET).uri("/downloads/file/backup.sql"));
 
         assertEquals(NOT_FOUND, traversal.status());
         assertEquals(NOT_FOUND, unknown.status());

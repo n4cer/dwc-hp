@@ -1,0 +1,33 @@
+@(downloads: Seq[models.Download], messages: play.i18n.Messages)
+
+@main(messages.at("downloads.title"), messages, messages.at("downloads.description"), controllers.routes.HomeController.downloads().url) {
+  <div class="mitteContent">
+    <h1>@messages.at("downloads.heading")</h1>
+    <br>
+    <p>@messages.at("downloads.intro")</p>
+    <br>
+
+    @if(downloads.isEmpty) {
+      <p>@messages.at("downloads.empty")</p>
+    } else {
+      <ul class="download-list">
+        @for((item, index) <- downloads.zipWithIndex) {
+          @* The list arrives grouped by category, so a heading is due whenever it changes. *@
+          @if(item.getCategory() != null && !item.getCategory().isBlank() && (index == 0 || item.getCategory() != downloads(index - 1).getCategory())) {
+            <li class="download-group"><h2>@item.getCategory()</h2></li>
+          }
+          <li class="download-item">
+            <a class="download-name" href="@controllers.routes.HomeController.downloadFile(item.getFile())">@item.getTitle()</a>
+            <span class="download-meta">
+              @if(!item.getFileType().isEmpty) { <span class="download-type">@item.getFileType()</span> }
+              @if(!item.getSizeLabel().isEmpty) { @item.getSizeLabel() } else { @messages.at("downloads.missing") }
+            </span>
+            @if(item.getDescription() != null && !item.getDescription().isBlank()) {
+              <div class="download-description">@Html(item.getDescription())</div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+}

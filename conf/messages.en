@@ -160,6 +160,13 @@ video.downloadWeb = Download video (MP4)
 video.downloadOriginal = Download original file
 video.backToList = Back to the overview
 
+downloads.title = Downloads
+downloads.description = Configs, maps, demos, and other Doomwarriors files to download.
+downloads.heading = downloads
+downloads.intro = Files from the clan's stash: configs, maps, demos, and everything else that piled up over the years.
+downloads.empty = No files are available for download at the moment.
+downloads.missing = currently unavailable
+
 todo.text = Yep, we're on it...
 
 notFound.clanwar = Clan war not found

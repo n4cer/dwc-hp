@@ -13,8 +13,9 @@ and includes a protected administration area for managing news and clan wars.
 - Player and squad overview
 - Clan history, contact page, legal notice, and privacy policy
 - Video archive with an in-browser player and download links
+- Download section for configs, maps, demos, and other files
 - Random images served from a configurable directory
-- Administration area for creating and editing news, clan wars, and videos
+- Administration area for creating and editing news, clan wars, videos, and downloads
 - Historical data initialization using Play Evolutions
 
 ## Technology
@@ -110,6 +111,7 @@ sbt test
 | `DWC_ADMIN_PASSWORD` | Administration-area password |
 | `picture_folder` | Directory containing images served by `/random` |
 | `video_folder` | Directory containing the archive videos served by `/videos` |
+| `download_folder` | Directory containing the files served by `/downloads` |
 | `owner.*` | Contact and legal-notice details |
 | `privacy.*` | Privacy-policy details |
 
@@ -146,7 +148,7 @@ Copy the repository's `deploy` directory to the Ubuntu server and run as root
 apt update
 apt install -y openjdk-17-jre-headless nginx curl
 useradd --create-home --shell /bin/bash dwc-deploy
-install -d -o micha -g users -m 0755 /home/micha/dwc/releases /var/lib/dwc/pictures /var/lib/dwc/videos
+install -d -o micha -g users -m 0755 /home/micha/dwc/releases /var/lib/dwc/pictures /var/lib/dwc/videos /var/lib/dwc/downloads
 install -d -o root -g root -m 0755 /etc/dwc
 install -o root -g root -m 0755 deploy/deploy-dwc /usr/local/sbin/deploy-dwc
 install -o root -g root -m 0644 deploy/dwc.service /etc/systemd/system/dwc.service
@@ -227,6 +229,36 @@ The application streams the bytes itself and answers HTTP range requests, so
 seeking within a video works. The `location /videos/` block in
 `deploy/nginx.conf` passes those requests through unbuffered; without it nginx
 would spool entire videos to disk before sending them.
+
+### Downloads
+
+The download section works like the video archive: the files live on the server,
+the database only holds what is shown about them. Copy them into
+`download_folder` (`/var/lib/dwc/downloads` in production) and make them
+readable:
+
+```bash
+chmod -R a+rX /var/lib/dwc/downloads
+```
+
+Then create one entry per file under `/admin/downloads` with title, optional
+category, the file name, sort order, and the published flag. Entries stay
+invisible to visitors until published. Entries sharing a category are shown
+under a common heading on `/downloads`, in the given sort order, with the
+uncategorised ones last. The size next to each entry is read from disk on every
+render, so it can never disagree with the file actually served; an entry whose
+file is missing shows up as `missing` in the admin list.
+
+Only the extensions whitelisted in `HomeController.FILE_EXTENSIONS` are served
+(archives, `.pk3`, `.cfg`, `.txt`, `.pdf`, Quake 3 demos, and a few media
+types). Anything else in the folder stays unreachable, so a backup or a private
+note dropped there by accident is never handed out. Executables are deliberately
+not on that list; add the extension there if you really want to offer one.
+
+Like the videos, the bytes are served through the application with HTTP range
+support, which makes interrupted downloads resumable. The regex location in
+`deploy/nginx.conf` covers `/downloads/file/` alongside the video endpoints and
+passes those requests through unbuffered.
 
 ### Quake 3 server control (admin panel)
 

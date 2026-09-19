@@ -26,6 +26,9 @@ GET     /video/:id                  controllers.HomeController.video(request: Re
 GET     /videos/stream/:file        controllers.HomeController.videoStream(request: Request, file: String)
 GET     /videos/download/:file      controllers.HomeController.videoDownload(request: Request, file: String)
 GET     /videos/poster/:file        controllers.HomeController.videoPoster(file: String)
+GET     /downloads                  controllers.HomeController.downloads(request: Request)
+GET     /downloads/                 controllers.HomeController.downloadsIndexSlash
+GET     /downloads/file/:file       controllers.HomeController.downloadFile(request: Request, file: String)
 GET     /random                     controllers.HomeController.randomPic
 GET     /images/clanwars/:file      controllers.HomeController.clanwarImage(file: String)
 GET     /images/lineup/:file        controllers.HomeController.lineupImage(file: String)
@@ -81,6 +84,11 @@ GET     /admin/videos/new            controllers.AdminController.newVideo(reques
 GET     /admin/videos/:id/edit       controllers.AdminController.editVideo(request: Request, id: Long)
 POST    /admin/videos                controllers.AdminController.createVideo(request: Request)
 POST    /admin/videos/:id            controllers.AdminController.updateVideo(request: Request, id: Long)
+GET     /admin/downloads             controllers.AdminController.downloadIndex(request: Request)
+GET     /admin/downloads/new         controllers.AdminController.newDownload(request: Request)
+GET     /admin/downloads/:id/edit    controllers.AdminController.editDownload(request: Request, id: Long)
+POST    /admin/downloads             controllers.AdminController.createDownload(request: Request)
+POST    /admin/downloads/:id         controllers.AdminController.updateDownload(request: Request, id: Long)
 GET     /admin/quake3                controllers.AdminQuake3Controller.index(request: Request)
 POST    /admin/quake3/:name/start    controllers.AdminQuake3Controller.start(request: Request, name: String)
 POST    /admin/quake3/:name/stop     controllers.AdminQuake3Controller.stop(request: Request, name: String)

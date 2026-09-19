@@ -4,6 +4,7 @@ import jakarta.inject.Inject;
 import models.Clanwar;
 import models.ContentSanitizer;
 import models.Country;
+import models.Download;
 import models.Game;
 import models.GameType;
 import models.League;
@@ -112,8 +113,9 @@ public class AdminController extends Controller {
         long gameCount = Game.find.query().findCount();
         long gameTypeCount = GameType.find.query().findCount();
         long videoCount = Video.find.query().findCount();
+        long downloadCount = Download.find.query().findCount();
         return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount,
-                mapCount, leagueCount, gameCount, gameTypeCount, videoCount, messages()));
+                mapCount, leagueCount, gameCount, gameTypeCount, videoCount, downloadCount, messages()));
     }
 
     @AddCSRFToken
@@ -350,6 +352,70 @@ public class AdminController extends Controller {
         for (String lang : PUBLIC_CACHE_LANGS) {
             cache.remove(HomeController.videoCacheKey(video.getId(), lang));
         }
+    }
+
+    @AddCSRFToken
+    public Result downloadIndex(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        List<Download> downloads = Download.find.query().orderBy("sortOrder asc, id asc").findList();
+        for (Download download : downloads) download.setSizeLabel(HomeController.fileSizeLabel(configuration, download.getFile()));
+        return ok(views.html.adminDownloadList.render(request, downloads, messages()));
+    }
+
+    @AddCSRFToken
+    public Result newDownload(Http.Request request) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        return ok(downloadForm(request, null, null));
+    }
+
+    @AddCSRFToken
+    public Result editDownload(Http.Request request, Long id) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Download download = Download.find.byId(id);
+        if (download == null) return notFound("Download not found.");
+        return ok(downloadForm(request, download, null));
+    }
+
+    public Result createDownload(Http.Request request) {
+        return saveDownload(request, new Download());
+    }
+
+    public Result updateDownload(Http.Request request, Long id) {
+        Download download = Download.find.byId(id);
+        if (download == null) return notFound("Download not found.");
+        return saveDownload(request, download);
+    }
+
+    private Result saveDownload(Http.Request request, Download download) {
+        Result denied = requireAdmin(request);
+        if (denied != null) return denied;
+        Map<String, String[]> data = form(request);
+        String title = value(data, "title");
+        String file = value(data, "file");
+        Integer sortOrder = optionalInteger(value(data, "sortOrder"));
+
+        if (title.isBlank() || file.isBlank()
+                || (!value(data, "sortOrder").isBlank() && sortOrder == null)) {
+            return badRequest(downloadForm(request, download.getId() == null ? null : download,
+                    "Please complete all required fields correctly."));
+        }
+
+        download.setTitle(title);
+        download.setDescription(ContentSanitizer.sanitizeHtml(value(data, "description")));
+        download.setCategory(emptyToNull(value(data, "category")));
+        download.setFile(file);
+        download.setSortOrder(sortOrder == null ? 0 : sortOrder);
+        download.setPublished(!value(data, "published").isBlank());
+        if (download.getId() == null) download.save(); else download.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.downloadIndex()).flashing("success", "Download saved successfully.");
+    }
+
+    private play.twirl.api.Html downloadForm(Http.Request request, Download download, String error) {
+        return views.html.adminDownloadForm.render(request, download, error, messages());
     }
 
     @AddCSRFToken
@@ -797,6 +863,7 @@ public class AdminController extends Controller {
             cache.remove("lineup_" + lang);
             cache.remove("halloffame_" + lang);
             cache.remove("videos_" + lang);
+            cache.remove("downloads_" + lang);
         }
     }
 
