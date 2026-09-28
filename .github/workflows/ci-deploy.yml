@@ -28,8 +28,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "17"
@@ -44,7 +44,7 @@ jobs:
           artifact="$(find target/universal -maxdepth 1 -type f -name '*.tgz' -print -quit)"
           test -n "$artifact"
           cp "$artifact" dwc.tgz
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dwc-${{ github.sha }}
           path: dwc.tgz
@@ -60,7 +60,7 @@ jobs:
       group: production
       cancel-in-progress: false
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dwc-${{ github.sha }}
       - name: Configure SSH
