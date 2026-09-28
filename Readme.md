@@ -2,7 +2,7 @@
 
 Website for the Doomwarriors clan, featuring news, a clan-war archive, player
 profiles, and the clan's history. The project is built with the Play Framework
-and includes a protected administration area for managing news and clan wars.
+and includes a member login with role-based administration.
 
 ![Screenshot of the Doomwarriors homepage](screenshot_2007.png)
 
@@ -61,20 +61,22 @@ The exact versions used by the project are defined in `build.sbt`,
    picture_folder = "C:/path/to/images"
    ```
 
-4. Optionally enable the administration area by setting both environment
-   variables. Login remains disabled if either variable is missing.
+4. Optionally bootstrap the first administrator. While no active lineup member
+   holds the ADMIN role, the member whose nick is given here becomes administrator
+   on startup, and the password becomes theirs if they have none yet. Once an
+   administrator exists, both variables have no effect and can be removed.
 
    PowerShell:
 
    ```powershell
-   $env:DWC_ADMIN_USERNAME = "admin"
+   $env:DWC_ADMIN_USERNAME = "your-nick"
    $env:DWC_ADMIN_PASSWORD = "a-secure-password"
    ```
 
    Linux/macOS:
 
    ```bash
-   export DWC_ADMIN_USERNAME="admin"
+   export DWC_ADMIN_USERNAME="your-nick"
    export DWC_ADMIN_PASSWORD="a-secure-password"
    ```
 
@@ -107,8 +109,8 @@ sbt test
 | --- | --- |
 | `db.default.*` | PostgreSQL connection |
 | `play.http.secret.key` | Signing and session secret; always replace it in production |
-| `DWC_ADMIN_USERNAME` | Administration-area username |
-| `DWC_ADMIN_PASSWORD` | Administration-area password |
+| `DWC_ADMIN_USERNAME` | Nick of the member to make administrator while none exists (bootstrap only) |
+| `DWC_ADMIN_PASSWORD` | That member's initial password if they have none yet (bootstrap only) |
 | `picture_folder` | Directory containing images served by `/random` |
 | `video_folder` | Directory containing the archive videos served by `/videos` |
 | `download_folder` | Directory containing the files served by `/downloads` |
@@ -259,6 +261,47 @@ Like the videos, the bytes are served through the application with HTTP range
 support, which makes interrupted downloads resumable. The regex location in
 `deploy/nginx.conf` covers `/downloads/file/` alongside the video endpoints and
 passes those requests through unbuffered.
+
+### Member login, roles and audit log
+
+Active lineup members who have a password sign in at `/admin/login` with their
+nick. Every signed-in member can edit their own basic profile and password under
+`/admin/profile`; everything else depends on the roles an administrator assigns
+in the lineup form:
+
+| Role | Grants |
+|---|---|
+| Administrator | Everything, including roles and password links |
+| News | News |
+| Clanwars | Clanwars, maps, leagues, games and game types |
+| Lineup | Members and squads, except roles and administrator accounts |
+| Quake 3 servers | Starting and stopping the Quake 3 servers |
+| Media | Videos and downloads |
+
+Members get their first password through a one-time link: an administrator
+clicks "Create password link" in the member's lineup form and passes the link on
+(it is shown once, valid for 48 hours, and only its hash is stored). The same
+button resets a forgotten password. Changing the password or deactivating a
+member ends all of that member's sessions.
+
+Failed logins are throttled per client address (5 per 15 minutes) and per nick
+(10 per 15 minutes, whether or not the nick exists); both limits are configured
+under `auth.*` in `conf/application.conf`. `deploy/nginx.conf` additionally
+rate-limits the login and password-link URLs before they reach the JVM.
+
+Every login, failed login, logout, password change, password link, role change
+and denied access is written as one logfmt line starting with `dwc-auth ` to
+stdout (and thus journald) and to `application.log`, for example:
+
+```
+dwc-auth event=login_failed reason=bad_password member_id=12 nick=foo src_ip=203.0.113.5 path=/admin/login ua="Mozilla/5.0 ..."
+```
+
+`event` is one of `login_success`, `login_failed`, `login_rate_limited`,
+`logout`, `password_changed`, `password_change_failed`, `password_link_created`,
+`password_link_redeemed`, `password_link_rejected`, `roles_changed`,
+`access_denied` and `bootstrap_admin`. Passwords and link tokens are never
+logged.
 
 ### Quake 3 server control (admin panel)
 

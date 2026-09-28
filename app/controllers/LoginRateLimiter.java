@@ -1,7 +1,5 @@
 package controllers;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
 import play.api.Configuration;
 
 import java.time.Clock;
@@ -9,22 +7,25 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Singleton
+/**
+ * Counts failures per key within a fixed window. Keys are whatever the caller throttles
+ * on - a client address or a nick - see {@link LoginThrottle}.
+ */
 final class LoginRateLimiter {
-    private static final String MAX_ATTEMPTS_CONFIG = "admin.loginRateLimit.maxAttempts";
-    private static final String WINDOW_CONFIG = "admin.loginRateLimit.window";
-
     private final int maxAttempts;
     private final Duration window;
     private final Clock clock;
     private final ConcurrentHashMap<String, AttemptWindow> attempts = new ConcurrentHashMap<>();
 
-    @Inject
-    LoginRateLimiter(Configuration configuration) {
-        this(configuration.underlying().hasPath(MAX_ATTEMPTS_CONFIG)
-                        ? configuration.underlying().getInt(MAX_ATTEMPTS_CONFIG) : 5,
-                configuration.underlying().hasPath(WINDOW_CONFIG)
-                        ? configuration.underlying().getDuration(WINDOW_CONFIG) : Duration.ofMinutes(15),
+    /** Reads {@code <prefix>.maxAttempts} and {@code <prefix>.window}, falling back to the given defaults. */
+    static LoginRateLimiter fromConfig(Configuration configuration, String prefix, int defaultMaxAttempts,
+            Duration defaultWindow) {
+        String maxAttempts = prefix + ".maxAttempts";
+        String window = prefix + ".window";
+        return new LoginRateLimiter(configuration.underlying().hasPath(maxAttempts)
+                        ? configuration.underlying().getInt(maxAttempts) : defaultMaxAttempts,
+                configuration.underlying().hasPath(window)
+                        ? configuration.underlying().getDuration(window) : defaultWindow,
                 Clock.systemUTC());
     }
 

@@ -2,7 +2,10 @@ PLAY_HTTP_SECRET_KEY=replace-with-a-long-random-value
 DWC_DB_URL=jdbc:postgresql://127.0.0.1:5432/dwc
 DWC_DB_USERNAME=dwc
 DWC_DB_PASSWORD=replace-me
-DWC_ADMIN_USERNAME=admin
+# Bootstrap only: this lineup member becomes administrator while no active
+# administrator exists, with this as initial password if they have none yet.
+# Remove both once you have signed in and changed the password.
+DWC_ADMIN_USERNAME=your-nick
 DWC_ADMIN_PASSWORD=replace-me-too
 # Must equal QUAKE3CTL_TOKEN in quake3ctl.env
 DWC_QUAKE3_TOKEN=replace-with-a-long-random-value

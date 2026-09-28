@@ -27,6 +27,15 @@
     </encoder>
   </appender>
 
+  <!-- Audit-Zeilen (controllers.AuthLog) ohne Level- und Logger-Praefix: jede
+       Zeile beginnt mit "dwc-auth " und ist reines logfmt, so dass Alloy sie
+       aus journald ohne Regex-Akrobatik zerlegen kann. -->
+  <appender name="STDOUT_AUTH" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%message%n</pattern>
+    </encoder>
+  </appender>
+
   <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
     <appender-ref ref="FILE" />
   </appender>
@@ -35,8 +44,22 @@
     <appender-ref ref="STDOUT" />
   </appender>
 
+  <!-- Per Default verwirft AsyncAppender INFO-Ereignisse, sobald der Puffer zu
+       80 % gefuellt ist - also genau waehrend eines Bruteforce-Angriffs.
+       discardingThreshold=0 schaltet das ab; bei vollem Puffer wartet der
+       Request, statt ein Audit-Ereignis zu verlieren. -->
+  <appender name="ASYNCSTDOUT_AUTH" class="ch.qos.logback.classic.AsyncAppender">
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="STDOUT_AUTH" />
+  </appender>
+
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
+
+  <logger name="auth" level="INFO" additivity="false">
+    <appender-ref ref="ASYNCSTDOUT_AUTH" />
+    <appender-ref ref="ASYNCFILE" />
+  </logger>
 
   <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
   <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />

@@ -14,5 +14,6 @@ libraryDependencies ++= Seq(
   evolutions,
   javaWs,
   "com.googlecode.owasp-java-html-sanitizer" % "owasp-java-html-sanitizer" % "20240325.1",
+  "org.mindrot" % "jbcrypt" % "0.4",
   "com.h2database" % "h2" % "2.3.232"
 )

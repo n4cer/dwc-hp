@@ -1,4 +1,4 @@
-@(request: Http.Request, item: User, squads: List[Squad], error: String, messages: play.i18n.Messages)
+@(request: Http.Request, item: User, squads: List[Squad], error: String, manageAccess: Boolean, openToken: PasswordToken, passwordLink: String, messages: play.i18n.Messages)
 @import scala.jdk.CollectionConverters._
 
 @main(if(item == null) "Add lineup member" else "Edit lineup member", messages, noindex = true) {
@@ -6,6 +6,12 @@
         <p class="admin-back"><a href="@controllers.routes.AdminController.lineupIndex()">&laquo; Back to lineup</a></p>
         <h1>@if(item == null) {Add lineup member} else {Edit lineup member}</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }
+        @if(passwordLink != null) {
+            <div class="admin-message success">
+                Password link for <strong>@item.getNick()</strong>, valid until @openToken.getExpiresAt().format("dd.MM.yyyy HH:mm"). It is shown only this once; send it to the member directly:
+                <input type="text" readonly value="@passwordLink" aria-label="Password link">
+            </div>
+        }
         <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createLineupMember()} else {@controllers.routes.AdminController.updateLineupMember(item.getId())}">
             @helper.CSRF.formField(request.asScala())
             <div class="admin-grid">
@@ -35,7 +41,37 @@
                 <label class="admin-check"><input type="checkbox" name="clanLeader" @if(item != null && java.lang.Boolean.TRUE.equals(item.getClanLeader())) {checked}> Clan leader</label>
                 <label class="admin-check"><input type="checkbox" name="honoraryMember" @if(item != null && java.lang.Boolean.TRUE.equals(item.getHonoraryMember())) {checked}> Honorary member</label>
             </div>
+            @if(manageAccess) {
+                <fieldset class="admin-fieldset">
+                    <legend>Roles</legend>
+                    <p class="admin-hint">Every active member with a password can sign in and maintain their own profile. Roles grant more.</p>
+                    @defining(if(item == null) java.util.EnumSet.noneOf(classOf[Role]) else item.getRoleSet()) { selectedRoles =>
+                        <div class="admin-check-grid">@for(role <- Role.values()) {
+                            <label class="admin-check" title="@role.getDescription()"><input type="checkbox" name="role" value="@role.name()" @if(selectedRoles.contains(role)) {checked}> @role.getLabel()</label>
+                        }</div>
+                    }
+                </fieldset>
+            }
             <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.lineupIndex()">Cancel</a></div>
         </form>
+        @if(manageAccess && item != null) {
+            <section>
+                <h2>Login</h2>
+                <p>
+                    Password: @if(item.hasPassword()) {set@if(item.getPasswordChangedAt() != null) { (changed @item.getPasswordChangedAt().format("dd.MM.yyyy"))}} else {not set}
+                    &middot; Last login: @if(item.getLastLoginAt() != null) {@item.getLastLoginAt().format("dd.MM.yyyy HH:mm")} else {never}
+                    @if(openToken != null && passwordLink == null) { &middot; Open password link until @openToken.getExpiresAt().format("dd.MM.yyyy HH:mm")}
+                </p>
+                @if(java.lang.Boolean.TRUE.equals(item.getActive())) {
+                    <form method="post" action="@controllers.routes.AdminController.createPasswordLink(item.getId())">
+                        @helper.CSRF.formField(request.asScala())
+                        <button type="submit" class="secondary">@if(item.hasPassword()) {Create password reset link} else {Create password link}</button>
+                    </form>
+                    <p class="admin-hint">The link lets the member choose a password. It replaces any earlier link and does not change the current password until it is used.</p>
+                } else {
+                    <p class="admin-hint">Inactive members cannot sign in.</p>
+                }
+            </section>
+        }
     </div>
 }

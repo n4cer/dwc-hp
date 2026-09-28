@@ -1,6 +1,8 @@
 include "/home/micha/dwc/current/conf/application.conf"
 
 play.http.secret.key = ${?PLAY_HTTP_SECRET_KEY}
+# The site is only reachable via HTTPS, so the session cookie never needs plain HTTP.
+play.http.session.secure = true
 db.default.url = ${?DWC_DB_URL}
 db.default.username = ${?DWC_DB_USERNAME}
 db.default.password = ${?DWC_DB_PASSWORD}

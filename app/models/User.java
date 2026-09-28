@@ -4,7 +4,11 @@ import play.data.validation.Constraints;
 import play.data.validation.Constraints.MinLength;
 
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 
@@ -46,6 +50,12 @@ public class User extends Model {
   private List<MatchLineup> lineups;
   @OneToMany(mappedBy="member", cascade=CascadeType.ALL)
   private List<UserSquad> squads;
+  @OneToMany(mappedBy="member", cascade=CascadeType.ALL)
+  private List<UserRole> roles;
+  @JsonIgnore
+  private String passwordHash;
+  private Date passwordChangedAt;
+  private Date lastLoginAt;
 
   public Long getId() {
     return id;
@@ -189,6 +199,69 @@ public class User extends Model {
 
   public void setLineups(List<MatchLineup> lineups) {
     this.lineups = lineups;
+  }
+
+  public List<UserRole> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(List<UserRole> roles) {
+    this.roles = roles;
+  }
+
+  public String getPasswordHash() {
+    return passwordHash;
+  }
+
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
+  }
+
+  public Date getPasswordChangedAt() {
+    return passwordChangedAt;
+  }
+
+  public void setPasswordChangedAt(Date passwordChangedAt) {
+    this.passwordChangedAt = passwordChangedAt;
+  }
+
+  public Date getLastLoginAt() {
+    return lastLoginAt;
+  }
+
+  public void setLastLoginAt(Date lastLoginAt) {
+    this.lastLoginAt = lastLoginAt;
+  }
+
+  public boolean hasPassword() {
+    return passwordHash != null && !passwordHash.isBlank();
+  }
+
+  /** Only active members who have set a password may sign in. */
+  public boolean canLogin() {
+    return Boolean.TRUE.equals(active) && hasPassword();
+  }
+
+  public Set<Role> getRoleSet() {
+    Set<Role> result = EnumSet.noneOf(Role.class);
+    if (roles != null) {
+      for (UserRole entry : roles) {
+        if (entry.getRole() != null) result.add(entry.getRole());
+      }
+    }
+    return result;
+  }
+
+  public boolean hasRole(Role required) {
+    for (Role role : getRoleSet()) {
+      if (role.grants(required)) return true;
+    }
+    return false;
+  }
+
+  public static User findByNick(String nick) {
+    if (nick == null || nick.isBlank()) return null;
+    return find.query().where().ieq("nick", nick.trim()).setMaxRows(1).findOne();
   }
 
   @Override
