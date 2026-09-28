@@ -30,6 +30,7 @@ import models.Download;
 import models.History;
 import models.MatchLineup;
 import models.News;
+import models.Role;
 import models.Score;
 import models.ScoreImage;
 import models.Squad;
@@ -109,7 +110,7 @@ public class HomeController extends Controller {
               .setMaxRows(NEWS_PAGE_SIZE)
               .orderBy(CONST_TIMESTAMP + " desc, id desc")
               .findList();
-      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+      boolean isAdmin = AdminAuth.hasRole(request, Role.NEWS);
 
       return ok(views.html.news.render(news, currentPage, pageCount, isAdmin, messages));
     }
@@ -125,7 +126,7 @@ public class HomeController extends Controller {
 
     public Result clanwar(Http.Request request, Long id) {
       Messages messages = messagesApi.preferred(request);
-      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+      boolean isAdmin = AdminAuth.hasRole(request, Role.CLANWARS);
       if (!isAdmin) {
         Optional<Html> cached = cache.get(clanwarCacheKey(id, messages.lang().code()));
         if (cached.isPresent()) return ok(cached.get());
@@ -399,7 +400,7 @@ public class HomeController extends Controller {
 
     public Result video(Http.Request request, Long id) {
       Messages messages = messagesApi.preferred(request);
-      boolean isAdmin = AdminAuth.isAuthenticated(request, configuration);
+      boolean isAdmin = AdminAuth.hasRole(request, Role.MEDIA);
       if (!isAdmin) {
         Optional<Html> cached = cache.get(videoCacheKey(id, messages.lang().code()));
         if (cached.isPresent()) return ok(cached.get());
@@ -643,6 +644,7 @@ public class HomeController extends Controller {
       String content = "User-agent: *\n"
               + "Allow: /\n"
               + "Disallow: /admin\n"
+              + "Disallow: /set-password/\n"
               + "Sitemap: " + baseUrl + "/sitemap.xml\n";
       return ok(content).as("text/plain; charset=utf-8");
     }

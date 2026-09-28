@@ -10,10 +10,13 @@ import models.GameType;
 import models.League;
 import models.MatchLineup;
 import models.News;
+import models.PasswordToken;
+import models.Role;
 import models.Score;
 import models.ScoreImage;
 import models.Squad;
 import models.User;
+import models.UserRole;
 import models.UserSquad;
 import models.Video;
 import play.api.Configuration;
@@ -26,23 +29,25 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class AdminController extends Controller {
-    private static final String ADMIN_SESSION = AdminAuth.ADMIN_SESSION;
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
     private static final DateTimeFormatter DATE = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final String LOGIN_FAILED = "Invalid nick or password.";
+    private static final String RATE_LIMITED = "Too many failed attempts. Please try again later.";
 
     // The admin area is only used by clan staff and is intentionally kept German-only,
     // regardless of the visiting browser's language preference.
@@ -50,15 +55,15 @@ public class AdminController extends Controller {
 
     private final Configuration configuration;
     private final AsyncCacheApi cache;
-    private final LoginRateLimiter loginRateLimiter;
+    private final LoginThrottle throttle;
     private final MessagesApi messagesApi;
 
     @Inject
-    public AdminController(Configuration configuration, AsyncCacheApi cache, LoginRateLimiter loginRateLimiter,
+    public AdminController(Configuration configuration, AsyncCacheApi cache, LoginThrottle throttle,
             MessagesApi messagesApi) {
         this.configuration = configuration;
         this.cache = cache;
-        this.loginRateLimiter = loginRateLimiter;
+        this.throttle = throttle;
         this.messagesApi = messagesApi;
     }
 
@@ -68,42 +73,249 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result login(Http.Request request) {
-        if (isAuthenticated(request)) return redirect(routes.AdminController.index());
-        return ok(views.html.adminLogin.render(request, credentialsConfigured(), null, messages()));
+        if (AdminAuth.currentUser(request).isPresent()) return redirect(routes.AdminController.index());
+        return ok(views.html.adminLogin.render(request, null, messages()));
     }
 
+    // Re-renders the form on failure. Requests without cookies skip the CSRF check and
+    // arrive without a token (bots usually send none), so one has to be added here.
+    @AddCSRFToken
     public Result authenticate(Http.Request request) {
         String client = request.remoteAddress();
-        LoginRateLimiter.LimitStatus limit = loginRateLimiter.status(client);
-        if (limit.blocked()) return rateLimited(request, limit);
-
         Map<String, String[]> data = form(request);
-        String username = value(data, "username");
-        String password = value(data, "password");
-        if (!credentialsConfigured() || !secureEquals(username, configured("admin.username"))
-                || !secureEquals(password, configured("admin.password"))) {
-            limit = loginRateLimiter.recordFailure(client);
-            if (limit.blocked()) return rateLimited(request, limit);
-            return unauthorized(views.html.adminLogin.render(request, credentialsConfigured(), "Invalid username or password.", messages()));
+        String nick = value(data, "nick");
+        String password = rawValue(data, "password");
+
+        LoginRateLimiter.LimitStatus limit = throttle.clientStatus(client);
+        String limitedBy = "client";
+        if (!limit.blocked()) {
+            limit = throttle.nickStatus(nick);
+            limitedBy = "nick";
         }
-        loginRateLimiter.reset(client);
-        return redirect(routes.AdminController.index()).addingToSession(request, ADMIN_SESSION, username);
+        if (limit.blocked()) {
+            AuthLog.event(AuthLog.Event.LOGIN_RATE_LIMITED).reason(limitedBy).nick(nick).request(request).log();
+            return rateLimited(views.html.adminLogin.render(request, RATE_LIMITED, messages()), limit);
+        }
+
+        // Every branch runs exactly one BCrypt check, so the response time does not
+        // reveal whether the nick exists, has a password or is active.
+        User member = User.findByNick(nick);
+        String reason = null;
+        if (member == null) {
+            Passwords.verifyDummy(password);
+            reason = "unknown_user";
+        } else if (!member.hasPassword()) {
+            Passwords.verifyDummy(password);
+            reason = "no_password";
+        } else if (!Passwords.verify(password, member.getPasswordHash())) {
+            reason = "bad_password";
+        } else if (!Boolean.TRUE.equals(member.getActive())) {
+            reason = "inactive";
+        }
+        if (reason != null) {
+            limit = throttle.recordFailure(client, nick);
+            AuthLog.Entry entry = AuthLog.event(AuthLog.Event.LOGIN_FAILED).reason(reason);
+            (member == null ? entry.nick(nick) : entry.member(member)).request(request).log();
+            if (limit.blocked()) return rateLimited(views.html.adminLogin.render(request, RATE_LIMITED, messages()), limit);
+            return unauthorized(views.html.adminLogin.render(request, LOGIN_FAILED, messages()));
+        }
+
+        throttle.recordSuccess(client, nick);
+        member.setLastLoginAt(new Date());
+        member.update();
+        AuthLog.event(AuthLog.Event.LOGIN_SUCCESS).member(member).request(request).log();
+        return AdminAuth.signIn(redirect(routes.AdminController.index()), member);
     }
 
-    private Result rateLimited(Http.Request request, LoginRateLimiter.LimitStatus limit) {
-        return status(TOO_MANY_REQUESTS, views.html.adminLogin.render(request, credentialsConfigured(),
-                "Too many failed login attempts. Please try again later.", messages()))
-                .withHeader("Retry-After", Long.toString(limit.retryAfterSeconds()));
+    private static Result rateLimited(play.twirl.api.Html page, LoginRateLimiter.LimitStatus limit) {
+        return status(TOO_MANY_REQUESTS, page).withHeader("Retry-After", Long.toString(limit.retryAfterSeconds()));
     }
 
     public Result logout(Http.Request request) {
-        return redirect(routes.AdminController.login()).removingFromSession(request, ADMIN_SESSION);
+        AdminAuth.currentUser(request).ifPresent(member ->
+                AuthLog.event(AuthLog.Event.LOGOUT).member(member).request(request).log());
+        return redirect(routes.AdminController.login()).withNewSession();
+    }
+
+    @AddCSRFToken
+    public Result profile(Http.Request request) {
+        Result denied = require(request, null);
+        if (denied != null) return denied;
+        return ok(profilePage(request, AdminAuth.currentUser(request).orElseThrow(), null));
+    }
+
+    /** Every member may maintain their own basic profile, nothing else about their entry. */
+    public Result updateProfile(Http.Request request) {
+        Result denied = require(request, null);
+        if (denied != null) return denied;
+        User member = AdminAuth.currentUser(request).orElseThrow();
+        Map<String, String[]> data = form(request);
+        String email = value(data, "email");
+        Date birthDate = parseDay(value(data, "birthDate"));
+        if (!value(data, "birthDate").isBlank() && birthDate == null) {
+            return badRequest(profilePage(request, member, "Please enter a valid birth date."));
+        }
+        User sameEmail = email.isBlank() ? null : User.find.query().where().eq("email", email).findOne();
+        if (sameEmail != null && !sameEmail.getId().equals(member.getId())) {
+            return badRequest(profilePage(request, member, "This email address is already used by another member."));
+        }
+        member.setRealname(value(data, "realname"));
+        member.setEmail(email.isBlank() ? null : email);
+        member.setBirthDate(birthDate);
+        member.setCity(value(data, "city"));
+        member.setJob(value(data, "job"));
+        member.setQuote(value(data, "quote"));
+        member.update();
+        clearPublicCaches();
+        return redirect(routes.AdminController.profile()).flashing("success", "Profile saved successfully.");
+    }
+
+    public Result changePassword(Http.Request request) {
+        Result denied = require(request, null);
+        if (denied != null) return denied;
+        User member = AdminAuth.currentUser(request).orElseThrow();
+        String client = request.remoteAddress();
+        LoginRateLimiter.LimitStatus limit = throttle.clientStatus(client);
+        if (!limit.blocked()) limit = throttle.nickStatus(member.getNick());
+        if (limit.blocked()) {
+            AuthLog.event(AuthLog.Event.LOGIN_RATE_LIMITED).reason("password_change").member(member).request(request).log();
+            return rateLimited(profilePage(request, member, RATE_LIMITED), limit);
+        }
+
+        Map<String, String[]> data = form(request);
+        // A hijacked session alone must not be enough to take over the account.
+        if (!Passwords.verify(rawValue(data, "currentPassword"), member.getPasswordHash())) {
+            limit = throttle.recordFailure(client, member.getNick());
+            AuthLog.event(AuthLog.Event.PASSWORD_CHANGE_FAILED).reason("bad_current_password")
+                    .member(member).request(request).log();
+            if (limit.blocked()) return rateLimited(profilePage(request, member, RATE_LIMITED), limit);
+            return badRequest(profilePage(request, member, "The current password is wrong."));
+        }
+        String password = rawValue(data, "password");
+        String error = Passwords.validate(password, rawValue(data, "passwordConfirmation"), member.getNick());
+        if (error != null) return badRequest(profilePage(request, member, error));
+
+        setPassword(member, password);
+        AuthLog.event(AuthLog.Event.PASSWORD_CHANGED).member(member).actor(member).request(request).log();
+        // The new password version ends every other session; this one continues.
+        return AdminAuth.signIn(redirect(routes.AdminController.profile())
+                .flashing("success", "Password changed. All other sessions have been signed out."), member);
+    }
+
+    private play.twirl.api.Html profilePage(Http.Request request, User member, String error) {
+        return views.html.adminProfile.render(request, member, error, messages());
+    }
+
+    /** Shows the link once; afterwards only its hash exists. */
+    public Result createPasswordLink(Http.Request request, Long id) {
+        Result denied = require(request, Role.ADMIN);
+        if (denied != null) return denied;
+        User actor = AdminAuth.currentUser(request).orElseThrow();
+        User member = User.find.byId(id);
+        if (member == null) return notFound("Lineup member not found.");
+        if (!Boolean.TRUE.equals(member.getActive())) {
+            return badRequest(lineupForm(request, member, "Inactive members cannot sign in, so they get no password link."));
+        }
+        PasswordToken.find.query().where().eq("member.id", member.getId()).delete();
+        String token = Passwords.newToken();
+        PasswordToken entry = new PasswordToken();
+        entry.setMember(member);
+        entry.setCreatedBy(actor);
+        entry.setTokenHash(Passwords.tokenHash(token));
+        entry.setExpiresAt(Date.from(Instant.now().plus(passwordTokenValidity())));
+        entry.save();
+        AuthLog.event(AuthLog.Event.PASSWORD_LINK_CREATED).member(member).actor(actor).request(request).log();
+        String link = siteBaseUrl(request) + routes.AdminController.passwordTokenForm(token).url();
+        return ok(lineupForm(request, member, null, link)).withHeader(CACHE_CONTROL, "no-store");
+    }
+
+    /**
+     * Opening the link changes nothing, so chat link previews (Discord fetches every
+     * URL it sees) cannot use it up. Only the POST consumes the token.
+     */
+    @AddCSRFToken
+    public Result passwordTokenForm(Http.Request request, String token) {
+        LoginRateLimiter.LimitStatus limit = throttle.clientStatus(request.remoteAddress());
+        if (limit.blocked()) return tokenPage(rateLimited(setPasswordPage(request, token, null, RATE_LIMITED), limit));
+        PasswordToken entry = validToken(token);
+        if (entry == null) return tokenPage(notFound(setPasswordPage(request, token, null, null)));
+        return tokenPage(ok(setPasswordPage(request, token, entry.getMember(), null)));
+    }
+
+    @AddCSRFToken
+    public Result redeemPasswordToken(Http.Request request, String token) {
+        String client = request.remoteAddress();
+        LoginRateLimiter.LimitStatus limit = throttle.clientStatus(client);
+        if (limit.blocked()) {
+            AuthLog.event(AuthLog.Event.PASSWORD_LINK_REJECTED).reason("rate_limited").request(request).log();
+            return tokenPage(rateLimited(setPasswordPage(request, token, null, RATE_LIMITED), limit));
+        }
+        PasswordToken entry = PasswordToken.find.query().where().eq("tokenHash", Passwords.tokenHash(token)).findOne();
+        String reason = entry == null ? "unknown_token"
+                : entry.isExpired() ? "expired"
+                : !Boolean.TRUE.equals(entry.getMember().getActive()) ? "inactive" : null;
+        if (reason != null) {
+            limit = throttle.recordFailure(client, null);
+            AuthLog.Entry log = AuthLog.event(AuthLog.Event.PASSWORD_LINK_REJECTED).reason(reason);
+            (entry == null ? log : log.member(entry.getMember())).request(request).log();
+            if (entry != null) entry.delete();
+            if (limit.blocked()) return tokenPage(rateLimited(setPasswordPage(request, token, null, RATE_LIMITED), limit));
+            return tokenPage(notFound(setPasswordPage(request, token, null, null)));
+        }
+
+        User member = entry.getMember();
+        Map<String, String[]> data = form(request);
+        String password = rawValue(data, "password");
+        String error = Passwords.validate(password, rawValue(data, "passwordConfirmation"), member.getNick());
+        if (error != null) return tokenPage(badRequest(setPasswordPage(request, token, member, error)));
+
+        setPassword(member, password);
+        member.setLastLoginAt(new Date());
+        member.update();
+        AuthLog.event(AuthLog.Event.PASSWORD_LINK_REDEEMED).member(member).request(request).log();
+        return AdminAuth.signIn(redirect(routes.AdminController.index())
+                .flashing("success", "Your password has been set. Welcome!"), member);
+    }
+
+    private static PasswordToken validToken(String token) {
+        PasswordToken entry = PasswordToken.find.query().where().eq("tokenHash", Passwords.tokenHash(token)).findOne();
+        if (entry == null || entry.isExpired() || !Boolean.TRUE.equals(entry.getMember().getActive())) return null;
+        return entry;
+    }
+
+    private play.twirl.api.Html setPasswordPage(Http.Request request, String token, User member, String error) {
+        return views.html.setPassword.render(request, token, member, error, messages());
+    }
+
+    /** The token sits in the URL: keep it out of caches and out of Referer headers. */
+    private static Result tokenPage(Result result) {
+        return result.withHeader(CACHE_CONTROL, "no-store").withHeader("Referrer-Policy", "no-referrer");
+    }
+
+    private static void setPassword(User member, String password) {
+        member.setPasswordHash(Passwords.hash(password));
+        member.setPasswordChangedAt(new Date());
+        member.update();
+        PasswordToken.find.query().where().eq("member.id", member.getId()).delete();
+    }
+
+    private Duration passwordTokenValidity() {
+        String path = "auth.passwordToken.validity";
+        return configuration.underlying().hasPath(path)
+                ? configuration.underlying().getDuration(path) : Duration.ofHours(48);
+    }
+
+    private String siteBaseUrl(Http.Request request) {
+        String configured = configured("site.baseUrl");
+        if (!configured.isBlank()) return configured.endsWith("/") ? configured.substring(0, configured.length() - 1) : configured;
+        return (request.secure() ? "https://" : "http://") + request.host();
     }
 
     @AddCSRFToken
     public Result index(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, null);
         if (denied != null) return denied;
+        User member = AdminAuth.currentUser(request).orElseThrow();
         long newsCount = News.find.query().findCount();
         long clanwarCount = Clanwar.find.query().findCount();
         long lineupCount = User.find.query().findCount();
@@ -114,13 +326,13 @@ public class AdminController extends Controller {
         long gameTypeCount = GameType.find.query().findCount();
         long videoCount = Video.find.query().findCount();
         long downloadCount = Download.find.query().findCount();
-        return ok(views.html.adminIndex.render(request, newsCount, clanwarCount, lineupCount, squadCount,
+        return ok(views.html.adminIndex.render(request, member, newsCount, clanwarCount, lineupCount, squadCount,
                 mapCount, leagueCount, gameCount, gameTypeCount, videoCount, downloadCount, messages()));
     }
 
     @AddCSRFToken
     public Result newsIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.NEWS);
         if (denied != null) return denied;
         List<News> news = News.find.query().orderBy().desc("timestamp").findList();
         return ok(views.html.adminNewsList.render(request, news, messages()));
@@ -128,7 +340,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result clanwarIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         List<Clanwar> clanwars = Clanwar.find.query().orderBy().desc("date").findList();
         return ok(views.html.adminClanwarList.render(request, clanwars, messages()));
@@ -136,7 +348,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result lineupIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         List<User> lineup = User.find.query().orderBy().asc("nick").findList();
         return ok(views.html.adminLineupList.render(request, lineup, messages()));
@@ -144,7 +356,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result squadIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         List<Squad> squads = Squad.find.query().orderBy().asc("description").findList();
         return ok(views.html.adminSquadList.render(request, squads, messages()));
@@ -152,17 +364,19 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newLineupMember(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         return ok(lineupForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editLineupMember(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         User member = User.find.byId(id);
         if (member == null) return notFound("Lineup member not found.");
+        Result protectedAccount = protectAdminAccount(request, member);
+        if (protectedAccount != null) return protectedAccount;
         return ok(lineupForm(request, member, null));
     }
 
@@ -178,18 +392,18 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newNews(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.NEWS);
         if (denied != null) return denied;
-        return ok(views.html.adminNewsForm.render(request, null, User.find.all(), null, messages()));
+        return ok(newsForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editNews(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.NEWS);
         if (denied != null) return denied;
         News news = News.find.byId(id);
         if (news == null) return notFound("News item not found.");
-        return ok(views.html.adminNewsForm.render(request, news, User.find.all(), null, messages()));
+        return ok(newsForm(request, news, null));
     }
 
     public Result createNews(Http.Request request) {
@@ -204,14 +418,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newClanwar(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         return ok(clanwarForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editClanwar(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Clanwar clanwar = Clanwar.find.byId(id);
         if (clanwar == null) return notFound("Clanwar not found.");
@@ -230,14 +444,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newSquad(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         return ok(squadForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editSquad(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         Squad squad = Squad.find.byId(id);
         if (squad == null) return notFound("Squad not found.");
@@ -255,7 +469,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveSquad(Http.Request request, Squad squad) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String description = value(data, "description");
@@ -278,7 +492,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result videoIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         List<Video> videos = Video.find.query().orderBy("sortOrder asc, id asc").findList();
         return ok(views.html.adminVideoList.render(request, videos, messages()));
@@ -286,14 +500,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newVideo(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         return ok(videoForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editVideo(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         Video video = Video.find.byId(id);
         if (video == null) return notFound("Video not found.");
@@ -311,7 +525,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveVideo(Http.Request request, Video video) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String title = value(data, "title");
@@ -356,7 +570,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result downloadIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         List<Download> downloads = Download.find.query().orderBy("sortOrder asc, id asc").findList();
         for (Download download : downloads) download.setSizeLabel(HomeController.fileSizeLabel(configuration, download.getFile()));
@@ -365,14 +579,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newDownload(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         return ok(downloadForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editDownload(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         Download download = Download.find.byId(id);
         if (download == null) return notFound("Download not found.");
@@ -390,7 +604,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveDownload(Http.Request request, Download download) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String title = value(data, "title");
@@ -420,7 +634,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result mapIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         List<models.Map> maps = models.Map.find.query().orderBy().asc("map").findList();
         return ok(views.html.adminMapList.render(request, maps, messages()));
@@ -428,14 +642,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newMap(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         return ok(mapForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editMap(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         models.Map map = models.Map.find.byId(id);
         if (map == null) return notFound("Map not found.");
@@ -453,7 +667,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveMap(Http.Request request, models.Map map) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String mapName = value(data, "map");
@@ -475,7 +689,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result leagueIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         List<League> leagues = League.find.query().orderBy().asc("league").findList();
         return ok(views.html.adminLeagueList.render(request, leagues, messages()));
@@ -483,14 +697,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newLeague(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         return ok(leagueForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editLeague(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         League league = League.find.byId(id);
         if (league == null) return notFound("League not found.");
@@ -508,7 +722,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveLeague(Http.Request request, League league) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String leagueName = value(data, "league");
@@ -528,7 +742,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result gameIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         List<Game> games = Game.find.query().orderBy().asc("description").findList();
         return ok(views.html.adminGameList.render(request, games, messages()));
@@ -536,14 +750,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newGame(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         return ok(gameForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editGame(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Game game = Game.find.byId(id);
         if (game == null) return notFound("Game not found.");
@@ -561,7 +775,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveGame(Http.Request request, Game game) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String description = value(data, "description");
@@ -582,7 +796,7 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result gameTypeIndex(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         List<GameType> gameTypes = GameType.find.query().orderBy().asc("gameType").findList();
         return ok(views.html.adminGameTypeList.render(request, gameTypes, messages()));
@@ -590,14 +804,14 @@ public class AdminController extends Controller {
 
     @AddCSRFToken
     public Result newGameType(Http.Request request) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         return ok(gameTypeForm(request, null, null));
     }
 
     @AddCSRFToken
     public Result editGameType(Http.Request request, Long id) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         GameType gameType = GameType.find.byId(id);
         if (gameType == null) return notFound("Game type not found.");
@@ -615,7 +829,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveGameType(Http.Request request, GameType gameType) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String gameTypeName = value(data, "gameType");
@@ -633,8 +847,15 @@ public class AdminController extends Controller {
         return views.html.adminGameTypeForm.render(request, gameType, error, messages());
     }
 
+    private play.twirl.api.Html newsForm(Http.Request request, News news, String error) {
+        // New items default to the signed-in member as author.
+        Long defaultAuthorId = AdminAuth.currentUser(request).map(User::getId).orElse(null);
+        return views.html.adminNewsForm.render(request, news, User.find.query().orderBy().asc("nick").findList(),
+                defaultAuthorId, error, messages());
+    }
+
     private Result saveNews(Http.Request request, News news) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.NEWS);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String topic = value(data, "topic");
@@ -642,8 +863,8 @@ public class AdminController extends Controller {
         User author = find(User.find, value(data, "usernameId"));
         Date timestamp = parseDate(value(data, "timestamp"));
         if (topic.isBlank() || content.isBlank() || author == null || timestamp == null) {
-            return badRequest(views.html.adminNewsForm.render(request, news.getId() == null ? null : news,
-                    User.find.all(), "Please complete all required fields correctly.", messages()));
+            return badRequest(newsForm(request, news.getId() == null ? null : news,
+                    "Please complete all required fields correctly."));
         }
         news.setTopic(topic);
         news.setContent(ContentSanitizer.sanitizeHtml(content));
@@ -655,7 +876,7 @@ public class AdminController extends Controller {
     }
 
     private Result saveClanwar(Http.Request request, Clanwar clanwar) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.CLANWARS);
         if (denied != null) return denied;
         Map<String, String[]> data = form(request);
         String enemy = value(data, "enemy");
@@ -690,8 +911,12 @@ public class AdminController extends Controller {
     }
 
     private Result saveLineupMember(Http.Request request, User member) {
-        Result denied = requireAdmin(request);
+        Result denied = require(request, Role.LINEUP);
         if (denied != null) return denied;
+        Result protectedAccount = protectAdminAccount(request, member);
+        if (protectedAccount != null) return protectedAccount;
+        User actor = AdminAuth.currentUser(request).orElseThrow();
+        boolean manageAccess = actor.hasRole(Role.ADMIN);
         Map<String, String[]> data = form(request);
         boolean creating = member.getId() == null;
         String nick = value(data, "nick");
@@ -707,11 +932,19 @@ public class AdminController extends Controller {
             return badRequest(lineupForm(request, creating ? null : member,
                     "Please enter a nick with at least three characters and check all entered values."));
         }
-        User sameNick = User.find.query().where().eq("nick", nick).findOne();
+        // Case-insensitive, because the login looks nicks up that way.
+        User sameNick = User.findByNick(nick);
         User sameEmail = email.isBlank() ? null : User.find.query().where().eq("email", email).findOne();
         if ((sameNick != null && !sameNick.getId().equals(member.getId()))
                 || (sameEmail != null && !sameEmail.getId().equals(member.getId()))) {
             return badRequest(lineupForm(request, creating ? null : member, "Nick and email address must be unique."));
+        }
+        boolean active = data.containsKey("active");
+        Set<Role> roles = manageAccess ? selectedRoles(data) : member.getRoleSet();
+        if (!creating && member.hasRole(Role.ADMIN) && Boolean.TRUE.equals(member.getActive())
+                && (!active || !roles.contains(Role.ADMIN)) && !otherActiveAdminExists(member)) {
+            return badRequest(lineupForm(request, member,
+                    "This is the last active administrator. Make someone else an administrator first."));
         }
 
         member.setNick(nick);
@@ -724,14 +957,72 @@ public class AdminController extends Controller {
         member.setSince(since);
         member.setExitDate(exitDate);
         member.setImage(value(data, "image"));
-        member.setActive(data.containsKey("active"));
+        member.setActive(active);
         member.setFounder(data.containsKey("founder"));
         member.setClanLeader(data.containsKey("clanLeader"));
         member.setHonoraryMember(data.containsKey("honoraryMember"));
         if (creating) member.save(); else member.update();
         syncSquads(member, data);
+        if (manageAccess) syncRoles(request, actor, member, roles);
+        if (!active) PasswordToken.find.query().where().eq("member.id", member.getId()).delete();
         clearPublicCaches();
         return redirect(routes.AdminController.lineupIndex()).flashing("success", "Lineup member saved successfully.");
+    }
+
+    /**
+     * Only administrators may touch administrator accounts. Otherwise LINEUP could
+     * deactivate or rename an administrator, or edit their way into the account.
+     */
+    private Result protectAdminAccount(Http.Request request, User member) {
+        if (member.getId() == null || !member.hasRole(Role.ADMIN)) return null;
+        User actor = AdminAuth.currentUser(request).orElseThrow();
+        return actor.hasRole(Role.ADMIN) ? null : AdminAuth.forbidden(request, actor, Role.ADMIN, messages());
+    }
+
+    private static boolean otherActiveAdminExists(User member) {
+        return UserRole.find.query().where()
+                .eq("role", Role.ADMIN)
+                .eq("member.active", true)
+                .ne("member.id", member.getId())
+                .exists();
+    }
+
+    private static Set<Role> selectedRoles(Map<String, String[]> data) {
+        Set<Role> roles = EnumSet.noneOf(Role.class);
+        for (String name : values(data, "role")) {
+            try { roles.add(Role.valueOf(name)); } catch (IllegalArgumentException ignored) { }
+        }
+        return roles;
+    }
+
+    private void syncRoles(Http.Request request, User actor, User member, Set<Role> selected) {
+        List<UserRole> entries = UserRole.find.query().where().eq("member.id", member.getId()).findList();
+        Set<Role> previous = EnumSet.noneOf(Role.class);
+        for (UserRole entry : entries) {
+            previous.add(entry.getRole());
+            if (!selected.contains(entry.getRole())) entry.delete();
+        }
+        for (Role role : selected) {
+            if (previous.contains(role)) continue;
+            UserRole entry = new UserRole();
+            entry.setMember(member);
+            entry.setRole(role);
+            entry.save();
+        }
+        if (!previous.equals(selected)) {
+            AuthLog.event(AuthLog.Event.ROLES_CHANGED).member(member).actor(actor)
+                    .field("roles", roleList(selected)).field("previous", roleList(previous))
+                    .request(request).log();
+        }
+    }
+
+    private static String roleList(Set<Role> roles) {
+        StringBuilder list = new StringBuilder();
+        for (Role role : roles) {
+            if (list.length() > 0) list.append(',');
+            list.append(role.name().toLowerCase(java.util.Locale.ROOT));
+        }
+        return list.toString();
     }
 
     private void syncSquads(User member, Map<String, String[]> data) {
@@ -758,8 +1049,15 @@ public class AdminController extends Controller {
     }
 
     private play.twirl.api.Html lineupForm(Http.Request request, User member, String error) {
+        return lineupForm(request, member, error, null);
+    }
+
+    private play.twirl.api.Html lineupForm(Http.Request request, User member, String error, String passwordLink) {
+        boolean manageAccess = AdminAuth.hasRole(request, Role.ADMIN);
+        PasswordToken openToken = member == null || member.getId() == null ? null : PasswordToken.openFor(member);
         return views.html.adminLineupForm.render(request, member,
-                Squad.find.query().orderBy().asc("description").findList(), error, messages());
+                Squad.find.query().orderBy().asc("description").findList(), error, manageAccess,
+                openToken, passwordLink, messages());
     }
 
     private play.twirl.api.Html clanwarForm(Http.Request request, Clanwar clanwar, String error) {
@@ -867,16 +1165,8 @@ public class AdminController extends Controller {
         }
     }
 
-    private Result requireAdmin(Http.Request request) {
-        return isAuthenticated(request) ? null : redirect(routes.AdminController.login());
-    }
-
-    private boolean isAuthenticated(Http.Request request) {
-        return AdminAuth.isAuthenticated(request, configuration);
-    }
-
-    private boolean credentialsConfigured() {
-        return AdminAuth.credentialsConfigured(configuration);
+    private Result require(Http.Request request, Role role) {
+        return AdminAuth.require(request, role, messages());
     }
 
     private String configured(String path) {
@@ -891,6 +1181,12 @@ public class AdminController extends Controller {
     private static String value(Map<String, String[]> data, String key) {
         String[] values = data.get(key);
         return values == null || values.length == 0 || values[0] == null ? "" : values[0].trim();
+    }
+
+    /** Like value(), but untrimmed: leading or trailing blanks are part of a password. */
+    private static String rawValue(Map<String, String[]> data, String key) {
+        String[] values = data.get(key);
+        return values == null || values.length == 0 || values[0] == null ? "" : values[0];
     }
 
     private static String[] values(Map<String, String[]> data, String key) {
@@ -929,9 +1225,5 @@ public class AdminController extends Controller {
 
     private static <T> T find(io.ebean.Finder<Long, T> finder, String id) {
         try { return finder.byId(Long.valueOf(id)); } catch (NumberFormatException ex) { return null; }
-    }
-
-    private static boolean secureEquals(String left, String right) {
-        return MessageDigest.isEqual(left.getBytes(StandardCharsets.UTF_8), right.getBytes(StandardCharsets.UTF_8));
     }
 }

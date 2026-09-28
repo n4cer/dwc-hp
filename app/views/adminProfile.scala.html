@@ -1,0 +1,41 @@
+@(request: Http.Request, item: User, error: String, messages: play.i18n.Messages)
+@import scala.jdk.CollectionConverters._
+
+@main("My profile", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <h1>My profile</h1>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <p class="admin-hint">Signed in as <strong>@item.getNick()</strong>@if(!item.getRoleSet().isEmpty()) { &middot; Roles: @item.getRoleSet().asScala.map(_.getLabel()).mkString(", ")}@if(item.getLastLoginAt() != null) { &middot; Last login: @item.getLastLoginAt().format("dd.MM.yyyy HH:mm")}</p>
+        <form method="post" action="@controllers.routes.AdminController.updateProfile()">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Real name<input type="text" name="realname" value="@item.getRealname()"></label>
+                <label>Email<input type="email" name="email" value="@item.getEmail()"></label>
+                <label>Birth date<input type="date" name="birthDate" value="@if(item.getBirthDate() != null) {@item.getBirthDate().format("yyyy-MM-dd")}"></label>
+                <label>City<input type="text" name="city" value="@item.getCity()"></label>
+                <label>Job<input type="text" name="job" value="@item.getJob()"></label>
+            </div>
+            <label>Quote<textarea name="quote" rows="3">@item.getQuote()</textarea></label>
+            <p class="admin-hint">Nick, picture, squads and membership dates are maintained by the lineup team.</p>
+            <div class="admin-actions"><button type="submit">Save profile</button></div>
+        </form>
+
+        <section>
+            <h2>Change password</h2>
+            <form method="post" action="@controllers.routes.AdminController.changePassword()">
+                @helper.CSRF.formField(request.asScala())
+                <label>Current password<input type="password" name="currentPassword" autocomplete="current-password" required></label>
+                <div class="admin-grid">
+                    <label>New password<input type="password" name="password" autocomplete="new-password" minlength="@controllers.Passwords.MIN_LENGTH" required></label>
+                    <label>Repeat new password<input type="password" name="passwordConfirmation" autocomplete="new-password" minlength="@controllers.Passwords.MIN_LENGTH" required></label>
+                </div>
+                <p class="admin-hint">At least @controllers.Passwords.MIN_LENGTH characters. Changing the password signs out all your other sessions.</p>
+                <div class="admin-actions"><button type="submit">Change password</button></div>
+            </form>
+        </section>
+    </div>
+}

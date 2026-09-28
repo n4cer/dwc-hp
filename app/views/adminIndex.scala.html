@@ -1,4 +1,4 @@
-@(request: Http.Request, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long, videoCount: Long, downloadCount: Long, messages: play.i18n.Messages)
+@(request: Http.Request, member: User, newsCount: Long, clanwarCount: Long, lineupCount: Long, squadCount: Long, mapCount: Long, leagueCount: Long, gameCount: Long, gameTypeCount: Long, videoCount: Long, downloadCount: Long, messages: play.i18n.Messages)
 
 @main("Administration", messages, noindex = true) {
     <div class="admin-page">
@@ -9,18 +9,28 @@
                 <button type="submit" class="secondary">Sign out</button>
             </form>
         </div>
+        <p class="admin-hint">Signed in as <strong>@member.getNick()</strong></p>
         @request.flash().get("success").map { message =>
             <div class="admin-message success">@message</div>
         }
         <div class="admin-dashboard">
+            <a class="admin-card" href="@controllers.routes.AdminController.profile()">
+                <h2>My profile</h2>
+                <p>Profile and password</p>
+            </a>
+            @if(member.hasRole(Role.NEWS)) {
             <a class="admin-card" href="@controllers.routes.AdminController.newsIndex()">
                 <h2>News</h2>
                 <p class="admin-card-count">@newsCount</p>
             </a>
+            }
+            @if(member.hasRole(Role.CLANWARS)) {
             <a class="admin-card" href="@controllers.routes.AdminController.clanwarIndex()">
                 <h2>Clanwars</h2>
                 <p class="admin-card-count">@clanwarCount</p>
             </a>
+            }
+            @if(member.hasRole(Role.LINEUP)) {
             <a class="admin-card" href="@controllers.routes.AdminController.lineupIndex()">
                 <h2>Lineup</h2>
                 <p class="admin-card-count">@lineupCount</p>
@@ -29,6 +39,8 @@
                 <h2>Squads</h2>
                 <p class="admin-card-count">@squadCount</p>
             </a>
+            }
+            @if(member.hasRole(Role.MEDIA)) {
             <a class="admin-card" href="@controllers.routes.AdminController.videoIndex()">
                 <h2>Videos</h2>
                 <p class="admin-card-count">@videoCount</p>
@@ -37,6 +49,8 @@
                 <h2>Downloads</h2>
                 <p class="admin-card-count">@downloadCount</p>
             </a>
+            }
+            @if(member.hasRole(Role.CLANWARS)) {
             <a class="admin-card" href="@controllers.routes.AdminController.mapIndex()">
                 <h2>Maps</h2>
                 <p class="admin-card-count">@mapCount</p>
@@ -53,9 +67,12 @@
                 <h2>Game types</h2>
                 <p class="admin-card-count">@gameTypeCount</p>
             </a>
+            }
+            @if(member.hasRole(Role.QUAKE3)) {
             <a class="admin-card" href="@controllers.routes.AdminQuake3Controller.index()">
                 <h2>Quake 3 servers</h2>
             </a>
+            }
         </div>
     </div>
 }

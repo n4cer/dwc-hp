@@ -1,7 +1,7 @@
 package controllers;
 
 import jakarta.inject.Inject;
-import play.api.Configuration;
+import models.Role;
 import play.filters.csrf.AddCSRFToken;
 import play.i18n.Lang;
 import play.i18n.Messages;
@@ -16,13 +16,11 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 public class AdminQuake3Controller extends Controller {
-    private final Configuration configuration;
     private final Quake3ControlClient control;
     private final MessagesApi messagesApi;
 
     @Inject
-    public AdminQuake3Controller(Configuration configuration, Quake3ControlClient control, MessagesApi messagesApi) {
-        this.configuration = configuration;
+    public AdminQuake3Controller(Quake3ControlClient control, MessagesApi messagesApi) {
         this.control = control;
         this.messagesApi = messagesApi;
     }
@@ -66,6 +64,6 @@ public class AdminQuake3Controller extends Controller {
     }
 
     private Result requireAdmin(Http.Request request) {
-        return AdminAuth.isAuthenticated(request, configuration) ? null : redirect(routes.AdminController.login());
+        return AdminAuth.require(request, Role.QUAKE3, messages());
     }
 }
