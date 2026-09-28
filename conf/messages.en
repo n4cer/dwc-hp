@@ -135,16 +135,6 @@ privacy.s11.p1 = We take appropriate technical and organisational measures to pr
 privacy.s12.heading = 12. Changes to this privacy policy
 privacy.s12.p1 = We update this privacy policy whenever the website, the procedures used, or the legal requirements change. The version published on this page at any given time applies.
 
-pickup.title = Quake 3 Pickup
-pickup.description = Regular and spontaneous Quake 3 play sessions with the Doomwarriors.
-pickup.heading = q3 pickup / spontaneous
-pickup.fixedTitle = Fixed sessions
-pickup.fixedText = For Q3 TDM and CTF you'll find these in the respective topics in the Discord channels. Roughly every 2 weeks, starting around 8pm.
-pickup.spontanTitle = Spontaneous
-pickup.spontanPrefix = For everyone who loves spontaneous matches, we have the
-pickup.spontanMiddle1 = channel #q3-pickup. There's a bot there that adds you to the respective pickups, just like #spontanctf used to (
-pickup.spontanMiddle2 = ) and then starts the games. We have our own servers where the games are played.
-pickup.commandsPrefix = You can find all bot commands here:
 
 videos.title = Videos
 videos.description = Old Doomwarriors videos from the clan's history, playable right in the browser.

@@ -628,11 +628,6 @@ public class HomeController extends Controller {
               && allowedExtensions.contains(name.substring(separator + 1).toLowerCase(Locale.ROOT));
     }
     
-    public Result pickup(Http.Request request) {
-      Messages messages = messagesApi.preferred(request);
-      return cachedPage("pickup", messages, 2400, () -> views.html.pickup.render(messages));
-    }
-
     public Result todo(Http.Request request) {
       Messages messages = messagesApi.preferred(request);
       return cachedPage("todo", messages, 2400, () -> views.html.todo.render(messages));
@@ -666,7 +661,6 @@ public class HomeController extends Controller {
       addSitemapUrl(xml, baseUrl, routes.HomeController.history().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.lineup().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.hallOfFame().url());
-      addSitemapUrl(xml, baseUrl, routes.HomeController.pickup().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.videos().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.downloads().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.contact().url());
