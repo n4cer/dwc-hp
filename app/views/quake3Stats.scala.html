@@ -1,0 +1,93 @@
+@(stats: controllers.Quake3Stats, mode: String, available: Boolean, messages: play.i18n.Messages)
+
+@modeLink(value: String, label: String) = {
+    @if(value == mode) { <strong>@label</strong> } else { <a href="@controllers.routes.HomeController.quake3Stats(value)">@label</a> }
+}
+
+@main(messages.at("quake3stats.title"), messages, messages.at("quake3stats.description"), controllers.routes.HomeController.quake3Stats().url, noindex = true) {
+<div class="mitteContent">
+    <h1>@messages.at("quake3stats.heading")</h1>
+    <br />
+    <p>@messages.at("quake3stats.intro")</p>
+    <br />
+    <p>
+        @modeLink("", messages.at("quake3stats.all"))
+        @for(value <- controllers.Quake3Stats.MODES.asScala) { | @modeLink(value, value.toUpperCase) }
+    </p>
+    <br />
+
+    @if(!available) {
+        <p>@messages.at("quake3stats.unavailable")</p>
+    } else if(stats.matchCount() == 0) {
+        <p>@messages.at("quake3stats.empty")</p>
+    } else {
+        <p>@messages.at("quake3stats.matchCount"): @stats.matchCount()</p>
+        <br />
+
+        <h2>@messages.at("quake3stats.leaderboard")</h2>
+        <div class="table-scroll">
+            <table class="text clanwar-table">
+                <thead><tr>
+                    <th scope="col">@messages.at("quake3stats.player")</th>
+                    <th scope="col">@messages.at("quake3stats.matches")</th>
+                    <th scope="col">@messages.at("quake3stats.wins")</th>
+                    <th scope="col">@messages.at("quake3stats.kills")</th>
+                    <th scope="col">@messages.at("quake3stats.deaths")</th>
+                    <th scope="col">@messages.at("quake3stats.kd")</th>
+                    <th scope="col">@messages.at("quake3stats.suicides")</th>
+                    <th scope="col">@messages.at("quake3stats.damage")</th>
+                    @for(weapon <- controllers.Quake3Stats.accuracyWeapons().asScala) {
+                        <th scope="col">@messages.at("quake3stats.accuracy", weapon)</th>
+                    }
+                    <th scope="col">@messages.at("quake3stats.favourite")</th>
+                </tr></thead>
+                <tbody>
+                    @for(player <- stats.leaderboard().asScala) {
+                        <tr>
+                            <td>@player.name()@if(player.bot()) { <span class="q3-bot">(@messages.at("quake3stats.bot"))</span> }</td>
+                            <td>@player.matches()</td>
+                            <td>@player.wins()</td>
+                            <td>@player.kills()</td>
+                            <td>@player.deaths()</td>
+                            <td>@player.kd()</td>
+                            <td>@player.suicides()</td>
+                            <td>@player.damageGiven() / @player.damageReceived()</td>
+                            @for(weapon <- controllers.Quake3Stats.accuracyWeapons().asScala) {
+                                <td>@player.accuracy(weapon)</td>
+                            }
+                            <td>@player.favouriteWeapon()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <br />
+
+        <h2>@messages.at("quake3stats.recent")</h2>
+        <div class="table-scroll">
+            <table class="text clanwar-table">
+                <thead><tr>
+                    <th scope="col">@messages.at("quake3stats.date")</th>
+                    <th scope="col">@messages.at("quake3stats.mode")</th>
+                    <th scope="col">@messages.at("quake3stats.map")</th>
+                    <th scope="col">@messages.at("quake3stats.duration")</th>
+                    <th scope="col">@messages.at("quake3stats.result")</th>
+                    <th scope="col">@messages.at("quake3stats.players")</th>
+                </tr></thead>
+                <tbody>
+                    @for(row <- stats.recentMatches().asScala) {
+                        <tr>
+                            <td>@if(row.start() != null) { @row.start().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) }</td>
+                            <td>@row.gametype()</td>
+                            <td>@row.map()</td>
+                            <td>@row.duration()</td>
+                            <td>@row.result()</td>
+                            <td>@row.players().asScala.mkString(", ")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+}

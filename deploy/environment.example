@@ -14,3 +14,5 @@ DWC_QUAKE3_PUBLIC_HOST=doomwarriors.de
 DWC_QUAKE3_DUEL_PORT=27960
 DWC_QUAKE3_TDM_PORT=27961
 DWC_QUAKE3_CTF_PORT=27962
+# games.log folders of the q3 servers, read for /quake3/stats
+DWC_QUAKE3_LOG_FOLDER=/home/micha/docker/q3-osp-server/logs

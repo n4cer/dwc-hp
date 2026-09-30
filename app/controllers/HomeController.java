@@ -230,6 +230,30 @@ public class HomeController extends Controller {
       return ok(result);
     }
 
+    private static final int QUAKE3_STATS_CACHE_DURATION = 300;
+
+    /**
+     * Proof of concept: player statistics read straight from the servers' games.log
+     * files, re-parsed at most every few minutes. Nothing is stored in the database yet.
+     */
+    public Result quake3Stats(Http.Request request, String mode) {
+      Messages messages = messagesApi.preferred(request);
+      String filter = Quake3Stats.MODES.contains(mode) ? mode : "";
+      String folder = configuration.underlying().hasPath("quake3.logs.folder")
+              ? configuration.underlying().getString("quake3.logs.folder") : "";
+      return cachedPage("quake3stats_" + filter, messages, QUAKE3_STATS_CACHE_DURATION, () -> {
+        Quake3Stats stats;
+        boolean available = !folder.isBlank();
+        try {
+          stats = available ? Quake3Stats.of(Quake3GamesLog.readFolder(Path.of(folder)), filter, 20) : Quake3Stats.empty();
+        } catch (IOException e) {
+          stats = Quake3Stats.empty();
+          available = false;
+        }
+        return views.html.quake3Stats.render(stats, filter, available, messages);
+      });
+    }
+
     public Result lineup(Http.Request request) {
         Messages messages = messagesApi.preferred(request);
         List<Squad> squads = Squad.find.all();
