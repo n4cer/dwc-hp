@@ -107,3 +107,44 @@
         })
         .catch(() => {});
 })();
+
+(() => {
+    // Sortable tables on the Quake 3 statistics page. Cells may carry the raw value
+    // in data-value (K/D, accuracy, dates); otherwise the visible text is compared.
+    const valueOf = (row, index, kind) => {
+        const cell = row.cells[index];
+        const raw = cell.dataset.value !== undefined ? cell.dataset.value : cell.textContent.trim();
+        if (kind !== 'number') return raw.toLowerCase();
+        const number = parseFloat(raw);
+        return Number.isNaN(number) ? -Infinity : number;
+    };
+
+    document.querySelectorAll('table[data-sortable]').forEach(table => {
+        const body = table.tBodies[0];
+        const headers = Array.from(table.tHead.rows[0].cells);
+        headers.forEach((header, index) => {
+            const button = header.querySelector('.q3-sort');
+            if (!button) return;
+            const kind = header.dataset.sort;
+            button.addEventListener('click', () => {
+                // Numbers start with the highest value, names with A.
+                const current = header.getAttribute('aria-sort');
+                const descending = current ? current === 'ascending' : kind === 'number';
+                headers.forEach(other => other.removeAttribute('aria-sort'));
+                header.setAttribute('aria-sort', descending ? 'descending' : 'ascending');
+
+                const rows = Array.from(body.rows);
+                rows.sort((a, b) => {
+                    const left = valueOf(a, index, kind);
+                    const right = valueOf(b, index, kind);
+                    const order = left < right ? -1 : left > right ? 1 : 0;
+                    return descending ? -order : order;
+                });
+                rows.forEach(row => body.appendChild(row));
+                body.querySelectorAll('.q3-rank').forEach((cell, position) => {
+                    cell.textContent = position + 1;
+                });
+            });
+        });
+    });
+})();

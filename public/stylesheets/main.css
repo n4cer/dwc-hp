@@ -209,7 +209,58 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .clanwar-table .result[data-result-color="#00B900"] {background-color:#00B900;}
 .clanwar-table .result[data-result-color="#FF5706"] {background-color:#FF5706;}
 .clanwar-stats-section {margin-bottom:15px;}
-.q3-bot {color:var(--dwc-text-muted);}
+/* Quake 3 Statistiken */
+.q3-stats h1 {margin-bottom:4px;}
+.q3-intro {color:var(--dwc-text-muted);margin-bottom:12px;}
+.q3-toolbar {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;}
+.q3-tabs {display:inline-flex;border:1px solid var(--dwc-border-strong);}
+.q3-tab {padding:4px 12px;font-weight:bold;color:var(--dwc-text);background:var(--dwc-surface);}
+.q3-tab + .q3-tab {border-left:1px solid var(--dwc-border-strong);}
+a.q3-tab:hover {background:var(--dwc-surface-alt);color:#E2A612;text-decoration:none;}
+.q3-tab.active {background:#E2A612;color:#111;}
+.q3-bot-toggle {padding:3px 10px;border:1px dashed var(--dwc-border-strong);border-radius:10px;font-size:10px;color:var(--dwc-text-muted);}
+.q3-bot-toggle.on {border-style:solid;color:#E2A612;}
+.q3-empty {padding:20px;border:1px dashed var(--dwc-border);text-align:center;color:var(--dwc-text-muted);}
+.q3-cards {margin-bottom:16px;}
+.q3-cards .stat-card {flex:1 1 90px;}
+.q3-card-name {display:block;margin-top:2px;font-weight:bold;word-break:break-word;}
+.q3-heading {margin:18px 0 4px;font-size:14px;color:#E2A612;}
+.q3-hint {color:var(--dwc-text-muted);font-size:10px;margin-bottom:4px;}
+.q3-table {width:100%;border-collapse:collapse;background:var(--dwc-surface);}
+.q3-table th,.q3-table td {padding:4px 4px;border-bottom:1px solid var(--dwc-border);text-align:left;white-space:nowrap;}
+.q3-table thead th {background:var(--dwc-surface-alt);border-bottom:2px solid var(--dwc-border-strong);font-size:10px;}
+.q3-table tbody tr:nth-child(even) {background:var(--dwc-surface-alt);}
+.q3-table tbody tr:hover {background:var(--dwc-bg-main);}
+.q3-table .num {text-align:right;font-variant-numeric:tabular-nums;}
+.q3-sort {all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:3px;}
+.q3-sort::after {content:"";font-size:9px;}
+.q3-sort:hover::after {content:"\2195";opacity:.5;}
+.q3-sort:hover,.q3-sort:focus-visible {color:#E2A612;}
+.q3-sort:focus-visible {outline:1px dotted #E2A612;}
+th[aria-sort="ascending"] .q3-sort::after {content:"\25B2";opacity:1;color:#E2A612;}
+th[aria-sort="descending"] .q3-sort::after {content:"\25BC";opacity:1;color:#E2A612;}
+th[aria-sort] {color:#E2A612;}
+.q3-rank {width:18px;color:var(--dwc-text-muted);}
+.q3-table tbody tr:nth-child(1) .q3-rank {color:#E2A612;font-weight:bold;}
+.q3-table tbody tr:nth-child(2) .q3-rank {color:#a8a8a8;font-weight:bold;}
+.q3-table tbody tr:nth-child(3) .q3-rank {color:#b0703a;font-weight:bold;}
+.q3-name {font-weight:bold;}
+.q3-strong {font-weight:bold;}
+.q3-bot {margin-left:4px;padding:0 5px;border:1px solid var(--dwc-border-strong);border-radius:8px;font-size:9px;font-weight:normal;color:var(--dwc-text-muted);text-transform:uppercase;}
+.q3-acc-bar {display:block;width:34px;height:3px;margin:2px 0 0 auto;background:var(--dwc-border);}
+.q3-acc-bar > span {display:block;height:100%;background:#E2A612;}
+.q3-weapon {padding:1px 6px;border-radius:8px;background:#E2A612;color:#111;font-size:10px;font-weight:bold;}
+.q3-mode {padding:1px 6px;border-radius:8px;font-size:10px;font-weight:bold;color:#fff;background:#666;}
+.q3-mode-duel {background:#6c3fa0;}
+.q3-mode-tdm {background:#2f6fb0;}
+.q3-mode-ctf {background:#C10000;}
+.q3-result {white-space:nowrap;}
+.q3-score {display:inline-block;margin:0 4px;padding:0 5px;border:1px solid var(--dwc-border-strong);font-weight:bold;font-variant-numeric:tabular-nums;}
+.q3-team-red {color:#d33;}
+.q3-team-blue {color:#3b82d6;}
+.q3-winner {font-weight:bold;}
+.q3-winner::after {content:" \2605";color:#E2A612;}
+.q3-table .q3-players {white-space:normal;color:var(--dwc-text-muted);font-size:10px;min-width:180px;}
 .clanwar-stats-summary {font-size:1.3em;font-weight:bold;cursor:pointer;margin:10px 0;}
 .clanwar-stats {margin-bottom:15px;}
 .clanwar-stats td,.clanwar-stats th {text-align:center;}

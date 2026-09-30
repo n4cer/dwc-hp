@@ -1,94 +1,130 @@
 @(stats: controllers.Quake3Stats, mode: String, bots: Boolean, available: Boolean, messages: play.i18n.Messages)
 
-@modeLink(value: String, label: String) = {
-    @if(value == mode) { <strong>@label</strong> } else { <a href="@controllers.routes.HomeController.quake3Stats(value, bots)">@label</a> }
+@import controllers.Quake3Stats.shortWeapon
+
+@modeTab(value: String, label: String) = {
+    @if(value == mode) {
+        <span class="q3-tab active" aria-current="page">@label</span>
+    } else {
+        <a class="q3-tab" href="@controllers.routes.HomeController.quake3Stats(value, bots)">@label</a>
+    }
 }
 
-@main(messages.at("quake3stats.title"), messages, messages.at("quake3stats.description"), controllers.routes.HomeController.quake3Stats().url, noindex = true) {
-<div class="mitteContent">
+@* sorted marks the column the server already ordered by, so the arrow matches the rows. *@
+@sortHeader(label: String, kind: String, title: String = "", sorted: String = "") = {
+    <th scope="col" class="@if(kind == "number") {num}" data-sort="@kind" @if(title.nonEmpty) { title="@title" } @if(sorted.nonEmpty) { aria-sort="@sorted" }><button type="button" class="q3-sort">@label</button></th>
+}
+
+@main(messages.at("quake3stats.title"), messages, messages.at("quake3stats.description"), controllers.routes.HomeController.quake3Stats().url) {
+<div class="mitteContent q3-stats">
     <h1>@messages.at("quake3stats.heading")</h1>
-    <br />
-    <p>@messages.at("quake3stats.intro")</p>
-    <br />
-    <p>
-        @modeLink("", messages.at("quake3stats.all"))
-        @for(value <- controllers.Quake3Stats.MODES.asScala) { | @modeLink(value, value.toUpperCase) }
-        &nbsp;&middot;&nbsp;
+    <p class="q3-intro">@messages.at("quake3stats.intro")</p>
+
+    <div class="q3-toolbar">
+        <nav class="q3-tabs" aria-label="@messages.at("quake3stats.mode")">
+            @modeTab("", messages.at("quake3stats.all"))
+            @for(value <- controllers.Quake3Stats.MODES.asScala) { @modeTab(value, value.toUpperCase) }
+        </nav>
         @if(bots) {
-            <a href="@controllers.routes.HomeController.quake3Stats(mode, false)">@messages.at("quake3stats.hideBots")</a>
+            <a class="q3-bot-toggle on" href="@controllers.routes.HomeController.quake3Stats(mode, false)">@messages.at("quake3stats.hideBots")</a>
         } else {
-            <a href="@controllers.routes.HomeController.quake3Stats(mode, true)">@messages.at("quake3stats.showBots")</a>
+            <a class="q3-bot-toggle" href="@controllers.routes.HomeController.quake3Stats(mode, true)">@messages.at("quake3stats.showBots")</a>
         }
-    </p>
-    <br />
+    </div>
 
     @if(!available) {
-        <p>@messages.at("quake3stats.unavailable")</p>
+        <p class="q3-empty">@messages.at("quake3stats.unavailable")</p>
     } else if(stats.matchCount() == 0) {
-        <p>@messages.at("quake3stats.empty")</p>
+        <p class="q3-empty">@messages.at("quake3stats.empty")</p>
     } else {
-        <p>@messages.at("quake3stats.matchCount"): @stats.matchCount()</p>
-        <br />
+        <div class="stat-cards q3-cards">
+            <div class="stat-card"><span class="stat-value">@stats.matchCount()</span><span class="stat-label">@messages.at("quake3stats.matches")</span></div>
+            <div class="stat-card"><span class="stat-value">@stats.leaderboard().size()</span><span class="stat-label">@messages.at("quake3stats.players")</span></div>
+            <div class="stat-card"><span class="stat-value">@stats.totalKills()</span><span class="stat-label">@messages.at("quake3stats.kills")</span></div>
+            @defining(stats.topFragger()) { top =>
+                @if(top != null) {
+                    <div class="stat-card stat-ratio"><span class="stat-value">@top.kills()</span><span class="stat-label">@messages.at("quake3stats.topFragger")</span><span class="q3-card-name">@top.name()</span></div>
+                }
+            }
+            @defining(stats.bestAim("Railgun")) { aim =>
+                @if(aim != null) {
+                    <div class="stat-card stat-ratio"><span class="stat-value">@aim.accuracy("Railgun")</span><span class="stat-label">@messages.at("quake3stats.bestRail")</span><span class="q3-card-name">@aim.name()</span></div>
+                }
+            }
+        </div>
 
-        <h2>@messages.at("quake3stats.leaderboard")</h2>
+        <h2 class="q3-heading">@messages.at("quake3stats.leaderboard")</h2>
+        <p class="q3-hint">@messages.at("quake3stats.sortHint")</p>
         <div class="table-scroll">
-            <table class="text clanwar-table">
+            <table class="q3-table" data-sortable>
                 <thead><tr>
-                    <th scope="col">@messages.at("quake3stats.player")</th>
-                    <th scope="col">@messages.at("quake3stats.matches")</th>
-                    <th scope="col">@messages.at("quake3stats.wins")</th>
-                    <th scope="col">@messages.at("quake3stats.kills")</th>
-                    <th scope="col">@messages.at("quake3stats.deaths")</th>
-                    <th scope="col">@messages.at("quake3stats.kd")</th>
-                    <th scope="col">@messages.at("quake3stats.suicides")</th>
-                    <th scope="col">@messages.at("quake3stats.damage")</th>
+                    <th scope="col" class="num q3-rank">#</th>
+                    @sortHeader(messages.at("quake3stats.player"), "text")
+                    @sortHeader(messages.at("quake3stats.matches"), "number")
+                    @sortHeader(messages.at("quake3stats.wins"), "number", sorted = "descending")
+                    @sortHeader(messages.at("quake3stats.kills"), "number")
+                    @sortHeader(messages.at("quake3stats.deaths"), "number")
+                    @sortHeader(messages.at("quake3stats.kd"), "number")
+                    @sortHeader(messages.at("quake3stats.suicidesShort"), "number", messages.at("quake3stats.suicides"))
+                    @sortHeader(messages.at("quake3stats.damageGiven"), "number", messages.at("quake3stats.damageGivenTitle"))
+                    @sortHeader(messages.at("quake3stats.damageReceived"), "number", messages.at("quake3stats.damageReceivedTitle"))
                     @for(weapon <- controllers.Quake3Stats.accuracyWeapons().asScala) {
-                        <th scope="col">@messages.at("quake3stats.accuracy", weapon)</th>
+                        @sortHeader(shortWeapon(weapon) + " %", "number", messages.at("quake3stats.accuracy", weapon))
                     }
-                    <th scope="col">@messages.at("quake3stats.favourite")</th>
+                    @sortHeader(messages.at("quake3stats.favouriteShort"), "text", messages.at("quake3stats.favourite"))
                 </tr></thead>
                 <tbody>
-                    @for(player <- stats.leaderboard().asScala) {
+                    @for((player, index) <- stats.leaderboard().asScala.zipWithIndex) {
                         <tr>
-                            <td>@player.name()@if(player.bot()) { <span class="q3-bot">(@messages.at("quake3stats.bot"))</span> }</td>
-                            <td>@player.matches()</td>
-                            <td>@player.wins()</td>
-                            <td>@player.kills()</td>
-                            <td>@player.deaths()</td>
-                            <td>@player.kd()</td>
-                            <td>@player.suicides()</td>
-                            <td>@player.damageGiven() / @player.damageReceived()</td>
+                            <td class="num q3-rank">@(index + 1)</td>
+                            <td class="q3-name">@player.name()@if(player.bot()) { <span class="q3-bot">@messages.at("quake3stats.bot")</span> }</td>
+                            <td class="num">@player.matches()</td>
+                            <td class="num">@player.wins()</td>
+                            <td class="num q3-strong">@player.kills()</td>
+                            <td class="num">@player.deaths()</td>
+                            <td class="num" data-value="@player.kdValue()">@player.kd()</td>
+                            <td class="num">@player.suicides()</td>
+                            <td class="num">@player.damageGiven()</td>
+                            <td class="num">@player.damageReceived()</td>
                             @for(weapon <- controllers.Quake3Stats.accuracyWeapons().asScala) {
-                                <td>@player.accuracy(weapon)</td>
+                                <td class="num q3-acc" data-value="@player.accuracyValue(weapon)">
+                                    @player.accuracy(weapon)
+                                    @if(player.accuracyValue(weapon) >= 0) {
+                                        <span class="q3-acc-bar" aria-hidden="true"><span class="pct-@player.accuracyStep(weapon)"></span></span>
+                                    }
+                                </td>
                             }
-                            <td>@player.favouriteWeapon()</td>
+                            <td>@defining(player.favouriteWeapon()) { weapon => @if(weapon == "–") { – } else { <span class="q3-weapon" title="@weapon">@shortWeapon(weapon)</span> } }</td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
-        <br />
 
-        <h2>@messages.at("quake3stats.recent")</h2>
+        <h2 class="q3-heading">@messages.at("quake3stats.recent")</h2>
         <div class="table-scroll">
-            <table class="text clanwar-table">
+            <table class="q3-table" data-sortable>
                 <thead><tr>
-                    <th scope="col">@messages.at("quake3stats.date")</th>
-                    <th scope="col">@messages.at("quake3stats.mode")</th>
-                    <th scope="col">@messages.at("quake3stats.map")</th>
-                    <th scope="col">@messages.at("quake3stats.duration")</th>
-                    <th scope="col">@messages.at("quake3stats.result")</th>
+                    @sortHeader(messages.at("quake3stats.date"), "number", sorted = "descending")
+                    @sortHeader(messages.at("quake3stats.mode"), "text")
+                    @sortHeader(messages.at("quake3stats.map"), "text")
+                    @sortHeader(messages.at("quake3stats.duration"), "number")
+                    <th scope="col" class="q3-result-col">@messages.at("quake3stats.result")</th>
                     <th scope="col">@messages.at("quake3stats.players")</th>
                 </tr></thead>
                 <tbody>
                     @for(row <- stats.recentMatches().asScala) {
                         <tr>
-                            <td>@if(row.start() != null) { @row.start().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) }</td>
-                            <td>@row.gametype()</td>
+                            <td class="num q3-date" data-value="@if(row.start() != null) {@row.start().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmm"))} else {0}">@if(row.start() != null) { @row.start().format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yy HH:mm")) }</td>
+                            <td><span class="q3-mode q3-mode-@row.gametype().toLowerCase">@row.gametype()</span></td>
                             <td>@row.map()</td>
-                            <td>@row.duration()</td>
-                            <td>@row.result()</td>
-                            <td>@row.players().asScala.mkString(", ")</td>
+                            <td class="num" data-value="@row.durationSeconds()">@row.duration()</td>
+                            <td class="q3-result">
+                                <span class="@if(row.teamGame()) {q3-team-red} @if(row.winner() == 1) {q3-winner}">@row.leftName()</span>
+                                <span class="q3-score">@row.leftScore() : @row.rightScore()</span>
+                                <span class="@if(row.teamGame()) {q3-team-blue} @if(row.winner() == 2) {q3-winner}">@row.rightName()</span>
+                            </td>
+                            <td class="q3-players">@row.players().asScala.mkString(", ")</td>
                         </tr>
                     }
                 </tbody>

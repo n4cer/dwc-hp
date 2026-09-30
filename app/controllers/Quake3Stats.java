@@ -15,18 +15,36 @@ import java.util.Map;
 public final class Quake3Stats {
     public static final List<String> MODES = List.of("duel", "tdm", "ctf");
     private static final List<String> ACCURACY_WEAPONS = List.of("LightningGun", "Railgun", "R.Launcher");
+    private static final int MIN_SHOTS_FOR_BEST_AIM = 50;
+    private static final Quake3GamesLog.WeaponStat NO_SHOTS = new Quake3GamesLog.WeaponStat(0, 0);
 
     public record Player(String name, boolean bot, int matches, int wins, int kills, int deaths, int suicides,
                          int teamKills, long damageGiven, long damageReceived,
                          Map<String, Integer> killsByWeapon, Map<String, Quake3GamesLog.WeaponStat> weapons) {
+        public double kdValue() {
+            return deaths == 0 ? kills : (double) kills / deaths;
+        }
+
         public String kd() {
-            return deaths == 0 ? String.valueOf(kills) : String.format(Locale.ROOT, "%.2f", (double) kills / deaths);
+            return String.format(Locale.ROOT, "%.2f", kdValue());
+        }
+
+        /** Hit ratio in percent, or -1 when the player never fired that weapon. */
+        public double accuracyValue(String weapon) {
+            Quake3GamesLog.WeaponStat stat = weapons.get(weapon);
+            if (stat == null || stat.shots() == 0) return -1;
+            return 100.0 * stat.hits() / stat.shots();
         }
 
         public String accuracy(String weapon) {
-            Quake3GamesLog.WeaponStat stat = weapons.get(weapon);
-            if (stat == null || stat.shots() == 0) return "–";
-            return Math.round(100.0 * stat.hits() / stat.shots()) + "%";
+            double value = accuracyValue(weapon);
+            return value < 0 ? "–" : Math.round(value) + "%";
+        }
+
+        /** The accuracy rounded to the pct-N width classes; the CSP rules out inline widths. */
+        public int accuracyStep(String weapon) {
+            double value = accuracyValue(weapon);
+            return value < 0 ? 0 : (int) Math.min(100, Math.round(value / 5) * 5);
         }
 
         public String favouriteWeapon() {
@@ -37,8 +55,21 @@ public final class Quake3Stats {
         }
     }
 
-    public record MatchRow(LocalDateTime start, String gametype, String map, String duration, String result,
-                           List<String> players) { }
+    /**
+     * One line in the latest matches: a duel shows the two players, a team game the two
+     * teams. winner is 1 for the left side, 2 for the right side and 0 for a draw.
+     */
+    public record MatchRow(LocalDateTime start, String gametype, String map, int durationSeconds, boolean teamGame,
+                           String leftName, int leftScore, String rightName, int rightScore, int winner,
+                           List<String> players) {
+        public String duration() {
+            return durationSeconds / 60 + ":" + String.format("%02d", durationSeconds % 60);
+        }
+
+        public String result() {
+            return leftName + " " + leftScore + " : " + rightScore + " " + rightName;
+        }
+    }
 
     private final List<Player> leaderboard;
     private final List<MatchRow> recentMatches;
@@ -62,8 +93,40 @@ public final class Quake3Stats {
         return matchCount;
     }
 
+    public long totalKills() {
+        return leaderboard.stream().mapToLong(Player::kills).sum();
+    }
+
+    /** Most frags; the leaderboard's own order already puts the most wins first. */
+    public Player topFragger() {
+        return leaderboard.stream().max(Comparator.comparingInt(Player::kills)).orElse(null);
+    }
+
+    /** Best hit ratio with the weapon, among players who fired it often enough to mean anything. */
+    public Player bestAim(String weapon) {
+        return leaderboard.stream()
+                .filter(player -> player.weapons().getOrDefault(weapon, NO_SHOTS).shots() >= MIN_SHOTS_FOR_BEST_AIM)
+                .max(Comparator.comparingDouble(player -> player.accuracyValue(weapon))).orElse(null);
+    }
+
     public static List<String> accuracyWeapons() {
         return ACCURACY_WEAPONS;
+    }
+
+    /** The abbreviations players use; the full OSP name goes into the tooltip. */
+    public static String shortWeapon(String weapon) {
+        return switch (weapon) {
+            case "Gauntlet" -> "GT";
+            case "MachineGun" -> "MG";
+            case "Shotgun" -> "SG";
+            case "G.Launcher" -> "GL";
+            case "R.Launcher" -> "RL";
+            case "LightningGun" -> "LG";
+            case "Railgun" -> "RG";
+            case "Plasmagun" -> "PG";
+            case "BFG10K" -> "BFG";
+            default -> weapon;
+        };
     }
 
     /**
@@ -99,18 +162,25 @@ public final class Quake3Stats {
     }
 
     private static MatchRow row(Quake3GamesLog.Match match) {
-        String result;
-        if (match.teamGame()) {
-            result = "Red " + match.redScore() + " : " + match.blueScore() + " Blue";
-        } else {
-            Quake3GamesLog.MatchPlayer first = match.players().get(0);
-            Quake3GamesLog.MatchPlayer second = match.players().get(1);
-            result = first.name() + " " + first.score() + " : " + second.score() + " " + second.name();
-        }
         List<String> players = match.players().stream()
                 .map(player -> player.name() + " (" + player.score() + ")").toList();
-        String duration = match.durationSeconds() / 60 + ":" + String.format("%02d", match.durationSeconds() % 60);
-        return new MatchRow(match.start(), match.gametype(), match.map(), duration, result, players);
+        String leftName, rightName;
+        int leftScore, rightScore;
+        if (match.teamGame()) {
+            leftName = "Red";
+            rightName = "Blue";
+            leftScore = match.redScore() == null ? 0 : match.redScore();
+            rightScore = match.blueScore() == null ? 0 : match.blueScore();
+        } else {
+            // Players arrive sorted by score, so the first two are the ones that matter.
+            leftName = match.players().get(0).name();
+            leftScore = match.players().get(0).score();
+            rightName = match.players().get(1).name();
+            rightScore = match.players().get(1).score();
+        }
+        int winner = leftScore > rightScore ? 1 : rightScore > leftScore ? 2 : 0;
+        return new MatchRow(match.start(), match.gametype(), match.map(), match.durationSeconds(), match.teamGame(),
+                leftName, leftScore, rightName, rightScore, winner, players);
     }
 
     private static final class Totals {

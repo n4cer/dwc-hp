@@ -233,8 +233,8 @@ public class HomeController extends Controller {
     private static final int QUAKE3_STATS_CACHE_DURATION = 300;
 
     /**
-     * Proof of concept: player statistics read straight from the servers' games.log
-     * files, re-parsed at most every few minutes. Nothing is stored in the database yet.
+     * Player statistics read straight from the servers' games.log files, re-parsed at
+     * most every few minutes. Nothing is stored in the database yet.
      */
     public Result quake3Stats(Http.Request request, String mode, boolean bots) {
       Messages messages = messagesApi.preferred(request);
@@ -687,6 +687,7 @@ public class HomeController extends Controller {
       addSitemapUrl(xml, baseUrl, routes.HomeController.hallOfFame().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.videos().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.downloads().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.quake3Stats("", false).url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.contact().url());
 
       Clanwar.find.query().select("id").findEach(
