@@ -66,10 +66,15 @@ public final class Quake3Stats {
         return ACCURACY_WEAPONS;
     }
 
-    /** mode is one of {@link #MODES}, or anything else for all modes together. */
-    static Quake3Stats of(List<Quake3GamesLog.Match> allMatches, String mode, int recentLimit) {
+    /**
+     * mode is one of {@link #MODES}, or anything else for all modes together. Without
+     * includeBots a match a bot played in does not count at all, since frags against
+     * bots would only inflate the numbers.
+     */
+    static Quake3Stats of(List<Quake3GamesLog.Match> allMatches, String mode, boolean includeBots, int recentLimit) {
         List<Quake3GamesLog.Match> matches = allMatches.stream()
                 .filter(match -> !MODES.contains(mode) || match.gametype().equalsIgnoreCase(mode))
+                .filter(match -> includeBots || !match.hasBots())
                 .sorted(Comparator.comparing(Quake3GamesLog.Match::start,
                         Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
                 .toList();

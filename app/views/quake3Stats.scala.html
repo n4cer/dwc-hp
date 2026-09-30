@@ -1,7 +1,7 @@
-@(stats: controllers.Quake3Stats, mode: String, available: Boolean, messages: play.i18n.Messages)
+@(stats: controllers.Quake3Stats, mode: String, bots: Boolean, available: Boolean, messages: play.i18n.Messages)
 
 @modeLink(value: String, label: String) = {
-    @if(value == mode) { <strong>@label</strong> } else { <a href="@controllers.routes.HomeController.quake3Stats(value)">@label</a> }
+    @if(value == mode) { <strong>@label</strong> } else { <a href="@controllers.routes.HomeController.quake3Stats(value, bots)">@label</a> }
 }
 
 @main(messages.at("quake3stats.title"), messages, messages.at("quake3stats.description"), controllers.routes.HomeController.quake3Stats().url, noindex = true) {
@@ -13,6 +13,12 @@
     <p>
         @modeLink("", messages.at("quake3stats.all"))
         @for(value <- controllers.Quake3Stats.MODES.asScala) { | @modeLink(value, value.toUpperCase) }
+        &nbsp;&middot;&nbsp;
+        @if(bots) {
+            <a href="@controllers.routes.HomeController.quake3Stats(mode, false)">@messages.at("quake3stats.hideBots")</a>
+        } else {
+            <a href="@controllers.routes.HomeController.quake3Stats(mode, true)">@messages.at("quake3stats.showBots")</a>
+        }
     </p>
     <br />
 

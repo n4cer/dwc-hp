@@ -190,3 +190,5 @@ quake3stats.map = Map
 quake3stats.duration = Dauer
 quake3stats.result = Ergebnis
 quake3stats.players = Spieler
+quake3stats.showBots = Matches mit Bots anzeigen
+quake3stats.hideBots = Matches mit Bots ausblenden

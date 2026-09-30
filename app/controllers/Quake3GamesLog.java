@@ -50,6 +50,10 @@ final class Quake3GamesLog {
             return redScore > blueScore ? 1 : blueScore > redScore ? 2 : 0;
         }
 
+        boolean hasBots() {
+            return players.stream().anyMatch(MatchPlayer::bot);
+        }
+
         boolean won(MatchPlayer player) {
             if (teamGame) return winningTeam() != 0 && player.team() == winningTeam();
             return players.stream().noneMatch(other -> other != player && other.score() >= player.score());

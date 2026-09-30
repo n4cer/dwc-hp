@@ -143,13 +143,13 @@ public class Quake3GamesLogTest {
         List<Quake3GamesLog.Match> matches = new java.util.ArrayList<>(parse(DUEL));
         matches.addAll(parse(TDM));
 
-        Quake3Stats all = Quake3Stats.of(matches, "", 20);
+        Quake3Stats all = Quake3Stats.of(matches, "", true, 20);
         assertEquals(2, all.matchCount());
         assertEquals(4, all.leaderboard().size());
         // Newest first.
         assertEquals("TDM", all.recentMatches().get(0).gametype());
 
-        Quake3Stats duel = Quake3Stats.of(matches, "duel", 20);
+        Quake3Stats duel = Quake3Stats.of(matches, "duel", true, 20);
         assertEquals(1, duel.matchCount());
         Quake3Stats.Player alpha = duel.leaderboard().get(0);
         assertEquals("dwc.alpha", alpha.name());
@@ -158,6 +158,21 @@ public class Quake3GamesLogTest {
         assertEquals("37%", alpha.accuracy("R.Launcher"));
         assertEquals("–", alpha.accuracy("Railgun"));
         assertEquals("dwc.alpha 2 : 0 [BOT]Beta", duel.recentMatches().get(0).result());
+    }
+
+    @Test
+    public void leavesOutMatchesWithBotsUnlessAskedFor() throws IOException {
+        List<Quake3GamesLog.Match> matches = new java.util.ArrayList<>(parse(DUEL));
+        matches.addAll(parse(TDM));
+
+        Quake3Stats humans = Quake3Stats.of(matches, "", false, 20);
+        assertEquals(1, humans.matchCount());
+        assertEquals("TDM", humans.recentMatches().get(0).gametype());
+        assertTrue(humans.leaderboard().stream().noneMatch(Quake3Stats.Player::bot));
+        // The human from the bot duel only played there, so they drop out too.
+        assertTrue(humans.leaderboard().stream().noneMatch(player -> player.name().equals("dwc.alpha")));
+
+        assertEquals(0, Quake3Stats.of(matches, "duel", false, 20).matchCount());
     }
 
     @Test
