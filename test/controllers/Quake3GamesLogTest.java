@@ -176,6 +176,27 @@ public class Quake3GamesLogTest {
     }
 
     @Test
+    public void exportsTheStatisticsAsJson() throws IOException {
+        List<Quake3GamesLog.Match> matches = new java.util.ArrayList<>(parse(DUEL));
+        matches.addAll(parse(TDM));
+
+        com.fasterxml.jackson.databind.JsonNode json = Quake3Stats.of(matches, "duel", true, 20).toJson("duel", true);
+        assertEquals("duel", json.get("mode").asText());
+        assertEquals(1, json.get("matchCount").asInt());
+        com.fasterxml.jackson.databind.JsonNode alpha = json.get("leaderboard").get(0);
+        assertEquals(1, alpha.get("rank").asInt());
+        assertEquals("dwc.alpha", alpha.get("name").asText());
+        assertEquals(2.0, alpha.get("kd").asDouble(), 0.001);
+        assertEquals(59, alpha.get("weapons").get("R.Launcher").get("shots").asInt());
+        assertEquals(37.29, alpha.get("weapons").get("R.Launcher").get("accuracy").asDouble(), 0.001);
+        com.fasterxml.jackson.databind.JsonNode match = json.get("recentMatches").get(0);
+        assertEquals("dwc.alpha", match.get("winner").asText());
+        assertEquals(2, match.get("leftScore").asInt());
+
+        assertEquals("all", Quake3Stats.empty().toJson("", false).get("mode").asText());
+    }
+
+    @Test
     public void stripsQuakeColorCodes() {
         assertEquals("dwc.n4cer", Quake3GamesLog.stripColors("dwc^4.^7n^44^7cer"));
         assertEquals("[BOT]He-Man", Quake3GamesLog.stripColors("^3[^7BOT^3]^7He-Man"));

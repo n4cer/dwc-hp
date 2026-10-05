@@ -1,11 +1,18 @@
 package controllers;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
+
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.libs.Json;
 
 /**
  * What the Quake 3 statistics page shows: a leaderboard summed up over the
@@ -17,6 +24,7 @@ public final class Quake3Stats {
     private static final List<String> ACCURACY_WEAPONS = List.of("LightningGun", "Railgun", "R.Launcher");
     private static final int MIN_SHOTS_FOR_BEST_AIM = 50;
     private static final Quake3GamesLog.WeaponStat NO_SHOTS = new Quake3GamesLog.WeaponStat(0, 0);
+    private static final DateTimeFormatter JSON_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     public record Player(String name, boolean bot, int matches, int wins, int kills, int deaths, int suicides,
                          int teamKills, long damageGiven, long damageReceived,
@@ -127,6 +135,82 @@ public final class Quake3Stats {
             case "BFG10K" -> "BFG";
             default -> weapon;
         };
+    }
+
+    /**
+     * The same numbers as the page, machine-readable (/quake3/stats.json), so that
+     * an AI or a script can work with them without scraping the HTML. Accuracies
+     * are percentages rounded to two decimals, or null when a weapon was never fired.
+     */
+    public ObjectNode toJson(String mode, boolean includeBots) {
+        ObjectNode node = Json.newObject();
+        node.put("mode", MODES.contains(mode) ? mode : "all");
+        node.put("bots", includeBots);
+        node.put("matchCount", matchCount);
+        node.put("totalKills", totalKills());
+
+        ObjectNode highlights = node.putObject("highlights");
+        Player top = topFragger();
+        highlights.put("topFragger", top == null ? null : top.name());
+        ObjectNode bestAim = highlights.putObject("bestAim");
+        for (String weapon : ACCURACY_WEAPONS) {
+            Player best = bestAim(weapon);
+            if (best == null) {
+                bestAim.putNull(weapon);
+            } else {
+                bestAim.putObject(weapon).put("player", best.name()).put("accuracy", round(best.accuracyValue(weapon)));
+            }
+        }
+
+        ArrayNode players = node.putArray("leaderboard");
+        int rank = 1;
+        for (Player player : leaderboard) {
+            ObjectNode entry = players.addObject();
+            entry.put("rank", rank++);
+            entry.put("name", player.name());
+            entry.put("bot", player.bot());
+            entry.put("matches", player.matches());
+            entry.put("wins", player.wins());
+            entry.put("kills", player.kills());
+            entry.put("deaths", player.deaths());
+            entry.put("kd", round(player.kdValue()));
+            entry.put("suicides", player.suicides());
+            entry.put("teamKills", player.teamKills());
+            entry.put("damageGiven", player.damageGiven());
+            entry.put("damageReceived", player.damageReceived());
+            String favourite = player.favouriteWeapon();
+            entry.put("favouriteWeapon", favourite.equals("–") ? null : favourite);
+            ObjectNode killsByWeapon = entry.putObject("killsByWeapon");
+            new TreeMap<>(player.killsByWeapon()).forEach(killsByWeapon::put);
+            ObjectNode weapons = entry.putObject("weapons");
+            new TreeMap<>(player.weapons()).forEach((weapon, stat) -> {
+                double accuracy = player.accuracyValue(weapon);
+                ObjectNode weaponNode = weapons.putObject(weapon).put("shots", stat.shots()).put("hits", stat.hits());
+                if (accuracy < 0) weaponNode.putNull("accuracy"); else weaponNode.put("accuracy", round(accuracy));
+            });
+        }
+
+        ArrayNode matches = node.putArray("recentMatches");
+        for (MatchRow match : recentMatches) {
+            ObjectNode entry = matches.addObject();
+            entry.put("start", match.start() == null ? null : match.start().format(JSON_DATE));
+            entry.put("gametype", match.gametype());
+            entry.put("map", match.map());
+            entry.put("durationSeconds", match.durationSeconds());
+            entry.put("teamGame", match.teamGame());
+            entry.put("left", match.leftName());
+            entry.put("leftScore", match.leftScore());
+            entry.put("right", match.rightName());
+            entry.put("rightScore", match.rightScore());
+            entry.put("winner", match.winner() == 1 ? match.leftName() : match.winner() == 2 ? match.rightName() : null);
+            ArrayNode names = entry.putArray("players");
+            match.players().forEach(names::add);
+        }
+        return node;
+    }
+
+    private static double round(double value) {
+        return Math.round(value * 100) / 100.0;
     }
 
     /**
