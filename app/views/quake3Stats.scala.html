@@ -15,7 +15,8 @@
     <th scope="col" class="@if(kind == "number") {num}" data-sort="@kind" @if(title.nonEmpty) { title="@title" } @if(sorted.nonEmpty) { aria-sort="@sorted" }><button type="button" class="q3-sort">@label</button></th>
 }
 
-@main(messages.at("quake3stats.title"), messages, messages.at("quake3stats.description"), controllers.routes.HomeController.quake3Stats().url) {
+@main(messages.at("quake3stats.title"), messages, messages.at("quake3stats.description"), controllers.routes.HomeController.quake3Stats().url,
+    alternateJson = controllers.routes.HomeController.quake3StatsJson(mode, bots).url) {
 <div class="mitteContent q3-stats">
     <h1>@messages.at("quake3stats.heading")</h1>
     <p class="q3-intro">@messages.at("quake3stats.intro")</p>

@@ -239,19 +239,37 @@ public class HomeController extends Controller {
     public Result quake3Stats(Http.Request request, String mode, boolean bots) {
       Messages messages = messagesApi.preferred(request);
       String filter = Quake3Stats.MODES.contains(mode) ? mode : "";
+      return cachedPage("quake3stats_" + filter + (bots ? "_bots" : ""), messages, QUAKE3_STATS_CACHE_DURATION, () -> {
+        Optional<Quake3Stats> stats = loadQuake3Stats(filter, bots);
+        return views.html.quake3Stats.render(stats.orElse(Quake3Stats.empty()), filter, bots, stats.isPresent(), messages);
+      });
+    }
+
+    /** The statistics page as JSON, for AIs and scripts; same filters, same cache period. */
+    public Result quake3StatsJson(String mode, boolean bots) {
+      String filter = Quake3Stats.MODES.contains(mode) ? mode : "";
+      String key = "quake3statsJson_" + filter + (bots ? "_bots" : "");
+      String json = cache.<String>get(key).orElseGet(() -> {
+        Optional<Quake3Stats> stats = loadQuake3Stats(filter, bots);
+        ObjectNode node = stats.orElse(Quake3Stats.empty()).toJson(filter, bots);
+        node.put("available", stats.isPresent());
+        String rendered = Json.stringify(node);
+        cache.set(key, rendered, QUAKE3_STATS_CACHE_DURATION);
+        return rendered;
+      });
+      return ok(json).as(Http.MimeTypes.JSON);
+    }
+
+    /** Empty when no log folder is configured or it cannot be read. */
+    private Optional<Quake3Stats> loadQuake3Stats(String filter, boolean bots) {
       String folder = configuration.underlying().hasPath("quake3.logs.folder")
               ? configuration.underlying().getString("quake3.logs.folder") : "";
-      return cachedPage("quake3stats_" + filter + (bots ? "_bots" : ""), messages, QUAKE3_STATS_CACHE_DURATION, () -> {
-        Quake3Stats stats;
-        boolean available = !folder.isBlank();
-        try {
-          stats = available ? Quake3Stats.of(Quake3GamesLog.readFolder(Path.of(folder)), filter, bots, 20) : Quake3Stats.empty();
-        } catch (IOException e) {
-          stats = Quake3Stats.empty();
-          available = false;
-        }
-        return views.html.quake3Stats.render(stats, filter, bots, available, messages);
-      });
+      if (folder.isBlank()) return Optional.empty();
+      try {
+        return Optional.of(Quake3Stats.of(Quake3GamesLog.readFolder(Path.of(folder)), filter, bots, 20));
+      } catch (IOException e) {
+        return Optional.empty();
+      }
     }
 
     public Result lineup(Http.Request request) {

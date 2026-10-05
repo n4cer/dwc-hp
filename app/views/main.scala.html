@@ -1,4 +1,4 @@
-@(title: String, messages: play.i18n.Messages, description: String = "", canonicalPath: String = "", noindex: Boolean = false)(content: Html)
+@(title: String, messages: play.i18n.Messages, description: String = "", canonicalPath: String = "", noindex: Boolean = false, alternateJson: String = "")(content: Html)
 
 @defining(if (description.nonEmpty) description else messages.at("meta.defaultDescription")) { resolvedDescription =>
 <!DOCTYPE html>
@@ -15,6 +15,9 @@
         @if(canonicalPath.nonEmpty) {
             <link rel="canonical" href="@canonicalPath" />
             <meta property="og:url" content="@canonicalPath" />
+        }
+        @if(alternateJson.nonEmpty) {
+            <link rel="alternate" type="application/json" href="@alternateJson" />
         }
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="Doomwarriors Clan" />
