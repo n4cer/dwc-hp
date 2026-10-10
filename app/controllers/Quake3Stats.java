@@ -20,7 +20,7 @@ import play.libs.Json;
  * Proof of concept: nothing is stored, it is recomputed from the logs.
  */
 public final class Quake3Stats {
-    public static final List<String> MODES = List.of("duel", "tdm", "ctf");
+    public static final List<String> MODES = List.of("duel", "tdm", "ctf", "instagib");
     private static final List<String> ACCURACY_WEAPONS = List.of("LightningGun", "Railgun", "R.Launcher");
     private static final int MIN_SHOTS_FOR_BEST_AIM = 50;
     private static final Quake3GamesLog.WeaponStat NO_SHOTS = new Quake3GamesLog.WeaponStat(0, 0);

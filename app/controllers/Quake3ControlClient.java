@@ -22,7 +22,7 @@ import java.util.concurrent.CompletionStage;
 @Singleton
 public final class Quake3ControlClient {
     public enum Server {
-        DUEL("duel", "Duel"), TDM("tdm", "TDM"), CTF("ctf", "CTF");
+        DUEL("duel", "Duel"), TDM("tdm", "TDM"), CTF("ctf", "CTF"), INSTAGIB("instagib", "Instagib");
 
         public final String id;
         public final String label;
@@ -61,7 +61,7 @@ public final class Quake3ControlClient {
 
     CompletionStage<List<Status>> statusAll() {
         List<CompletionStage<Status>> futures = List.of(
-                status(Server.DUEL), status(Server.TDM), status(Server.CTF));
+                status(Server.DUEL), status(Server.TDM), status(Server.CTF), status(Server.INSTAGIB));
         return CompletableFuture.allOf(futures.stream().map(CompletionStage::toCompletableFuture).toArray(CompletableFuture[]::new))
                 .thenApply(ignored -> futures.stream().map(CompletionStage::toCompletableFuture)
                         .map(CompletableFuture::join).toList());

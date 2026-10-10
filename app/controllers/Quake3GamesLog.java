@@ -25,12 +25,17 @@ import java.util.zip.GZIPInputStream;
  * Parses the games.log the OSP Quake 3 servers write (see the q3server
  * project, logs/<mode>/games.log) into finished matches.
  *
+ * A server that only changes the rules (instagib) logs the underlying
+ * gametype, so its matches take their label from the log folder instead.
+ *
  * Only a level that saw both "Game_Start" and "Exit" counts as a match:
  * warmups, map votes and aborted rounds never reach the statistics. Chat
  * lines are skipped entirely, so nothing anyone typed ends up on the site.
  */
 final class Quake3GamesLog {
     static final int WORLD = 1022;
+    /** Log subfolder -> label that replaces the gametype for the matches logged there. */
+    private static final Map<String, String> FOLDER_LABELS = Map.of("instagib", "Instagib");
 
     record WeaponStat(int shots, int hits) {
         WeaponStat plus(WeaponStat other) {
@@ -87,14 +92,21 @@ final class Quake3GamesLog {
         for (Path log : logs) {
             try (InputStream raw = Files.newInputStream(log);
                  InputStream in = log.toString().endsWith(".gz") ? new GZIPInputStream(raw) : raw) {
+                Path parent = log.getParent();
+                String label = parent.equals(folder) ? null : FOLDER_LABELS.get(parent.getFileName().toString());
                 // Quake 3 knows no UTF-8; names are single bytes.
-                matches.addAll(parse(new InputStreamReader(in, StandardCharsets.ISO_8859_1)));
+                matches.addAll(parse(new InputStreamReader(in, StandardCharsets.ISO_8859_1), label));
             }
         }
         return matches;
     }
 
     static List<Match> parse(Reader source) throws IOException {
+        return parse(source, null);
+    }
+
+    /** label, when not null, replaces the gametype label of every match. */
+    static List<Match> parse(Reader source, String label) throws IOException {
         List<Match> matches = new ArrayList<>();
         Level level = null;
         BufferedReader reader = new BufferedReader(source);
@@ -108,7 +120,7 @@ final class Quake3GamesLog {
 
             if (event.equals("InitGame")) {
                 if (level != null) level.finish(matches);
-                level = new Level(time, info(rest));
+                level = new Level(time, info(rest), label);
                 continue;
             }
             if (level == null) continue;
@@ -209,6 +221,7 @@ final class Quake3GamesLog {
     private static final class Level {
         private final double initTime;
         private final String gametype;
+        private final String label;
         private final String map;
         private LocalDateTime serverTime;
         private Double startTime;
@@ -217,9 +230,10 @@ final class Quake3GamesLog {
         private final Map<Integer, Slot> slots = new HashMap<>();
         private final Map<String, Tally> tallies = new LinkedHashMap<>();
 
-        Level(double initTime, Map<String, String> info) {
+        Level(double initTime, Map<String, String> info, String label) {
             this.initTime = initTime;
             this.gametype = info.get("g_gametype");
+            this.label = label;
             this.map = info.getOrDefault("mapname", "?");
         }
 
@@ -349,7 +363,7 @@ final class Quake3GamesLog {
             if (players.size() < 2) return;
             LocalDateTime start = serverTime == null ? null
                     : serverTime.plusSeconds(Math.round(startTime - initTime));
-            matches.add(new Match(gametypeLabel(gametype), teamGame(), map, start,
+            matches.add(new Match(label != null ? label : gametypeLabel(gametype), teamGame(), map, start,
                     (int) Math.round(exitTime - startTime), redScore, blueScore, players));
         }
     }

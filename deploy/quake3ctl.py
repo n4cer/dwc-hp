@@ -21,6 +21,7 @@ UNITS = {
     "duel": "quake3@duel.service",
     "tdm": "quake3@tdm.service",
     "ctf": "quake3@ctf.service",
+    "instagib": "quake3@instagib.service",
 }
 
 TOKEN = os.environ.get("QUAKE3CTL_TOKEN", "")
