@@ -305,13 +305,13 @@ logged.
 
 ### Quake 3 server control (admin panel)
 
-The admin panel's "Quake 3 servers" page starts/stops the Duel/TDM/CTF
+The admin panel's "Quake 3 servers" page starts/stops the Duel/TDM/CTF/Instagib
 docker-compose stacks. The `dwc` web process itself is never given Docker or
 systemd rights for this: it only talks over `localhost` to a small
 root-owned sidecar (`deploy/quake3ctl.py`) that is the sole thing allowed to
-start/stop three hardcoded `quake3@<name>.service` units.
+start/stop four hardcoded `quake3@<name>.service` units.
 
-All three game types are services (`q3server-duel`/`q3server-tdm`/`q3server-ctf`)
+All game types are services (`q3server-duel`/`q3server-tdm`/`q3server-ctf`/`q3server-instagib`)
 in the one docker-compose.yml at `/home/micha/docker/q3-osp-server`; the
 `quake3@.service` template targets that fixed path and just the one service
 (`q3server-%i`), not the whole compose project, so starting/stopping one
@@ -341,7 +341,7 @@ until this token is configured.
 
 Independently of the admin control above, every page's right-hand sidebar
 shows a "Quake 3 servers" box with each server's address and player count
-once `DWC_QUAKE3_PUBLIC_HOST` and the `DWC_QUAKE3_{DUEL,TDM,CTF}_PORT`
+once `DWC_QUAKE3_PUBLIC_HOST` and the `DWC_QUAKE3_{DUEL,TDM,CTF,INSTAGIB}_PORT`
 variables are set in `/etc/dwc/environment` (see
 `deploy/environment.example`). This queries the servers' own UDP query
 protocol directly from `dwc.service` (no sidecar involved) and is fetched

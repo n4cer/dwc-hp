@@ -42,7 +42,8 @@ final class Quake3StatusScheduler {
         List<ServerConfig> servers = host.isBlank() ? List.of() : List.of(
                 new ServerConfig("duel", "Duel", host, intConfigured(configuration, "quake3.public.duel.port")),
                 new ServerConfig("tdm", "TDM", host, intConfigured(configuration, "quake3.public.tdm.port")),
-                new ServerConfig("ctf", "CTF", host, intConfigured(configuration, "quake3.public.ctf.port")))
+                new ServerConfig("ctf", "CTF", host, intConfigured(configuration, "quake3.public.ctf.port")),
+                new ServerConfig("instagib", "Instagib", host, intConfigured(configuration, "quake3.public.instagib.port")))
                 .stream().filter(server -> server.port() > 0).toList();
         if (servers.isEmpty()) return;
 

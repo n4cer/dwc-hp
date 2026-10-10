@@ -4,6 +4,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -206,5 +209,20 @@ public class Quake3GamesLogTest {
     public void ignoresLogsWithoutFinishedMatches() throws IOException {
         assertTrue(parse("").isEmpty());
         assertTrue(parse("0.0 InitGame: \\g_gametype\\1\\mapname\\q3dm6\n0.4 ShutdownGame:").isEmpty());
+    }
+
+    @Test
+    public void matchesFromTheInstagibFolderAreLabelledInstagib() throws IOException {
+        Path folder = Files.createTempDirectory("q3logs");
+        Files.createDirectories(folder.resolve("instagib"));
+        Files.createDirectories(folder.resolve("duel"));
+        Files.writeString(folder.resolve("instagib/games.log"), DUEL, StandardCharsets.ISO_8859_1);
+        Files.writeString(folder.resolve("duel/games.log"), DUEL, StandardCharsets.ISO_8859_1);
+
+        List<Quake3GamesLog.Match> matches = Quake3GamesLog.readFolder(folder);
+        assertEquals(2, matches.size());
+        assertEquals(1, Quake3Stats.of(matches, "instagib", true, 20).matchCount());
+        assertEquals(1, Quake3Stats.of(matches, "duel", true, 20).matchCount());
+        assertEquals("Instagib", Quake3Stats.of(matches, "instagib", true, 20).recentMatches().get(0).gametype());
     }
 }

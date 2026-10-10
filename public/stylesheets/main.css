@@ -254,6 +254,7 @@ th[aria-sort] {color:#E2A612;}
 .q3-mode-duel {background:#6c3fa0;}
 .q3-mode-tdm {background:#2f6fb0;}
 .q3-mode-ctf {background:#C10000;}
+.q3-mode-instagib {background:#1f8a70;}
 .q3-result {white-space:nowrap;}
 .q3-score {display:inline-block;margin:0 4px;padding:0 5px;border:1px solid var(--dwc-border-strong);font-weight:bold;font-variant-numeric:tabular-nums;}
 .q3-team-red {color:#d33;}

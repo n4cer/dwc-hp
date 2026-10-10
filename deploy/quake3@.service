@@ -7,7 +7,7 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-# All three game types are services in one docker-compose.yml, so start/stop
+# All game types are services in one docker-compose.yml, so start/stop
 # target just the one service (q3server-%i) instead of the whole project.
 WorkingDirectory=/home/micha/docker/q3-osp-server
 ExecStart=/usr/bin/docker compose up -d q3server-%i
