@@ -17,3 +17,5 @@ DWC_QUAKE3_CTF_PORT=27962
 DWC_QUAKE3_INSTAGIB_PORT=27963
 # games.log folders of the q3 servers, read for /quake3/stats
 DWC_QUAKE3_LOG_FOLDER=/home/micha/docker/q3-osp-server/logs
+# pk3 folders of the q3 servers, served at /quake3/pk3 for their sv_dlURL
+DWC_QUAKE3_PK3_FOLDER=/home/micha/docker/q3-osp-server/server-data

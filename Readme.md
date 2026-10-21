@@ -348,6 +348,21 @@ protocol directly from `dwc.service` (no sidecar involved) and is fetched
 client-side so it stays live even on pages that are cached for minutes.
 Leave the host unset to hide the box (it falls back to "empty").
 
+#### Map downloads for the game servers
+
+Players missing a map get it from the server, but Quake 3's built-in UDP
+download is slow enough that many disconnect before it finishes. The servers'
+`sv_dlURL` therefore points at `https://www.doomwarriors.de/quake3/pk3`, and
+quake3e/ioquake3 clients fetch `<sv_dlURL>/<fs_game>/<file>.pk3` over HTTP
+instead. Set `DWC_QUAKE3_PK3_FOLDER` in `/etc/dwc/environment` to the q3server
+project's `server-data` folder; the route answers 404 until it is set.
+
+Only `.pk3` files directly inside `baseq3/` and `osp/` are served, read
+straight from the folders the servers load them from, so a newly added map
+needs no extra step. The retail id paks (`baseq3/pak0.pk3` to `pak8.pk3`) are
+copyrighted and never handed out. The regex location in `deploy/nginx.conf`
+passes these requests through unbuffered, like the video and download bytes.
+
 ### Manual package
 
 Create a deployable package with:
