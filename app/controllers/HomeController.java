@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -67,6 +68,12 @@ public class HomeController extends Controller {
             Set.of("zip", "rar", "7z", "gz", "tgz", "pk3", "cfg", "txt", "pdf",
                    "dm_68", "dm_67", "dm_66", "dm3", "jpg", "png", "mp3");
     private static final int DOWNLOAD_CACHE_DURATION = 2400;
+    // Mod folders the Quake 3 servers load pk3 files from (see quake3Pk3Path).
+    private static final Set<String> QUAKE3_GAMES = Set.of("baseq3", "osp");
+    private static final Set<String> PK3_EXTENSION = Set.of("pk3");
+    // The retail id paks (baseq3/pak0.pk3 ... pak8.pk3) are copyrighted and never handed out.
+    private static final Pattern QUAKE3_ID_PAK =
+            Pattern.compile("pak[0-8]\\.pk3", Pattern.CASE_INSENSITIVE);
     private static final Set<String> SUPPORTED_LANGS = Set.of("de", "en");
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
@@ -593,6 +600,39 @@ public class HomeController extends Controller {
       Path resolved = folder.resolve(file).normalize();
       if (!resolved.startsWith(folder)
               || !hasExtension(resolved, FILE_EXTENSIONS)
+              || !Files.isRegularFile(resolved, LinkOption.NOFOLLOW_LINKS)) {
+        return null;
+      }
+      return resolved;
+    }
+
+    /**
+     * Fast download for the Quake 3 servers: their sv_dlURL points here, so quake3e and
+     * ioquake3 clients fetch missing maps over HTTP instead of the server's slow UDP
+     * download. Clients request sv_dlURL/&lt;fs_game&gt;/&lt;file&gt;.pk3.
+     */
+    public Result quake3Pk3(Http.Request request, String game, String file) {
+      String folder = configuration.underlying().hasPath("quake3.pk3.folder")
+              ? configuration.underlying().getString("quake3.pk3.folder") : "";
+      if (folder.isBlank()) return notFound("file not found");
+      Path path = quake3Pk3Path(Path.of(folder), game, file);
+      if (path == null) return notFound("file not found");
+      return RangeResults.ofPath(request, path);
+    }
+
+    /**
+     * Resolves a pk3 inside one of the servers' mod folders, rejecting anything that
+     * escapes it, is not a pk3 or is one of the retail id paks. Mirrors {@link #downloadPath}.
+     */
+    static Path quake3Pk3Path(Path root, String game, String file) {
+      if (!QUAKE3_GAMES.contains(game)) return null;
+      if (file.contains("/") || file.contains("\\")) return null;
+      if (game.equals("baseq3") && QUAKE3_ID_PAK.matcher(file).matches()) return null;
+
+      Path folder = root.resolve(game);
+      Path resolved = folder.resolve(file).normalize();
+      if (!resolved.startsWith(folder)
+              || !hasExtension(resolved, PK3_EXTENSION)
               || !Files.isRegularFile(resolved, LinkOption.NOFOLLOW_LINKS)) {
         return null;
       }
