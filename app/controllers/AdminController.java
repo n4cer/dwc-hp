@@ -578,10 +578,16 @@ public class AdminController extends Controller {
     }
 
     @AddCSRFToken
-    public Result newDownload(Http.Request request) {
+    public Result newDownload(Http.Request request, String file) {
         Result denied = require(request, Role.MEDIA);
         if (denied != null) return denied;
-        return ok(downloadForm(request, null, null));
+        // Prefilled when coming from a file just put into the download folder (AdminUploadController).
+        Download prefilled = null;
+        if (!file.isBlank()) {
+            prefilled = new Download();
+            prefilled.setFile(file);
+        }
+        return ok(downloadForm(request, prefilled, null));
     }
 
     @AddCSRFToken

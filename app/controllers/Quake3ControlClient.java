@@ -1,23 +1,31 @@
 package controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import play.api.Configuration;
+import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 /**
  * Talks to the quake3ctl sidecar (deploy/quake3ctl.py), a small root-owned
  * process that is the only thing on the host allowed to start/stop the
- * Quake 3 docker-compose stacks. The dwc web process itself has no Docker
- * or systemd privileges; it only ever calls this fixed, token-authenticated
- * HTTP endpoint on localhost.
+ * Quake 3 docker-compose stacks and to move files uploaded over SFTP into
+ * the game servers' and the download section's folders. The dwc web process
+ * itself has no Docker, systemd or such file privileges; it only ever calls
+ * this fixed, token-authenticated HTTP endpoint on localhost.
  */
 @Singleton
 public final class Quake3ControlClient {
@@ -43,6 +51,13 @@ public final class Quake3ControlClient {
             return "active".equals(state);
         }
     }
+
+    /** A file in the SFTP upload folder; replaces maps target names to the file it would overwrite there. */
+    public record Upload(String name, long size, Instant modified, Map<String, Existing> replaces) { }
+
+    public record Existing(long size, Instant modified) { }
+
+    public record Uploads(List<Upload> uploads, String error) { }
 
     private final WSClient ws;
     private final String baseUrl;
@@ -82,9 +97,48 @@ public final class Quake3ControlClient {
                 .handle((response, error) -> toStatus(server, response, error));
     }
 
+    CompletionStage<Uploads> uploads() {
+        return request("/uploads").get().handle((response, error) -> {
+            String failure = failure(response, error);
+            return failure != null ? new Uploads(List.of(), failure) : new Uploads(parseUploads(response.getBody()), null);
+        });
+    }
+
+    /** Null on success, otherwise why the file could not be installed. */
+    CompletionStage<String> installUpload(String name, String target) {
+        return request("/uploads/" + name + "/install/" + target).post("").handle(Quake3ControlClient::failure);
+    }
+
+    /** Null on success, otherwise why the file could not be discarded. */
+    CompletionStage<String> discardUpload(String name) {
+        return request("/uploads/" + name + "/discard").post("").handle(Quake3ControlClient::failure);
+    }
+
+    static List<Upload> parseUploads(String json) {
+        List<Upload> uploads = new ArrayList<>();
+        for (JsonNode node : Json.parse(json)) {
+            Map<String, Existing> replaces = new LinkedHashMap<>();
+            Iterator<Map.Entry<String, JsonNode>> targets = node.path("replaces").fields();
+            while (targets.hasNext()) {
+                Map.Entry<String, JsonNode> target = targets.next();
+                replaces.put(target.getKey(), new Existing(target.getValue().path("size").asLong(),
+                        Instant.ofEpochSecond(target.getValue().path("mtime").asLong())));
+            }
+            uploads.add(new Upload(node.path("name").asText(), node.path("size").asLong(),
+                    Instant.ofEpochSecond(node.path("mtime").asLong()), replaces));
+        }
+        return uploads;
+    }
+
+    private static String failure(WSResponse response, Throwable error) {
+        if (error != null) return "Control service unreachable.";
+        if (response.getStatus() != 200) return "Control service error: " + response.getBody().trim();
+        return null;
+    }
+
     private Status toStatus(Server server, WSResponse response, Throwable error) {
-        if (error != null) return new Status(server, null, "Control service unreachable.");
-        if (response.getStatus() != 200) return new Status(server, null, "Control service error: " + response.getBody().trim());
+        String failure = failure(response, error);
+        if (failure != null) return new Status(server, null, failure);
         return new Status(server, response.getBody().trim(), null);
     }
 

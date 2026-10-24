@@ -1,0 +1,52 @@
+@(request: Http.Request, rows: java.util.List[controllers.AdminUploadController.Row], error: String, messages: play.i18n.Messages)
+
+@main("Uploads", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Uploads</h1></div>
+        <p class="admin-hint">Files uploaded over SFTP wait here until they are put into place. A file of the same name in the target folder is replaced.</p>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        @request.flash().get("error").map { message =>
+            <div class="admin-message error">@message</div>
+        }
+        @if(error != null) {
+            <div class="admin-message error">@error</div>
+        } else {
+            @if(rows.isEmpty) {
+                <p>No uploads waiting.</p>
+            } else {
+                <table class="admin-table"><thead><tr>
+                    <th scope="col">File</th><th scope="col">Size</th><th scope="col">Uploaded</th><th scope="col">Replaces</th><th scope="col"><span class="visually-hidden">Actions</span></th>
+                </tr></thead><tbody>
+                @for(row <- rows) {
+                    <tr>
+                        <td>@row.name()</td>
+                        <td>@row.size()</td>
+                        <td>@row.modified()@if(row.settling()) {<br><span class="admin-hint">still uploading?</span>}</td>
+                        <td>@for(replaced <- row.replaces()) {@replaced<br>}</td>
+                        <td>
+                            @if(row.targets().isEmpty) {
+                                <span class="admin-hint">Nowhere to put this file for you.</span>
+                            } else {
+                                <form method="post" action="@controllers.routes.AdminUploadController.install(row.name())">
+                                    @helper.CSRF.formField(request.asScala())
+                                    <select name="target" aria-label="Target for @row.name()">
+                                        @for(target <- row.targets()) {<option value="@target.id">@target.label</option>}
+                                    </select>
+                                    <button type="submit" @if(row.settling()) {disabled}>Install</button>
+                                </form>
+                            }
+                            <form method="post" action="@controllers.routes.AdminUploadController.discard(row.name())">
+                                @helper.CSRF.formField(request.asScala())
+                                <button type="submit" class="secondary">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody></table>
+            }
+        }
+    </div>
+}
