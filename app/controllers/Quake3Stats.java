@@ -73,9 +73,11 @@ public final class Quake3Stats {
     /**
      * One line in the latest matches: a duel shows the two players, a team game the two
      * teams. winner is 1 for the left side, 2 for the right side and 0 for a draw.
+     * leftHuman and rightHuman tell a duel's players from bots; a team is neither.
      */
     public record MatchRow(LocalDateTime start, String gametype, String map, int durationSeconds, boolean teamGame,
-                           String leftName, int leftScore, String rightName, int rightScore, int winner,
+                           String leftName, boolean leftHuman, int leftScore,
+                           String rightName, boolean rightHuman, int rightScore, int winner,
                            List<String> players) {
         public String duration() {
             return durationSeconds / 60 + ":" + String.format("%02d", durationSeconds % 60);
@@ -300,6 +302,7 @@ public final class Quake3Stats {
         List<String> players = match.players().stream()
                 .map(player -> player.name() + " (" + player.score() + ")").toList();
         String leftName, rightName;
+        boolean leftHuman = false, rightHuman = false;
         int leftScore, rightScore;
         if (match.teamGame()) {
             leftName = "Red";
@@ -309,13 +312,15 @@ public final class Quake3Stats {
         } else {
             // Players arrive sorted by score, so the first two are the ones that matter.
             leftName = match.players().get(0).name();
+            leftHuman = !match.players().get(0).bot();
             leftScore = match.players().get(0).score();
             rightName = match.players().get(1).name();
+            rightHuman = !match.players().get(1).bot();
             rightScore = match.players().get(1).score();
         }
         int winner = leftScore > rightScore ? 1 : rightScore > leftScore ? 2 : 0;
         return new MatchRow(match.start(), match.gametype(), match.map(), match.durationSeconds(), match.teamGame(),
-                leftName, leftScore, rightName, rightScore, winner, players);
+                leftName, leftHuman, leftScore, rightName, rightHuman, rightScore, winner, players);
     }
 
     private static final class Totals {

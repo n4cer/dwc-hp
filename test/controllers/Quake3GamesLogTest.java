@@ -161,6 +161,8 @@ public class Quake3GamesLogTest {
         assertEquals("37%", alpha.accuracy("R.Launcher"));
         assertEquals("–", alpha.accuracy("Railgun"));
         assertEquals("dwc.alpha 2 : 0 [BOT]Beta", duel.recentMatches().get(0).result());
+        assertTrue(duel.recentMatches().get(0).leftHuman());
+        assertFalse(duel.recentMatches().get(0).rightHuman());
     }
 
     @Test
