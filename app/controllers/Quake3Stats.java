@@ -2,6 +2,7 @@ package controllers;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,7 +32,17 @@ public final class Quake3Stats {
      * A player from the administration: the name the statistics show, their profile when
      * they are a member (memberId, else null), and the other nicks they played under.
      */
-    public record Identity(String name, Long memberId, List<String> nicks) { }
+    public record Identity(String name, Long memberId, List<String> nicks) {
+        public static final String CLAN_TAG = "dwc.";
+
+        /** Members are shown with the clan tag; their bare nick still counts as one of their nicks. */
+        public static Identity member(String nick, Long memberId, List<String> nicks) {
+            if (nick.toLowerCase(Locale.ROOT).startsWith(CLAN_TAG)) return new Identity(nick, memberId, nicks);
+            List<String> all = new ArrayList<>(nicks);
+            all.add(nick);
+            return new Identity(CLAN_TAG + nick, memberId, all);
+        }
+    }
 
     public record Player(String name, Long memberId, boolean bot, int matches, int wins, int kills, int deaths, int suicides,
                          int teamKills, long damageGiven, long damageReceived,

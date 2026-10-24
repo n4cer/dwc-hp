@@ -1,4 +1,4 @@
-@(clanwar: Clanwar, isAdmin: Boolean, previous: Clanwar, next: Clanwar, messages: play.i18n.Messages)
+@(clanwar: Clanwar, isAdmin: Boolean, previous: Clanwar, next: Clanwar, hasDemoStats: Boolean, messages: play.i18n.Messages)
 
 @main(messages.at("clanwar.title", clanwar.getEnemy()), messages, messages.at("clanwar.description", clanwar.getEnemy()), controllers.routes.HomeController.clanwar(clanwar.getId()).url) {
 <div class="mitteContent">
@@ -37,6 +37,10 @@
             <a href="@controllers.routes.HomeController.player(l.getMember().getId())">@l.getMember().getNick()</a>
         }
     </div>
+
+    @if(hasDemoStats) {
+        <p class="clanwar-demo-stats"><a href="@controllers.routes.HomeController.clanwarStats(clanwar.getId())">@messages.at("clanwar.demoStats")</a></p>
+    }
 
     <div class="clanwar-scores">
     @for(score <- clanwar.getScores()) {

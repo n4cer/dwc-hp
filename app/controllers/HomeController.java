@@ -16,6 +16,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -79,6 +81,7 @@ public class HomeController extends Controller {
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
     @Inject MessagesApi messagesApi;
+    @Inject N4botClient n4bot;
 
     public Result setLanguage(String code, String to) {
       Result result = redirect(isSafeRedirectTarget(to) ? to : "/");
@@ -151,7 +154,7 @@ public class HomeController extends Controller {
       Clanwar previous = index >= 0 && index + 1 < ordered.size() ? ordered.get(index + 1) : null;
       Clanwar next = index > 0 ? ordered.get(index - 1) : null;
 
-      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next, messages);
+      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next, n4bot.hasStats(id), messages);
       if (!isAdmin) cache.set(clanwarCacheKey(id, messages.lang().code()), html, CLANWAR_CACHE_DURATION);
 
       return ok(html);
@@ -159,6 +162,35 @@ public class HomeController extends Controller {
 
     public static String clanwarCacheKey(Long id, String langCode) {
       return "clanwar_" + id + "_" + langCode;
+    }
+
+    public static String clanwarStatsCacheKey(Long id, String langCode) {
+      return "clanwar_stats_" + id + "_" + langCode;
+    }
+
+    /**
+     * Damage, weapon and kill statistics of a clan war, taken from the Quake 3 demos
+     * n4bot has linked to it. 404 while there are none (or n4bot is unreachable).
+     */
+    public CompletionStage<Result> clanwarStats(Http.Request request, Long id) {
+      Messages messages = messagesApi.preferred(request);
+      boolean isAdmin = AdminAuth.hasRole(request, Role.CLANWARS);
+      String key = clanwarStatsCacheKey(id, messages.lang().code());
+      if (!isAdmin) {
+        Optional<Html> cached = cache.get(key);
+        if (cached.isPresent()) return CompletableFuture.completedFuture(ok(cached.get()));
+      }
+
+      Clanwar clanwar = Clanwar.find.byId(id);
+      if (clanwar == null) return CompletableFuture.completedFuture(notFound(messages.at("notFound.clanwar")));
+
+      return n4bot.clanwar(id).thenApply(json -> {
+        if (json.isEmpty()) return notFound(views.html.clanwarStats.render(clanwar, null, messages));
+        ClanwarDemoStats stats = ClanwarDemoStats.fromJson(json.get(), Quake3Stats.aliases(quake3Identities()));
+        Html html = views.html.clanwarStats.render(clanwar, stats, messages);
+        if (!isAdmin) cache.set(key, html, CLANWAR_CACHE_DURATION);
+        return ok(html);
+      });
     }
 
     private static final DateTimeFormatter CLANWAR_JSON_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
@@ -277,8 +309,10 @@ public class HomeController extends Controller {
     /** The players maintained under Administration > Quake 3 players. */
     static List<Quake3Stats.Identity> quake3Identities() {
       return Quake3Player.find.query().fetch("member").fetch("nicks").findList().stream()
-              .map(player -> new Quake3Stats.Identity(player.displayName(),
-                      player.getMember() == null ? null : player.getMember().getId(), player.nickNames()))
+              .map(player -> player.getMember() == null
+                      ? new Quake3Stats.Identity(player.displayName(), null, player.nickNames())
+                      : Quake3Stats.Identity.member(player.getMember().getNick(), player.getMember().getId(),
+                              player.nickNames()))
               .toList();
     }
 
@@ -663,13 +697,21 @@ public class HomeController extends Controller {
     /** Human-readable file size, or an empty string when the file cannot be read. */
     private static String formatSize(Path path) {
       try {
-        long bytes = Files.size(path);
-        if (bytes >= 1073741824L) return String.format(Locale.ROOT, "%.1f GB", bytes / 1073741824.0);
-        if (bytes >= 1048576L) return Math.max(1, Math.round(bytes / 1048576.0)) + " MB";
-        return Math.max(1, Math.round(bytes / 1024.0)) + " KB";
+        return formatSize(Files.size(path));
       } catch (IOException ex) {
         return "";
       }
+    }
+
+    static String formatSize(long bytes) {
+      if (bytes >= 1073741824L) return String.format(Locale.ROOT, "%.1f GB", bytes / 1073741824.0);
+      if (bytes >= 1048576L) return Math.max(1, Math.round(bytes / 1048576.0)) + " MB";
+      return Math.max(1, Math.round(bytes / 1024.0)) + " KB";
+    }
+
+    /** Whether /downloads would serve a file of this name, were it in the download folder. */
+    static boolean isDownloadable(String file) {
+      return hasExtension(Path.of(file), FILE_EXTENSIONS);
     }
     @Cached(key = "randomPic", duration = 300)
     public Result randomPic() {

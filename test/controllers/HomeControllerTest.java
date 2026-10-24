@@ -66,6 +66,37 @@ public class HomeControllerTest extends WithApplication {
     }
 
     @Test
+    public void testDemoStatsOfUnknownClanwarReturn404() {
+        Result result = route(app, new Http.RequestBuilder().method(GET).uri("/clanwar/999999/stats"));
+
+        assertEquals(NOT_FOUND, result.status());
+    }
+
+    @Test
+    public void testDemoStatsPageRendersMapsAndEscapesNames() {
+        models.Clanwar clanwar = new models.Clanwar();
+        clanwar.setId(463L);
+        clanwar.setDate(new java.util.Date());
+        clanwar.setEnemy("DX!");
+        clanwar.setScores(new java.util.ArrayList<>());
+        String payload = "{\"clanwar_id\":463,\"maps\":[{\"map\":\"q3wcp1\",\"demos\":[],\"match\":{"
+                + "\"score_summary\":\"RED 3 : 0 BLUE\",\"has_match_stats\":true,\"players\":["
+                + "{\"name\":\"<b>evil</b>\",\"team\":\"blue\",\"kills\":1,\"deaths\":2,"
+                + "\"weapons\":[{\"weapon\":\"Railgun\",\"accuracy\":40,\"hits\":4,\"shots\":10,\"kills\":1}]}],"
+                + "\"obituaries\":[]}}]}";
+        ClanwarDemoStats stats = ClanwarDemoStats.fromJson(play.libs.Json.parse(payload), java.util.Map.of());
+        play.i18n.Messages messages = app.injector().instanceOf(play.i18n.MessagesApi.class)
+                .preferred(java.util.List.of(play.i18n.Lang.forCode("de")));
+
+        String html = views.html.clanwarStats.render(clanwar, stats, messages).body();
+
+        assertTrue(html.contains("q3wcp1"));
+        assertTrue(html.contains("RED 3 : 0 BLUE"));
+        assertTrue(html.contains("Railgun"));
+        assertTrue(html.contains("&lt;b&gt;evil&lt;/b&gt;"));
+    }
+
+    @Test
     public void testMissingVideoFilesReturn404() {
         // Nothing outside the whitelist or the configured folder may be served.
         Result traversal = route(app, new Http.RequestBuilder().method(GET).uri("/videos/stream/..%2Fsecret.mp4"));

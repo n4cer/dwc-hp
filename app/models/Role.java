@@ -9,8 +9,8 @@ public enum Role {
   NEWS("News", "Write and edit news"),
   CLANWARS("Clanwars", "Clanwars, maps, leagues, games and game types"),
   LINEUP("Lineup", "Members and squads, except roles and administrators"),
-  QUAKE3("Quake 3", "Start and stop the Quake 3 servers, merge players' nicks in the statistics"),
-  MEDIA("Media", "Videos and downloads");
+  QUAKE3("Quake 3", "Start and stop the Quake 3 servers, install uploaded pk3 files, merge players' nicks in the statistics"),
+  MEDIA("Media", "Videos and downloads, including uploaded files");
 
   private final String label;
   private final String description;
