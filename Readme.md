@@ -275,7 +275,7 @@ in the lineup form:
 | News | News |
 | Clanwars | Clanwars, maps, leagues, games and game types |
 | Lineup | Members and squads, except roles and administrator accounts |
-| Quake 3 servers | Starting and stopping the Quake 3 servers |
+| Quake 3 | Starting and stopping the Quake 3 servers, merging players' nicks in the statistics |
 | Media | Videos and downloads |
 
 Members get their first password through a one-time link: an administrator
@@ -347,6 +347,17 @@ variables are set in `/etc/dwc/environment` (see
 protocol directly from `dwc.service` (no sidecar involved) and is fetched
 client-side so it stays live even on pages that are cached for minutes.
 Leave the host unset to hide the box (it falls back to "empty").
+
+#### Players with several nicks
+
+The statistics (`/quake3/stats`) only know the names from the servers'
+`games.log`, so someone who played as `lamagra` and `dwc.lamagra` shows up
+twice. Under Administration > "Quake 3 players" (role Quake 3) every player
+gets one entry with all their nicks, one per line; colours and case do not
+matter. An entry can be linked to a lineup member, who is then shown under
+their nick from the lineup with a link to their profile, or just carry a name
+for guests who are not members. The page also lists the nicks from the logs
+that belong to nobody yet. Changes show up on the statistics page right away.
 
 #### Map downloads for the game servers
 

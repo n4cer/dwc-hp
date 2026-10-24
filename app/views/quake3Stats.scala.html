@@ -78,7 +78,7 @@
                     @for((player, index) <- stats.leaderboard().asScala.zipWithIndex) {
                         <tr>
                             <td class="num q3-rank">@(index + 1)</td>
-                            <td class="q3-name">@player.name()@if(player.bot()) { <span class="q3-bot">@messages.at("quake3stats.bot")</span> }</td>
+                            <td class="q3-name">@if(player.memberId() != null) {<a href="@controllers.routes.HomeController.player(player.memberId())">@player.name()</a>} else {@player.name()}@if(player.bot()) { <span class="q3-bot">@messages.at("quake3stats.bot")</span> }</td>
                             <td class="num">@player.matches()</td>
                             <td class="num">@player.wins()</td>
                             <td class="num q3-strong">@player.kills()</td>
