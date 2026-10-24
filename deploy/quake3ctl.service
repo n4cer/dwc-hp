@@ -9,9 +9,13 @@ EnvironmentFile=/etc/dwc/quake3ctl.env
 Restart=on-failure
 RestartSec=5
 # Runs as root: it only ever calls "systemctl start/stop/is-active" on the
-# three hardcoded quake3@*.service units below, never a shell or user input.
+# hardcoded quake3@*.service units, and moves files from the SFTP upload
+# folder into the hardcoded target folders; never a shell or user input.
 NoNewPrivileges=true
-ProtectHome=true
+# /home stays read-only except for the q3 servers' pk3 folders, which uploads
+# may be installed into (QUAKE3CTL_PK3_DIR in quake3ctl.env).
+ProtectHome=read-only
+ReadWritePaths=/home/micha/docker/q3-osp-server/server-data
 PrivateTmp=true
 
 [Install]

@@ -275,8 +275,8 @@ in the lineup form:
 | News | News |
 | Clanwars | Clanwars, maps, leagues, games and game types |
 | Lineup | Members and squads, except roles and administrator accounts |
-| Quake 3 | Starting and stopping the Quake 3 servers, merging players' nicks in the statistics |
-| Media | Videos and downloads |
+| Quake 3 | Starting and stopping the Quake 3 servers, installing uploaded pk3 files, merging players' nicks in the statistics |
+| Media | Videos and downloads, including uploaded files |
 
 Members get their first password through a one-time link: an administrator
 clicks "Create password link" in the member's lineup form and passes the link on
@@ -373,6 +373,35 @@ straight from the folders the servers load them from, so a newly added map
 needs no extra step. The retail id paks (`baseq3/pak0.pk3` to `pak8.pk3`) are
 copyrighted and never handed out. The regex location in `deploy/nginx.conf`
 passes these requests through unbuffered, like the video and download bytes.
+
+#### Installing files uploaded over SFTP
+
+New pk3 files for the game servers and new files for the download section are
+uploaded over SFTP into `/srv/upload/eingang`, where they wait until a member
+puts them into place under Administration > "Uploads". Each file can go to
+`baseq3` or `osp` of the game servers (pk3 files only, role Quake 3) or to the
+download folder (only extensions the download section serves, role Media). A
+file of the same name there is replaced.
+
+The `dwc` web process may neither read the upload folder nor write to the game
+servers' folders, so the quake3ctl sidecar does the moving, using the same
+token. It accepts only plain file names, refuses symlinks, hard links, the
+retail id paks in `baseq3`, and files changed within the last minute (an upload
+still running). It moves the file when upload folder and target share a file
+system and copies it otherwise, and replaces the old file atomically, so a
+running server or a download in progress keeps the old bytes. Installed files
+belong to the owner of the target folder and get mode `0644`.
+
+The game servers load pk3 files only on startup, so restart them under
+"Quake 3 servers" after installing one; `/quake3/pk3` serves the new file right
+away. After a new file lands in the download folder, the page opens the form
+for its download entry; an existing entry for the same file name offers the new
+file straight away.
+
+The folders default to the paths above and can be changed in
+`/etc/dwc/quake3ctl.env` (see `deploy/quake3ctl.env.example`). The pk3 folder
+lies under `/home`, which `quake3ctl.service` otherwise keeps read-only, so
+update its `ReadWritePaths` too if that folder moves.
 
 ### Manual package
 

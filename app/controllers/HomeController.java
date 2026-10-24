@@ -663,13 +663,21 @@ public class HomeController extends Controller {
     /** Human-readable file size, or an empty string when the file cannot be read. */
     private static String formatSize(Path path) {
       try {
-        long bytes = Files.size(path);
-        if (bytes >= 1073741824L) return String.format(Locale.ROOT, "%.1f GB", bytes / 1073741824.0);
-        if (bytes >= 1048576L) return Math.max(1, Math.round(bytes / 1048576.0)) + " MB";
-        return Math.max(1, Math.round(bytes / 1024.0)) + " KB";
+        return formatSize(Files.size(path));
       } catch (IOException ex) {
         return "";
       }
+    }
+
+    static String formatSize(long bytes) {
+      if (bytes >= 1073741824L) return String.format(Locale.ROOT, "%.1f GB", bytes / 1073741824.0);
+      if (bytes >= 1048576L) return Math.max(1, Math.round(bytes / 1048576.0)) + " MB";
+      return Math.max(1, Math.round(bytes / 1024.0)) + " KB";
+    }
+
+    /** Whether /downloads would serve a file of this name, were it in the download folder. */
+    static boolean isDownloadable(String file) {
+      return hasExtension(Path.of(file), FILE_EXTENSIONS);
     }
     @Cached(key = "randomPic", duration = 300)
     public Result randomPic() {
