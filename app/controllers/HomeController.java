@@ -309,8 +309,10 @@ public class HomeController extends Controller {
     /** The players maintained under Administration > Quake 3 players. */
     static List<Quake3Stats.Identity> quake3Identities() {
       return Quake3Player.find.query().fetch("member").fetch("nicks").findList().stream()
-              .map(player -> new Quake3Stats.Identity(player.displayName(),
-                      player.getMember() == null ? null : player.getMember().getId(), player.nickNames()))
+              .map(player -> player.getMember() == null
+                      ? new Quake3Stats.Identity(player.displayName(), null, player.nickNames())
+                      : Quake3Stats.Identity.member(player.getMember().getNick(), player.getMember().getId(),
+                              player.nickNames()))
               .toList();
     }
 

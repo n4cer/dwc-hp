@@ -99,4 +99,16 @@ public class ClanwarDemoStatsTest {
         assertNull(players.get(2).memberId());
         assertFalse(players.get(2).shownName().isEmpty());
     }
+
+    @Test
+    public void membersAreShownWithTheClanTag() {
+        Quake3Stats.Identity n4cer = Quake3Stats.Identity.member("n4cer", 7L, List.of());
+        Quake3Stats.Identity pons = Quake3Stats.Identity.member("dwc.pons", 9L, List.of());
+
+        List<ClanwarDemoStats.PlayerRow> players = parse(Quake3Stats.aliases(List.of(n4cer, pons))).maps().get(0).players();
+
+        assertEquals(Long.valueOf(7), players.get(0).memberId());
+        assertEquals("dwc.n4cer", players.get(0).shownName());
+        assertEquals("dwc.pons", players.get(1).shownName());
+    }
 }
