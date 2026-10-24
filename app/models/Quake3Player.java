@@ -23,7 +23,7 @@ public class Quake3Player extends Model {
   @ManyToOne
   private User member;
   @OneToMany(mappedBy = "player", cascade = CascadeType.ALL)
-  @OrderBy("nick")
+  @jakarta.persistence.OrderBy("nick")
   private List<Quake3PlayerNick> nicks = new ArrayList<>();
 
   public Long getId() {
