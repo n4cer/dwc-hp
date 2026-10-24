@@ -164,6 +164,22 @@ public class Quake3GamesLogTest {
     }
 
     @Test
+    public void mergesPlayersWhoPlayedUnderSeveralNicks() throws IOException {
+        List<Quake3GamesLog.Match> matches = new java.util.ArrayList<>(parse(DUEL));
+        matches.addAll(parse(TDM));
+        java.util.Map<String, String> aliases = Quake3Stats.aliases(com.typesafe.config.ConfigFactory.parseString(
+                "quake3.players { \"dwc.alpha\" = [\"Red ^1One\"], Beta = \"[bot]beta\" }"));
+
+        Quake3Stats all = Quake3Stats.of(matches, "", true, 20, aliases);
+        assertEquals(3, all.leaderboard().size());
+        Quake3Stats.Player alpha = all.leaderboard().stream()
+                .filter(player -> player.name().equals("dwc.alpha")).findFirst().orElseThrow();
+        assertEquals(2, alpha.matches());
+        assertTrue(all.leaderboard().stream().anyMatch(player -> player.name().equals("Beta")));
+        assertEquals("dwc.alpha 2 : 0 Beta", all.recentMatches().get(1).result());
+    }
+
+    @Test
     public void leavesOutMatchesWithBotsUnlessAskedFor() throws IOException {
         List<Quake3GamesLog.Match> matches = new java.util.ArrayList<>(parse(DUEL));
         matches.addAll(parse(TDM));
