@@ -245,6 +245,8 @@ th[aria-sort] {color:#E2A612;}
 .q3-table tbody tr:nth-child(2) .q3-rank {color:#a8a8a8;font-weight:bold;}
 .q3-table tbody tr:nth-child(3) .q3-rank {color:#b0703a;font-weight:bold;}
 .q3-name {font-weight:bold;}
+/* Humans stand out from the bots, linked to a profile or not. */
+.q3-human {color:#E2A612;}
 .q3-strong {font-weight:bold;}
 .q3-bot {margin-left:4px;padding:0 5px;border:1px solid var(--dwc-border-strong);border-radius:8px;font-size:9px;font-weight:normal;color:var(--dwc-text-muted);text-transform:uppercase;}
 .q3-acc-bar {display:block;width:34px;height:3px;margin:2px 0 0 auto;background:var(--dwc-border);}

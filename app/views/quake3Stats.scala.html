@@ -44,12 +44,12 @@
             <div class="stat-card"><span class="stat-value">@stats.totalKills()</span><span class="stat-label">@messages.at("quake3stats.kills")</span></div>
             @defining(stats.topFragger()) { top =>
                 @if(top != null) {
-                    <div class="stat-card stat-ratio"><span class="stat-value">@top.kills()</span><span class="stat-label">@messages.at("quake3stats.topFragger")</span><span class="q3-card-name">@top.name()</span></div>
+                    <div class="stat-card stat-ratio"><span class="stat-value">@top.kills()</span><span class="stat-label">@messages.at("quake3stats.topFragger")</span><span class="q3-card-name @if(!top.bot()) {q3-human}">@top.name()</span></div>
                 }
             }
             @defining(stats.bestAim("Railgun")) { aim =>
                 @if(aim != null) {
-                    <div class="stat-card stat-ratio"><span class="stat-value">@aim.accuracy("Railgun")</span><span class="stat-label">@messages.at("quake3stats.bestRail")</span><span class="q3-card-name">@aim.name()</span></div>
+                    <div class="stat-card stat-ratio"><span class="stat-value">@aim.accuracy("Railgun")</span><span class="stat-label">@messages.at("quake3stats.bestRail")</span><span class="q3-card-name @if(!aim.bot()) {q3-human}">@aim.name()</span></div>
                 }
             }
         </div>
@@ -78,7 +78,7 @@
                     @for((player, index) <- stats.leaderboard().asScala.zipWithIndex) {
                         <tr>
                             <td class="num q3-rank">@(index + 1)</td>
-                            <td class="q3-name">@if(player.memberId() != null) {<a href="@controllers.routes.HomeController.player(player.memberId())">@player.name()</a>} else {@player.name()}@if(player.bot()) { <span class="q3-bot">@messages.at("quake3stats.bot")</span> }</td>
+                            <td class="q3-name @if(!player.bot()) {q3-human}">@if(player.memberId() != null) {<a href="@controllers.routes.HomeController.player(player.memberId())">@player.name()</a>} else {@player.name()}@if(player.bot()) { <span class="q3-bot">@messages.at("quake3stats.bot")</span> }</td>
                             <td class="num">@player.matches()</td>
                             <td class="num">@player.wins()</td>
                             <td class="num q3-strong">@player.kills()</td>
@@ -121,9 +121,9 @@
                             <td>@row.map()</td>
                             <td class="num" data-value="@row.durationSeconds()">@row.duration()</td>
                             <td class="q3-result">
-                                <span class="@if(row.teamGame()) {q3-team-red} @if(row.winner() == 1) {q3-winner}">@row.leftName()</span>
+                                <span class="@if(row.teamGame()) {q3-team-red} @if(row.leftHuman()) {q3-human} @if(row.winner() == 1) {q3-winner}">@row.leftName()</span>
                                 <span class="q3-score">@row.leftScore() : @row.rightScore()</span>
-                                <span class="@if(row.teamGame()) {q3-team-blue} @if(row.winner() == 2) {q3-winner}">@row.rightName()</span>
+                                <span class="@if(row.teamGame()) {q3-team-blue} @if(row.rightHuman()) {q3-human} @if(row.winner() == 2) {q3-winner}">@row.rightName()</span>
                             </td>
                             <td class="q3-players">@row.players().asScala.mkString(", ")</td>
                         </tr>
