@@ -16,10 +16,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
+
+import com.typesafe.config.Config;
 
 /**
  * Parses the games.log the OSP Quake 3 servers write (see the q3server
@@ -99,6 +102,17 @@ final class Quake3GamesLog {
             }
         }
         return matches;
+    }
+
+    /** The matches below quake3.logs.folder; empty when it is not set or cannot be read. */
+    static Optional<List<Match>> readConfigured(Config config) {
+        String folder = config.hasPath("quake3.logs.folder") ? config.getString("quake3.logs.folder") : "";
+        if (folder.isBlank()) return Optional.empty();
+        try {
+            return Optional.of(readFolder(Path.of(folder)));
+        } catch (IOException e) {
+            return Optional.empty();
+        }
     }
 
     static List<Match> parse(Reader source) throws IOException {

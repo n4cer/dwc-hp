@@ -167,15 +167,20 @@ public class Quake3GamesLogTest {
     public void mergesPlayersWhoPlayedUnderSeveralNicks() throws IOException {
         List<Quake3GamesLog.Match> matches = new java.util.ArrayList<>(parse(DUEL));
         matches.addAll(parse(TDM));
-        java.util.Map<String, String> aliases = Quake3Stats.aliases(com.typesafe.config.ConfigFactory.parseString(
-                "quake3.players { \"dwc.alpha\" = [\"Red ^1One\"], Beta = \"[bot]beta\" }"));
+        // A member who also played as "Red One", and a non-member under two names.
+        java.util.Map<String, Quake3Stats.Identity> aliases = Quake3Stats.aliases(List.of(
+                new Quake3Stats.Identity("dwc.alpha", 7L, List.of("Red ^1One")),
+                new Quake3Stats.Identity("Beta", null, List.of("[bot]beta"))));
 
         Quake3Stats all = Quake3Stats.of(matches, "", true, 20, aliases);
         assertEquals(3, all.leaderboard().size());
         Quake3Stats.Player alpha = all.leaderboard().stream()
                 .filter(player -> player.name().equals("dwc.alpha")).findFirst().orElseThrow();
         assertEquals(2, alpha.matches());
-        assertTrue(all.leaderboard().stream().anyMatch(player -> player.name().equals("Beta")));
+        assertEquals(Long.valueOf(7), alpha.memberId());
+        Quake3Stats.Player beta = all.leaderboard().stream()
+                .filter(player -> player.name().equals("Beta")).findFirst().orElseThrow();
+        assertEquals(null, beta.memberId());
         assertEquals("dwc.alpha 2 : 0 Beta", all.recentMatches().get(1).result());
     }
 

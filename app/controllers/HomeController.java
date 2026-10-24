@@ -31,6 +31,7 @@ import models.Download;
 import models.History;
 import models.MatchLineup;
 import models.News;
+import models.Quake3Player;
 import models.Role;
 import models.Score;
 import models.ScoreImage;
@@ -269,15 +270,28 @@ public class HomeController extends Controller {
 
     /** Empty when no log folder is configured or it cannot be read. */
     private Optional<Quake3Stats> loadQuake3Stats(String filter, boolean bots) {
-      String folder = configuration.underlying().hasPath("quake3.logs.folder")
-              ? configuration.underlying().getString("quake3.logs.folder") : "";
-      if (folder.isBlank()) return Optional.empty();
-      try {
-        return Optional.of(Quake3Stats.of(Quake3GamesLog.readFolder(Path.of(folder)), filter, bots, 20,
-                Quake3Stats.aliases(configuration.underlying())));
-      } catch (IOException e) {
-        return Optional.empty();
+      return Quake3GamesLog.readConfigured(configuration.underlying()).map(matches ->
+              Quake3Stats.of(matches, filter, bots, 20, Quake3Stats.aliases(quake3Identities())));
+    }
+
+    /** The players maintained under Administration > Quake 3 players. */
+    static List<Quake3Stats.Identity> quake3Identities() {
+      return Quake3Player.find.query().fetch("member").fetch("nicks").findList().stream()
+              .map(player -> new Quake3Stats.Identity(player.displayName(),
+                      player.getMember() == null ? null : player.getMember().getId(), player.nickNames()))
+              .toList();
+    }
+
+    /** Every cache entry the statistics page and its JSON can be stored under. */
+    static List<String> quake3StatsCacheKeys(List<String> langs) {
+      List<String> keys = new ArrayList<>();
+      for (String filter : Stream.concat(Stream.of(""), Quake3Stats.MODES.stream()).toList()) {
+        for (String bots : List.of("", "_bots")) {
+          keys.add("quake3statsJson_" + filter + bots);
+          for (String lang : langs) keys.add("quake3stats_" + filter + bots + "_" + lang);
+        }
       }
+      return keys;
     }
 
     public Result lineup(Http.Request request) {

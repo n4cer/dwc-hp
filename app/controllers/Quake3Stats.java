@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigObject;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import play.libs.Json;
@@ -29,7 +27,13 @@ public final class Quake3Stats {
     private static final Quake3GamesLog.WeaponStat NO_SHOTS = new Quake3GamesLog.WeaponStat(0, 0);
     private static final DateTimeFormatter JSON_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
-    public record Player(String name, boolean bot, int matches, int wins, int kills, int deaths, int suicides,
+    /**
+     * A player from the administration: the name the statistics show, their profile when
+     * they are a member (memberId, else null), and the other nicks they played under.
+     */
+    public record Identity(String name, Long memberId, List<String> nicks) { }
+
+    public record Player(String name, Long memberId, boolean bot, int matches, int wins, int kills, int deaths, int suicides,
                          int teamKills, long damageGiven, long damageReceived,
                          Map<String, Integer> killsByWeapon, Map<String, Quake3GamesLog.WeaponStat> weapons) {
         public double kdValue() {
@@ -171,6 +175,7 @@ public final class Quake3Stats {
             ObjectNode entry = players.addObject();
             entry.put("rank", rank++);
             entry.put("name", player.name());
+            entry.put("memberId", player.memberId());
             entry.put("bot", player.bot());
             entry.put("matches", player.matches());
             entry.put("wins", player.wins());
@@ -226,11 +231,11 @@ public final class Quake3Stats {
     }
 
     /**
-     * aliases maps lower-case names to the name a player is shown under (see
-     * {@link #aliases(Config)}), so that whoever played under several nicks gets one line.
+     * aliases maps lower-case nicks to the player behind them (see {@link #aliases(List)}),
+     * so that whoever played under several nicks gets one line.
      */
     static Quake3Stats of(List<Quake3GamesLog.Match> allMatches, String mode, boolean includeBots, int recentLimit,
-                          Map<String, String> aliases) {
+                          Map<String, Identity> aliases) {
         List<Quake3GamesLog.Match> matches = allMatches.stream()
                 .filter(match -> !MODES.contains(mode) || match.gametype().equalsIgnoreCase(mode))
                 .filter(match -> includeBots || !match.hasBots())
@@ -242,7 +247,9 @@ public final class Quake3Stats {
         Map<String, Totals> totals = new LinkedHashMap<>();
         for (Quake3GamesLog.Match match : matches) {
             for (Quake3GamesLog.MatchPlayer player : match.players()) {
-                totals.computeIfAbsent(player.name().toLowerCase(), key -> new Totals(player.name()))
+                Identity identity = aliases.get(player.name().toLowerCase());
+                totals.computeIfAbsent(player.name().toLowerCase(),
+                                key -> new Totals(player.name(), identity == null ? null : identity.memberId()))
                         .add(player, match.won(player));
             }
         }
@@ -255,29 +262,25 @@ public final class Quake3Stats {
     }
 
     /**
-     * Reads quake3.players from the configuration: per player the name to show and
-     * the other nicks they played under, e.g. "dwc.lamagra" = ["lamagra", "lama"].
-     * Names are compared without colours and case. Returns lower-case nick -> shown name.
+     * Turns the players maintained in the administration into lower-case nick -> who
+     * that is. A player's shown name counts as one of their nicks too. Nicks are
+     * compared without colours and case, like the games.log names.
      */
-    static Map<String, String> aliases(Config config) {
-        Map<String, String> aliases = new HashMap<>();
-        if (!config.hasPath("quake3.players")) return aliases;
-        ConfigObject players = config.getObject("quake3.players");
-        for (String name : players.keySet()) {
-            String shown = Quake3GamesLog.stripColors(name);
-            aliases.put(shown.toLowerCase(), shown);
-            Object nicks = players.get(name).unwrapped();
-            List<?> list = nicks instanceof List<?> l ? l : List.of(nicks);
-            for (Object nick : list) aliases.put(Quake3GamesLog.stripColors(String.valueOf(nick)).toLowerCase(), shown);
+    static Map<String, Identity> aliases(List<Identity> players) {
+        Map<String, Identity> aliases = new HashMap<>();
+        for (Identity player : players) {
+            aliases.put(Quake3GamesLog.stripColors(player.name()).toLowerCase(), player);
+            for (String nick : player.nicks()) aliases.put(Quake3GamesLog.stripColors(nick).toLowerCase(), player);
         }
         return aliases;
     }
 
-    private static Quake3GamesLog.Match rename(Quake3GamesLog.Match match, Map<String, String> aliases) {
+    private static Quake3GamesLog.Match rename(Quake3GamesLog.Match match, Map<String, Identity> aliases) {
         if (aliases.isEmpty()) return match;
         List<Quake3GamesLog.MatchPlayer> players = match.players().stream()
                 .map(player -> {
-                    String shown = aliases.get(player.name().toLowerCase());
+                    Identity identity = aliases.get(player.name().toLowerCase());
+                    String shown = identity == null ? null : identity.name();
                     return shown == null || shown.equals(player.name()) ? player
                             : new Quake3GamesLog.MatchPlayer(shown, player.bot(), player.team(), player.score(),
                                     player.kills(), player.deaths(), player.suicides(), player.teamKills(),
@@ -317,14 +320,16 @@ public final class Quake3Stats {
 
     private static final class Totals {
         final String name;
+        final Long memberId;
         boolean bot;
         int matches, wins, kills, deaths, suicides, teamKills;
         long damageGiven, damageReceived;
         final Map<String, Integer> killsByWeapon = new LinkedHashMap<>();
         final Map<String, Quake3GamesLog.WeaponStat> weapons = new LinkedHashMap<>();
 
-        Totals(String name) {
+        Totals(String name, Long memberId) {
             this.name = name;
+            this.memberId = memberId;
         }
 
         void add(Quake3GamesLog.MatchPlayer player, boolean won) {
@@ -342,7 +347,7 @@ public final class Quake3Stats {
         }
 
         Player toPlayer() {
-            return new Player(name, bot, matches, wins, kills, deaths, suicides, teamKills, damageGiven,
+            return new Player(name, memberId, bot, matches, wins, kills, deaths, suicides, teamKills, damageGiven,
                     damageReceived, Map.copyOf(killsByWeapon), Map.copyOf(weapons));
         }
     }

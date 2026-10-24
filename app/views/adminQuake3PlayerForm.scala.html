@@ -1,0 +1,26 @@
+@(request: Http.Request, item: models.Quake3Player, name: String, memberId: java.lang.Long, nicks: String, members: java.util.List[User], error: String, messages: play.i18n.Messages)
+
+@main(if(item == null) "Add Quake 3 player" else "Edit Quake 3 player", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminQuake3Controller.players()">&laquo; Back to Quake 3 players</a></p>
+        <h1>@if(item == null) { Add Quake 3 player } else { Edit Quake 3 player }</h1>
+        @if(error != null) { <div class="admin-message error">@error</div> }
+        <form method="post" action="@if(item == null) {@controllers.routes.AdminQuake3Controller.createPlayer()} else {@controllers.routes.AdminQuake3Controller.updatePlayer(item.getId())}">
+            @helper.CSRF.formField(request.asScala())
+            <div class="admin-grid">
+                <label>Member<select name="member"><option value="">No member</option>@for(member <- members.asScala) {<option value="@member.getId()" @if(memberId != null && memberId == member.getId()) {selected}>@member.getNick()</option>}</select></label>
+                <label>Name<input type="text" name="name" value="@name"></label>
+            </div>
+            <p class="admin-hint">A member is shown under their nick from the lineup; the name is only used for players who are not members.</p>
+            <label>Nicks<textarea name="nicks" rows="8">@nicks</textarea></label>
+            <p class="admin-hint">One nick per line, as in the game; colours and case do not matter. The shown name counts as a nick by itself.</p>
+            <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminQuake3Controller.players()">Cancel</a></div>
+        </form>
+        @if(item != null) {
+            <form method="post" action="@controllers.routes.AdminQuake3Controller.deletePlayer(item.getId())">
+                @helper.CSRF.formField(request.asScala())
+                <div class="admin-actions"><button type="submit" class="secondary">Delete player</button></div>
+            </form>
+        }
+    </div>
+}

@@ -1,0 +1,40 @@
+@(request: Http.Request, players: java.util.List[models.Quake3Player], unassigned: java.util.Map[String, Integer], messages: play.i18n.Messages)
+
+@main("Quake 3 players", messages, noindex = true) {
+    <div class="admin-page">
+        <p class="admin-back"><a href="@controllers.routes.AdminController.index()">&laquo; Back to administration</a></p>
+        <div class="admin-header"><h1>Quake 3 players</h1><a class="admin-button" href="@controllers.routes.AdminQuake3Controller.newPlayer()">Add player</a></div>
+        <p class="admin-hint">The statistics count all nicks of a player as one. Members are shown under their nick from the lineup and link to their profile.</p>
+        @request.flash().get("success").map { message =>
+            <div class="admin-message success">@message</div>
+        }
+        <table class="admin-table"><thead><tr>
+            <th scope="col">Shown as</th><th scope="col">Member</th><th scope="col">Nicks</th><th scope="col"><span class="visually-hidden">Actions</span></th>
+        </tr></thead><tbody>
+        @for(player <- players.asScala) {
+            <tr>
+                <td>@player.displayName()</td>
+                <td>@if(player.getMember() != null) {yes} else {–}</td>
+                <td>@player.nickNames().asScala.mkString(", ")</td>
+                <td><a href="@controllers.routes.AdminQuake3Controller.editPlayer(player.getId())">Edit</a></td>
+            </tr>
+        }
+        </tbody></table>
+
+        @if(!unassigned.isEmpty()) {
+            <h2>Nicks without a player</h2>
+            <p class="admin-hint">Seen in the server logs (bots left out). A nick that belongs to nobody stays a player of its own.</p>
+            <table class="admin-table"><thead><tr>
+                <th scope="col">Nick</th><th scope="col">Matches</th><th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr></thead><tbody>
+            @for((nick, count) <- unassigned.asScala) {
+                <tr>
+                    <td>@nick</td>
+                    <td>@count</td>
+                    <td><a href="@controllers.routes.AdminQuake3Controller.newPlayer(nick)">Add player</a></td>
+                </tr>
+            }
+            </tbody></table>
+        }
+    </div>
+}
