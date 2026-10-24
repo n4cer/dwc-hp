@@ -906,6 +906,7 @@ public class AdminController extends Controller {
         clearPublicCaches();
         for (String lang : PUBLIC_CACHE_LANGS) {
             cache.remove(HomeController.clanwarCacheKey(clanwar.getId(), lang));
+            cache.remove(HomeController.clanwarStatsCacheKey(clanwar.getId(), lang));
         }
         return redirect(routes.AdminController.clanwarIndex()).flashing("success", "Clanwar saved successfully.");
     }
