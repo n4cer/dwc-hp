@@ -16,6 +16,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -79,6 +81,7 @@ public class HomeController extends Controller {
     @Inject Configuration configuration;
     @Inject SyncCacheApi cache;
     @Inject MessagesApi messagesApi;
+    @Inject N4botClient n4bot;
 
     public Result setLanguage(String code, String to) {
       Result result = redirect(isSafeRedirectTarget(to) ? to : "/");
@@ -151,7 +154,7 @@ public class HomeController extends Controller {
       Clanwar previous = index >= 0 && index + 1 < ordered.size() ? ordered.get(index + 1) : null;
       Clanwar next = index > 0 ? ordered.get(index - 1) : null;
 
-      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next, messages);
+      Html html = views.html.clanwar.render(clanwar, isAdmin, previous, next, n4bot.hasStats(id), messages);
       if (!isAdmin) cache.set(clanwarCacheKey(id, messages.lang().code()), html, CLANWAR_CACHE_DURATION);
 
       return ok(html);
@@ -159,6 +162,35 @@ public class HomeController extends Controller {
 
     public static String clanwarCacheKey(Long id, String langCode) {
       return "clanwar_" + id + "_" + langCode;
+    }
+
+    public static String clanwarStatsCacheKey(Long id, String langCode) {
+      return "clanwar_stats_" + id + "_" + langCode;
+    }
+
+    /**
+     * Damage, weapon and kill statistics of a clan war, taken from the Quake 3 demos
+     * n4bot has linked to it. 404 while there are none (or n4bot is unreachable).
+     */
+    public CompletionStage<Result> clanwarStats(Http.Request request, Long id) {
+      Messages messages = messagesApi.preferred(request);
+      boolean isAdmin = AdminAuth.hasRole(request, Role.CLANWARS);
+      String key = clanwarStatsCacheKey(id, messages.lang().code());
+      if (!isAdmin) {
+        Optional<Html> cached = cache.get(key);
+        if (cached.isPresent()) return CompletableFuture.completedFuture(ok(cached.get()));
+      }
+
+      Clanwar clanwar = Clanwar.find.byId(id);
+      if (clanwar == null) return CompletableFuture.completedFuture(notFound(messages.at("notFound.clanwar")));
+
+      return n4bot.clanwar(id).thenApply(json -> {
+        if (json.isEmpty()) return notFound(views.html.clanwarStats.render(clanwar, null, messages));
+        ClanwarDemoStats stats = ClanwarDemoStats.fromJson(json.get(), Quake3Stats.aliases(quake3Identities()));
+        Html html = views.html.clanwarStats.render(clanwar, stats, messages);
+        if (!isAdmin) cache.set(key, html, CLANWAR_CACHE_DURATION);
+        return ok(html);
+      });
     }
 
     private static final DateTimeFormatter CLANWAR_JSON_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");

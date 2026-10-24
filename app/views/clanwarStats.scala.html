@@ -1,0 +1,133 @@
+@(clanwar: Clanwar, stats: controllers.ClanwarDemoStats, messages: play.i18n.Messages)
+
+@dash(value: Any) = @{ if (value == null) "–" else value.toString }
+
+@player(row: controllers.ClanwarDemoStats.PlayerRow) = {
+    @if(row.memberId() != null) {
+        <a class="q3-name @row.teamClass()" href="@controllers.routes.HomeController.player(row.memberId())" title="@row.name()">@row.shownName()</a>
+    } else {
+        <span class="q3-name @row.teamClass()">@row.name()</span>
+    }
+}
+
+@main(messages.at("clanwarStats.title", clanwar.getEnemy()), messages, messages.at("clanwarStats.description", clanwar.getEnemy()), controllers.routes.HomeController.clanwarStats(clanwar.getId()).url) {
+<div class="mitteContent q3-stats clanwar-demo-stats-page">
+    <p><a href="@controllers.routes.HomeController.clanwar(clanwar.getId())">&laquo; @messages.at("clanwarStats.back")</a></p>
+
+    <div class="clanwar-detail-header">
+        <div class="clanwar-detail-title">
+            <h1>@messages.at("clanwarStats.title", clanwar.getEnemy())</h1>
+            <div class="clanwar-detail-meta">
+                @clanwar.getDate().format("dd.MM.yyyy") &middot; @clanwar.getLeague() &middot; @clanwar.getGame() (@clanwar.getGametype())
+            </div>
+        </div>
+        <div class="clanwar-detail-result" data-result-color="@clanwar.getColor()">@clanwar.getResult()</div>
+    </div>
+
+    @if(stats == null || stats.maps().isEmpty()) {
+        <p class="q3-empty">@messages.at("clanwarStats.none")</p>
+    } else {
+        <p class="q3-intro">@messages.at("clanwarStats.intro")</p>
+
+        @for(map <- stats.maps().asScala) {
+            <h2 class="q3-heading">@map.map() <span class="q3-score">@dash(map.scoreSummary())</span>@if(map.duration() != null) { <span class="q3-hint">&middot; @map.duration()</span>}</h2>
+            @if(!map.hasMatchStats()) {
+                <p class="q3-hint">@messages.at("clanwarStats.noMatchStats")</p>
+            }
+
+            <div class="table-scroll">
+                <table class="q3-table" data-sortable>
+                    <thead><tr>
+                        <th scope="col">@messages.at("clanwarStats.player")</th>
+                        <th scope="col" class="num">Score</th>
+                        <th scope="col" class="num">Kills</th>
+                        <th scope="col" class="num">Deaths</th>
+                        <th scope="col" class="num">K/D</th>
+                        <th scope="col" class="num" title="@messages.at("clanwarStats.damageGiven")">Dmg +</th>
+                        <th scope="col" class="num" title="@messages.at("clanwarStats.damageReceived")">Dmg −</th>
+                        <th scope="col" class="num">@messages.at("clanwarStats.net")</th>
+                        <th scope="col" class="num">Acc</th>
+                        <th scope="col" class="num" title="Impressive">Imp</th>
+                        <th scope="col" class="num" title="Excellent">Exc</th>
+                        <th scope="col" class="num">Caps</th>
+                    </tr></thead>
+                    <tbody>
+                    @for(row <- map.players().asScala) {
+                        <tr>
+                            <td>@player(row)</td>
+                            <td class="num">@dash(row.score())</td>
+                            <td class="num">@row.kills()</td>
+                            <td class="num">@row.deaths()</td>
+                            <td class="num">@row.kd()</td>
+                            <td class="num">@dash(row.damageGiven())</td>
+                            <td class="num">@dash(row.damageReceived())</td>
+                            <td class="num">@dash(row.net())</td>
+                            <td class="num">@if(row.accuracy() != null) {@row.accuracy()%} else {–}</td>
+                            <td class="num">@dash(row.impressives())</td>
+                            <td class="num">@dash(row.excellents())</td>
+                            <td class="num">@dash(row.captures())</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            @if(map.hasWeapons()) {
+                <h3 class="q3-heading">@messages.at("clanwarStats.weapons")</h3>
+                <p class="q3-hint">@messages.at("clanwarStats.weaponsHint")</p>
+                <div class="table-scroll">
+                    <table class="q3-table">
+                        <thead><tr>
+                            <th scope="col">@messages.at("clanwarStats.player")</th>
+                            @for(weapon <- map.weapons().asScala) { <th scope="col" class="num">@weapon</th> }
+                        </tr></thead>
+                        <tbody>
+                        @for(row <- map.players().asScala.filter(r => !r.weapons().isEmpty)) {
+                            <tr>
+                                <td>@player(row)</td>
+                                @for(weapon <- map.weapons().asScala) {
+                                    @defining(row.weapons().get(weapon)) { stat =>
+                                        @if(stat == null) {
+                                            <td class="num">–</td>
+                                        } else {
+                                            <td class="num" title="@dash(stat.hits())/@dash(stat.shots())">@dash(stat.accuracy())% &middot; @dash(stat.kills())</td>
+                                        }
+                                    }
+                                }
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            @if(map.hasMatrix()) {
+                <h3 class="q3-heading">@messages.at("clanwarStats.matrix")</h3>
+                <div class="table-scroll">
+                    <table class="q3-table">
+                        <thead><tr>
+                            <th scope="col">@messages.at("clanwarStats.matrixAxis")</th>
+                            @for(name <- map.matrixNames().asScala) { <th scope="col" class="num">@name</th> }
+                        </tr></thead>
+                        <tbody>
+                        @for((name, index) <- map.matrixNames().asScala.zipWithIndex) {
+                            <tr>
+                                <th scope="row">@name</th>
+                                @for((value, column) <- map.matrix().get(index).asScala.zipWithIndex) {
+                                    <td class="num">@if(column == index) {·} else {@value}</td>
+                                }
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <p class="q3-hint">
+                @messages.at("clanwarStats.povs"):
+                @for((pov, i) <- map.povs().asScala.zipWithIndex) {@if(i > 0) {, }<a href="@pov.url()">@dash(pov.demoTaker())</a>}
+            </p>
+        }
+    }
+</div>
+}
