@@ -14,6 +14,7 @@ import play.mvc.Result;
 import play.api.test.CSRFTokenHelper;
 import play.test.WithApplication;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -101,6 +102,9 @@ public class Quake3PlayersAdminTest extends WithApplication {
         User member = new User();
         member.setNick(PREFIX + name);
         member.setActive(true);
+        // Without a password nobody can be signed in.
+        member.setPasswordHash(Passwords.hash("a long enough password"));
+        member.setPasswordChangedAt(new Date());
         member.save();
         if (role != null) {
             UserRole entry = new UserRole();

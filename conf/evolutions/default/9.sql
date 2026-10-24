@@ -1,6 +1,6 @@
 # --- !Ups
 
--- Quake 3 players who played under several nicks; the statistics count all of them as one.
+-- Quake 3 players who played under several nicks, counted as one in the statistics.
 create table quake3_players (
   id                            bigserial not null,
   name                          varchar(255),
