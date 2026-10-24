@@ -273,7 +273,8 @@ public class HomeController extends Controller {
               ? configuration.underlying().getString("quake3.logs.folder") : "";
       if (folder.isBlank()) return Optional.empty();
       try {
-        return Optional.of(Quake3Stats.of(Quake3GamesLog.readFolder(Path.of(folder)), filter, bots, 20));
+        return Optional.of(Quake3Stats.of(Quake3GamesLog.readFolder(Path.of(folder)), filter, bots, 20,
+                Quake3Stats.aliases(configuration.underlying())));
       } catch (IOException e) {
         return Optional.empty();
       }

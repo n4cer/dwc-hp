@@ -3,6 +3,7 @@ package controllers;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigObject;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import play.libs.Json;
@@ -219,9 +222,19 @@ public final class Quake3Stats {
      * bots would only inflate the numbers.
      */
     static Quake3Stats of(List<Quake3GamesLog.Match> allMatches, String mode, boolean includeBots, int recentLimit) {
+        return of(allMatches, mode, includeBots, recentLimit, Map.of());
+    }
+
+    /**
+     * aliases maps lower-case names to the name a player is shown under (see
+     * {@link #aliases(Config)}), so that whoever played under several nicks gets one line.
+     */
+    static Quake3Stats of(List<Quake3GamesLog.Match> allMatches, String mode, boolean includeBots, int recentLimit,
+                          Map<String, String> aliases) {
         List<Quake3GamesLog.Match> matches = allMatches.stream()
                 .filter(match -> !MODES.contains(mode) || match.gametype().equalsIgnoreCase(mode))
                 .filter(match -> includeBots || !match.hasBots())
+                .map(match -> rename(match, aliases))
                 .sorted(Comparator.comparing(Quake3GamesLog.Match::start,
                         Comparator.nullsFirst(Comparator.naturalOrder())).reversed())
                 .toList();
@@ -239,6 +252,41 @@ public final class Quake3Stats {
                 .toList();
         List<MatchRow> recent = matches.stream().limit(recentLimit).map(Quake3Stats::row).toList();
         return new Quake3Stats(leaderboard, recent, matches.size());
+    }
+
+    /**
+     * Reads quake3.players from the configuration: per player the name to show and
+     * the other nicks they played under, e.g. "dwc.lamagra" = ["lamagra", "lama"].
+     * Names are compared without colours and case. Returns lower-case nick -> shown name.
+     */
+    static Map<String, String> aliases(Config config) {
+        Map<String, String> aliases = new HashMap<>();
+        if (!config.hasPath("quake3.players")) return aliases;
+        ConfigObject players = config.getObject("quake3.players");
+        for (String name : players.keySet()) {
+            String shown = Quake3GamesLog.stripColors(name);
+            aliases.put(shown.toLowerCase(), shown);
+            Object nicks = players.get(name).unwrapped();
+            List<?> list = nicks instanceof List<?> l ? l : List.of(nicks);
+            for (Object nick : list) aliases.put(Quake3GamesLog.stripColors(String.valueOf(nick)).toLowerCase(), shown);
+        }
+        return aliases;
+    }
+
+    private static Quake3GamesLog.Match rename(Quake3GamesLog.Match match, Map<String, String> aliases) {
+        if (aliases.isEmpty()) return match;
+        List<Quake3GamesLog.MatchPlayer> players = match.players().stream()
+                .map(player -> {
+                    String shown = aliases.get(player.name().toLowerCase());
+                    return shown == null || shown.equals(player.name()) ? player
+                            : new Quake3GamesLog.MatchPlayer(shown, player.bot(), player.team(), player.score(),
+                                    player.kills(), player.deaths(), player.suicides(), player.teamKills(),
+                                    player.damageGiven(), player.damageReceived(), player.killsByWeapon(),
+                                    player.weapons());
+                })
+                .toList();
+        return new Quake3GamesLog.Match(match.gametype(), match.teamGame(), match.map(), match.start(),
+                match.durationSeconds(), match.redScore(), match.blueScore(), players);
     }
 
     static Quake3Stats empty() {
