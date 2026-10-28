@@ -390,6 +390,8 @@ th[aria-sort] {color:#E2A612;}
 .clanwar-score-value[data-result-color="#00B900"] {background-color:#00B900;}
 .clanwar-score-value[data-result-color="#FF5706"] {background-color:#FF5706;}
 .clanwar-no-screenshot {color:var(--dwc-text-muted);}
+.clanwar-score-demos {margin:6px 0 0;}
+.clanwar-score-demos a {margin-left:6px;}
 
 .clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;background:var(--dwc-surface-alt);}
 .clanwar-report h2 {margin:0 0 8px;font-size:14px;}

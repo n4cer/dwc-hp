@@ -22,6 +22,22 @@
             input.placeholder = 'Screenshot filename';
             target.appendChild(input);
         }
+        const demoButton = event.target.closest('.add-demo');
+        if (demoButton) {
+            // File and recorder go in pairs: the server matches them up by their order.
+            const name = demoButton.dataset.target;
+            const row = document.createElement('div');
+            row.className = 'admin-image-row';
+            [['File', 'Demo filename', 'demo-files'], ['Player', 'Recorded by', 'demo-players']].forEach(([suffix, placeholder, list]) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = name + suffix;
+                input.placeholder = placeholder;
+                input.setAttribute('list', list);
+                row.appendChild(input);
+            });
+            document.querySelector('[data-new-demos="' + name + '"]').appendChild(row);
+        }
         const removeButton = event.target.closest('.remove-new-score');
         if (removeButton) removeButton.closest('.new-score-row').remove();
     });

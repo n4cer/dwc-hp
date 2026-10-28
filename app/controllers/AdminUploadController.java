@@ -28,9 +28,10 @@ import java.util.regex.Pattern;
 
 /**
  * Files uploaded over SFTP wait in the server's upload folder until a member puts
- * them into place here: pk3 files for the Quake 3 servers (role Quake 3) and files
- * for the download section (role Media). The quake3ctl sidecar does the actual
- * moving, since the web process may write to neither folder.
+ * them into place here: pk3 files for the Quake 3 servers (role Quake 3), files
+ * for the download section (role Media) and clan war demos (role Clanwars). The
+ * quake3ctl sidecar does the actual moving, since the web process may write to
+ * none of these folders.
  */
 public class AdminUploadController extends Controller {
     /** Mirrors UPLOAD_NAME in deploy/quake3ctl.py, which enforces it. */
@@ -45,7 +46,8 @@ public class AdminUploadController extends Controller {
     public enum Target {
         BASEQ3("baseq3", "Quake 3 servers (baseq3)", Role.QUAKE3),
         OSP("osp", "Quake 3 servers (osp)", Role.QUAKE3),
-        DOWNLOADS("downloads", "Download section", Role.MEDIA);
+        DOWNLOADS("downloads", "Download section", Role.MEDIA),
+        DEMOS("demos", "Clan war demos", Role.CLANWARS);
 
         public final String id;
         public final String label;
@@ -59,6 +61,7 @@ public class AdminUploadController extends Controller {
 
         boolean accepts(String name) {
             if (this == DOWNLOADS) return HomeController.isDownloadable(name);
+            if (this == DEMOS) return HomeController.isClanwarDemo(name);
             // Only the retail paks in baseq3 are id's; a mod may ship its own pak0.pk3.
             return name.toLowerCase(Locale.ROOT).endsWith(".pk3") && !(this == BASEQ3 && ID_PAK.matcher(name).matches());
         }
@@ -114,6 +117,9 @@ public class AdminUploadController extends Controller {
         }
         return control.installUpload(name, target.id).thenApply(error -> {
             if (error != null) return back().flashing("error", name + ": " + error);
+            if (target == Target.DEMOS) {
+                return back().flashing("success", name + " is now in the clan war demo folder. Add it to a map in the clan war's form.");
+            }
             if (target != Target.DOWNLOADS) {
                 return back().flashing("success", name + " is now in " + target.id
                         + ". Restart the Quake 3 servers so that they load it.");
@@ -162,7 +168,8 @@ public class AdminUploadController extends Controller {
     /** The page is for members who may send uploads somewhere; which targets they get is decided per file. */
     private Result requireAnyTarget(Http.Request request, Optional<User> member) {
         if (member.isEmpty()) return redirect(routes.AdminController.login());
-        if (member.get().hasRole(Role.QUAKE3) || member.get().hasRole(Role.MEDIA)) return null;
+        if (member.get().hasRole(Role.QUAKE3) || member.get().hasRole(Role.MEDIA)
+                || member.get().hasRole(Role.CLANWARS)) return null;
         return AdminAuth.forbidden(request, member.get(), Role.MEDIA, messages());
     }
 }

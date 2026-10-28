@@ -61,6 +61,14 @@
             } else {
             <p class="clanwar-no-screenshot">@messages.at("clanwar.noScreenshot")</p>
             }
+
+            @if(score.getDemos() != null && !score.getDemos().isEmpty()) {
+            <p class="clanwar-score-demos">@messages.at("clanwar.demos"):
+                @for(demo <- score.getDemos()) {
+                <a href="@routes.HomeController.clanwarDemo(demo.getId())" title="@messages.at("clanwar.demoTitle", demo.getPlayer())" download>@demo.getPlayer()</a>
+                }
+            </p>
+            }
         </div>
     }
     </div>

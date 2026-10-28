@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static controllers.AdminUploadController.Target.BASEQ3;
+import static controllers.AdminUploadController.Target.DEMOS;
 import static controllers.AdminUploadController.Target.DOWNLOADS;
 import static controllers.AdminUploadController.Target.OSP;
 import static org.junit.Assert.assertEquals;
@@ -47,6 +48,19 @@ public class AdminUploadTest {
         assertFalse(BASEQ3.accepts("pak0.pk3"));
         assertFalse(BASEQ3.accepts("PAK8.PK3"));
         assertTrue(OSP.accepts("pak0.pk3"));
+    }
+
+    @Test
+    public void demosGoToTheClanwarDemos() {
+        assertTrue(DEMOS.accepts("final-q3dm6.dm_68"));
+        assertTrue(DEMOS.accepts("OLD.DM_66"));
+        assertTrue(DEMOS.accepts("cw-123-demos.zip"));
+        assertFalse(DEMOS.accepts("q3dm6.pk3"));
+        assertFalse(DEMOS.accepts("demo.dm_"));
+        assertFalse(DEMOS.accepts("notes.txt"));
+        User clanwars = member(Role.CLANWARS);
+        assertEquals(List.of(DEMOS), AdminUploadController.row(upload("final.dm_68", NOW.minusSeconds(3600)), clanwars, NOW)
+                .targets());
     }
 
     @Test

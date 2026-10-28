@@ -24,6 +24,9 @@ public class Score extends Model {
   private Map map;
   @OneToMany(mappedBy="score", cascade=CascadeType.ALL)
   private List<ScoreImage> images;
+  @OneToMany(mappedBy="score", cascade=CascadeType.ALL)
+  @jakarta.persistence.OrderBy("id")
+  private List<ScoreDemo> demos;
 
   public Long getId() {
     return id;
@@ -71,5 +74,13 @@ public class Score extends Model {
 
   public void setImages(List<ScoreImage> images) {
     this.images = images;
+  }
+
+  public List<ScoreDemo> getDemos() {
+    return demos;
+  }
+
+  public void setDemos(List<ScoreDemo> demos) {
+    this.demos = demos;
   }
 }

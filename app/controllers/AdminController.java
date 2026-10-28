@@ -13,6 +13,7 @@ import models.News;
 import models.PasswordToken;
 import models.Role;
 import models.Score;
+import models.ScoreDemo;
 import models.ScoreImage;
 import models.Squad;
 import models.User;
@@ -910,6 +911,7 @@ public class AdminController extends Controller {
         if (clanwar.getId() == null) clanwar.save(); else clanwar.update();
         syncClanwarRelations(clanwar, data);
         clearPublicCaches();
+        cache.remove("clanwarsJson");
         for (String lang : PUBLIC_CACHE_LANGS) {
             cache.remove(HomeController.clanwarCacheKey(clanwar.getId(), lang));
             cache.remove(HomeController.clanwarStatsCacheKey(clanwar.getId(), lang));
@@ -1069,7 +1071,8 @@ public class AdminController extends Controller {
 
     private play.twirl.api.Html clanwarForm(Http.Request request, Clanwar clanwar, String error) {
         return views.html.adminClanwarForm.render(request, clanwar, Game.find.all(), GameType.find.all(),
-                League.find.all(), Country.find.all(), models.Map.find.all(), User.find.all(), error, messages());
+                League.find.all(), Country.find.all(), models.Map.find.all(), User.find.all(),
+                HomeController.clanwarDemoFiles(configuration), error, messages());
     }
 
     private String validateClanwarRelations(Map<String, String[]> data, Clanwar clanwar) {
@@ -1081,6 +1084,14 @@ public class AdminController extends Controller {
                         || integer(value(data, "scoreEnemy_" + score.getId())) == null) {
                     return "Each score requires a map and two valid numeric scores.";
                 }
+                for (ScoreDemo demo : ScoreDemo.find.query().where().eq("score.id", score.getId()).findList()) {
+                    if (data.containsKey("demoDelete_" + demo.getId())) continue;
+                    String demoError = demoError(value(data, "demoFile_" + demo.getId()),
+                            value(data, "demoPlayer_" + demo.getId()));
+                    if (demoError != null) return demoError;
+                }
+                String demoError = newDemosError(data, "scoreNewDemo_" + score.getId());
+                if (demoError != null) return demoError;
             }
         }
         for (String key : values(data, "newScoreKey")) {
@@ -1089,6 +1100,28 @@ public class AdminController extends Controller {
                     || integer(value(data, "newScoreEnemy_" + key)) == null) {
                 return "Each new score requires a map and two valid numeric scores.";
             }
+            String demoError = newDemosError(data, "newScoreDemo_" + key);
+            if (demoError != null) return demoError;
+        }
+        return null;
+    }
+
+    private static String newDemosError(Map<String, String[]> data, String name) {
+        String[] files = values(data, name + "File");
+        String[] players = values(data, name + "Player");
+        for (int i = 0; i < Math.max(files.length, players.length); i++) {
+            String demoError = demoError(i < files.length ? files[i].trim() : "", i < players.length ? players[i].trim() : "");
+            if (demoError != null) return demoError;
+        }
+        return null;
+    }
+
+    /** A demo left blank altogether is dropped, so only half-filled or misnamed ones are errors. */
+    private static String demoError(String file, String player) {
+        if (file.isBlank() && player.isBlank()) return null;
+        if (player.isBlank()) return "Each demo requires the player who recorded it.";
+        if (!HomeController.isClanwarDemo(file)) {
+            return "Demo file \"" + file + "\" must be a plain file name ending in .dm_68 (or another .dm_ version), .zip, .7z or .rar.";
         }
         return null;
     }
@@ -1106,6 +1139,7 @@ public class AdminController extends Controller {
             score.setEnemyScore(integer(value(data, "scoreEnemy_" + score.getId())));
             score.update();
             syncImages(score, data);
+            syncDemos(score, data);
         }
         for (String key : values(data, "newScoreKey")) {
             Score score = new Score();
@@ -1115,6 +1149,7 @@ public class AdminController extends Controller {
             score.setEnemyScore(integer(value(data, "newScoreEnemy_" + key)));
             score.save();
             for (String imageName : values(data, "newScoreImage_" + key)) saveImage(score, imageName);
+            saveNewDemos(score, data, "newScoreDemo_" + key);
         }
     }
 
@@ -1159,6 +1194,34 @@ public class AdminController extends Controller {
         image.setScore(score);
         image.setImage(imageName.trim());
         image.save();
+    }
+
+    private void syncDemos(Score score, Map<String, String[]> data) {
+        for (ScoreDemo demo : ScoreDemo.find.query().where().eq("score.id", score.getId()).findList()) {
+            String file = value(data, "demoFile_" + demo.getId());
+            String player = value(data, "demoPlayer_" + demo.getId());
+            if (data.containsKey("demoDelete_" + demo.getId()) || (file.isBlank() && player.isBlank())) {
+                demo.delete();
+            } else {
+                demo.setFile(file);
+                demo.setPlayer(player);
+                demo.update();
+            }
+        }
+        saveNewDemos(score, data, "scoreNewDemo_" + score.getId());
+    }
+
+    private void saveNewDemos(Score score, Map<String, String[]> data, String name) {
+        String[] files = values(data, name + "File");
+        String[] players = values(data, name + "Player");
+        for (int i = 0; i < Math.min(files.length, players.length); i++) {
+            if (files[i].isBlank() && players[i].isBlank()) continue;
+            ScoreDemo demo = new ScoreDemo();
+            demo.setScore(score);
+            demo.setFile(files[i].trim());
+            demo.setPlayer(players[i].trim());
+            demo.save();
+        }
     }
 
     private void clearPublicCaches() {

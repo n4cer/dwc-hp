@@ -36,6 +36,7 @@ import models.News;
 import models.Quake3Player;
 import models.Role;
 import models.Score;
+import models.ScoreDemo;
 import models.ScoreImage;
 import models.Squad;
 import models.User;
@@ -71,6 +72,11 @@ public class HomeController extends Controller {
             Set.of("zip", "rar", "7z", "gz", "tgz", "pk3", "cfg", "txt", "pdf",
                    "dm_68", "dm_67", "dm_66", "dm3", "jpg", "png", "mp3");
     private static final int DOWNLOAD_CACHE_DURATION = 2400;
+    // Quake 3 demos of the clan wars, as recorded or packed. Mirrors DEMO_NAME in deploy/quake3ctl.py.
+    private static final Pattern CLANWAR_DEMO =
+            Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]{0,127}\\.(dm_\\d{2}|zip|7z|rar)", Pattern.CASE_INSENSITIVE);
+    // Below download_folder, but out of reach of /downloads/file, which serves no subfolders.
+    static final String CLANWAR_DEMO_SUBFOLDER = "clanwar-demos";
     // Mod folders the Quake 3 servers load pk3 files from (see quake3Pk3Path).
     private static final Set<String> QUAKE3_GAMES = Set.of("baseq3", "osp");
     private static final Set<String> PK3_EXTENSION = Set.of("pk3");
@@ -235,6 +241,18 @@ public class HomeController extends Controller {
             }
           }
           scoreNode.set("screenshots", screenshots);
+
+          ArrayNode demos = Json.newArray();
+          if (score.getDemos() != null) {
+            for (ScoreDemo demo : score.getDemos()) {
+              ObjectNode demoNode = Json.newObject();
+              demoNode.put("player", demo.getPlayer());
+              demoNode.put("name", demo.getDownloadName());
+              demoNode.put("url", routes.HomeController.clanwarDemo(demo.getId()).url());
+              demos.add(demoNode);
+            }
+          }
+          scoreNode.set("demos", demos);
 
           scores.add(scoreNode);
         }
@@ -653,6 +671,51 @@ public class HomeController extends Controller {
         return null;
       }
       return resolved;
+    }
+
+    /**
+     * Hands out a clan war demo under the name its clan war, map and recorder give it,
+     * whatever name it is stored under.
+     */
+    public Result clanwarDemo(Http.Request request, Long id) {
+      ScoreDemo demo = ScoreDemo.find.byId(id);
+      Path path = demo == null ? null : clanwarDemoPath(clanwarDemoFolder(configuration), demo.getFile());
+      if (path == null) return notFound("file not found");
+      return RangeResults.ofPath(request, path)
+              .withHeader(Http.HeaderNames.CONTENT_DISPOSITION, "attachment; filename=\"" + demo.getDownloadName() + "\"");
+    }
+
+    static Path clanwarDemoFolder(Configuration configuration) {
+      return Path.of(configuration.underlying().getString("download_folder")).resolve(CLANWAR_DEMO_SUBFOLDER);
+    }
+
+    /** Resolves a demo inside the clan war demo folder. Mirrors {@link #downloadPath}. */
+    static Path clanwarDemoPath(Path folder, String file) {
+      if (file == null || !isClanwarDemo(file)) return null;
+      Path resolved = folder.resolve(file).normalize();
+      if (!resolved.startsWith(folder) || !Files.isRegularFile(resolved, LinkOption.NOFOLLOW_LINKS)) return null;
+      return resolved;
+    }
+
+    /** Whether a file of this name may be stored and offered as a clan war demo. */
+    public static boolean isClanwarDemo(String file) {
+      return CLANWAR_DEMO.matcher(file).matches();
+    }
+
+    /** The demos waiting in the folder, offered as suggestions in the clan war form. */
+    static List<String> clanwarDemoFiles(Configuration configuration) {
+      Path folder = clanwarDemoFolder(configuration);
+      if (!Files.isDirectory(folder)) return List.of();
+      try (Stream<Path> entries = Files.list(folder)) {
+        return entries
+                .filter(path -> Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS))
+                .map(path -> path.getFileName().toString())
+                .filter(HomeController::isClanwarDemo)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+      } catch (IOException ex) {
+        return List.of();
+      }
     }
 
     /**

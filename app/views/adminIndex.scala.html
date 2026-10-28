@@ -68,7 +68,7 @@
                 <p class="admin-card-count">@gameTypeCount</p>
             </a>
             }
-            @if(member.hasRole(Role.QUAKE3) || member.hasRole(Role.MEDIA)) {
+            @if(member.hasRole(Role.QUAKE3) || member.hasRole(Role.MEDIA) || member.hasRole(Role.CLANWARS)) {
             <a class="admin-card" href="@controllers.routes.AdminUploadController.index()">
                 <h2>Uploads</h2>
                 <p>Files from SFTP</p>

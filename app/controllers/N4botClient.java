@@ -31,6 +31,7 @@ public final class N4botClient {
     static final String PREFIX = "dwc-n4bot";
     private static final Logger LOG = LoggerFactory.getLogger("n4bot");
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration FILE_TIMEOUT = Duration.ofSeconds(60);
     private static final String IDS_CACHE_KEY = "n4bot_clanwar_ids";
     private static final int IDS_CACHE_SECONDS = 300;
     // A short-lived empty entry while n4bot is down, so not every page waits for the timeout.
@@ -93,6 +94,35 @@ public final class N4botClient {
                 return Optional.empty();
             }
             return Optional.of(response.asJson());
+        });
+    }
+
+    /** The clan wars n4bot has demos for; empty when it is unreachable. Uncached, for the demo import. */
+    CompletionStage<List<Long>> clanwarIds() {
+        if (!configured()) return CompletableFuture.completedFuture(List.of());
+        return request("/api/q3/clanwars").get().handle((response, error) -> {
+            if (error != null || response.getStatus() != 200) {
+                log("list_failed", null, error != null ? error.getClass().getSimpleName() : "status " + response.getStatus());
+                return List.of();
+            }
+            List<Long> ids = new ArrayList<>();
+            for (JsonNode id : response.asJson().path("clanwar_ids")) ids.add(id.asLong());
+            return ids;
+        });
+    }
+
+    /** A demo file as n4bot's clan war answer links it (file_url); empty when it cannot be fetched. */
+    CompletionStage<Optional<byte[]>> demoFile(long clanwarId, String fileUrl) {
+        if (!configured() || fileUrl == null || !fileUrl.startsWith("/api/q3/results/")) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+        return ws.url(baseUrl + fileUrl).setRequestTimeout(FILE_TIMEOUT).get().handle((response, error) -> {
+            if (error != null || response.getStatus() != 200) {
+                log("demo_fetch_failed", clanwarId,
+                        error != null ? error.getClass().getSimpleName() : "status " + response.getStatus());
+                return Optional.empty();
+            }
+            return Optional.of(response.asByteArray());
         });
     }
 

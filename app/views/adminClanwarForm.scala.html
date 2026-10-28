@@ -1,4 +1,4 @@
-@(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], error: String, messages: play.i18n.Messages)
+@(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], demoFiles: List[String], error: String, messages: play.i18n.Messages)
 @import scala.jdk.CollectionConverters._
 
 @main(if(item == null) "Add clanwar" else "Edit clanwar", messages, noindex = true) {
@@ -45,14 +45,24 @@
                             <div data-new-images="scoreNewImage_@score.getId()"></div>
                             <button type="button" class="secondary add-image" data-target="scoreNewImage_@score.getId()">Add screenshot</button>
                         </div>
+                        <div class="admin-images"><strong>Demos</strong>
+                            @if(score.getDemos() != null) {@for(demo <- score.getDemos()) {
+                                <div class="admin-image-row"><input type="text" name="demoFile_@demo.getId()" value="@demo.getFile()" list="demo-files" aria-label="Demo filename"><input type="text" name="demoPlayer_@demo.getId()" value="@demo.getPlayer()" list="demo-players" aria-label="Recorded by"><label class="admin-check"><input type="checkbox" name="demoDelete_@demo.getId()"> Remove</label></div>
+                            }}
+                            <div data-new-demos="scoreNewDemo_@score.getId()"></div>
+                            <button type="button" class="secondary add-demo" data-target="scoreNewDemo_@score.getId()">Add demo</button>
+                        </div>
                     </div>
                 }}</div>
                 <button type="button" id="add-score" class="secondary">Add score</button>
                 <p class="admin-hint">Screenshot files are resolved below <code>picture_folder/clanwars/</code>.</p>
+                <p class="admin-hint">Demos are optional. Their files are resolved below <code>download_folder/clanwar-demos/</code>; upload them over SFTP and install them as clan war demos under Uploads. Visitors download them as <code>dwc.&lt;recorded by&gt;-&lt;game type&gt;-&lt;map&gt;-&lt;date&gt;-&lt;time&gt;-&lt;clanwar id&gt;[-&lt;n&gt;].&lt;extension&gt;</code>, where n numbers the plays of a map played more than once.</p>
             </fieldset>
             <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.clanwarIndex()">Cancel</a></div>
         </form>
     </div>
+    <datalist id="demo-files">@for(file <- demoFiles) {<option value="@file">}</datalist>
+    <datalist id="demo-players">@for(user <- users) {<option value="@user.getNick()">}</datalist>
     <template id="score-template"><div class="admin-score-row new-score-row">
         <input type="hidden" name="newScoreKey" value="__KEY__">
         <div class="admin-grid admin-score-fields">
@@ -61,6 +71,7 @@
             <label>Opponent score *<input type="number" name="newScoreEnemy___KEY__" required></label>
         </div>
         <div class="admin-images"><strong>Screenshots</strong><div data-new-images="newScoreImage___KEY__"></div><button type="button" class="secondary add-image" data-target="newScoreImage___KEY__">Add screenshot</button></div>
+        <div class="admin-images"><strong>Demos</strong><div data-new-demos="newScoreDemo___KEY__"></div><button type="button" class="secondary add-demo" data-target="newScoreDemo___KEY__">Add demo</button></div>
         <button type="button" class="secondary remove-new-score">Remove score</button>
     </div></template>
 }

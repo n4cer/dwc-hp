@@ -41,12 +41,18 @@ PORT = int(os.environ.get("QUAKE3CTL_PORT", "8765"))
 UPLOAD_DIR = os.environ.get("QUAKE3CTL_UPLOAD_DIR", "/srv/upload/eingang")
 PK3_DIR = os.environ.get("QUAKE3CTL_PK3_DIR", "/home/micha/docker/q3-osp-server/server-data")
 DOWNLOAD_DIR = os.environ.get("QUAKE3CTL_DOWNLOAD_DIR", "/var/lib/dwc/downloads")
+DEMO_DIR = os.environ.get("QUAKE3CTL_DEMO_DIR", os.path.join(DOWNLOAD_DIR, "clanwar-demos"))
 
-# target name -> (folder, only pk3 files allowed).
+PK3_NAME = re.compile(r".*\.pk3", re.IGNORECASE)
+# Quake 3 demos as recorded or packed. Mirrors CLANWAR_DEMO in HomeController.
+DEMO_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}\.(dm_\d{2}|zip|7z|rar)", re.IGNORECASE)
+
+# target name -> (folder, pattern the file name must match, or None for any).
 TARGETS = {
-    "baseq3": (os.path.join(PK3_DIR, "baseq3"), True),
-    "osp": (os.path.join(PK3_DIR, "osp"), True),
-    "downloads": (DOWNLOAD_DIR, False),
+    "baseq3": (os.path.join(PK3_DIR, "baseq3"), PK3_NAME),
+    "osp": (os.path.join(PK3_DIR, "osp"), PK3_NAME),
+    "downloads": (DOWNLOAD_DIR, None),
+    "demos": (DEMO_DIR, DEMO_NAME),
 }
 
 # Plain names only: no path separators, no leading dot, nothing a shell or
@@ -117,9 +123,9 @@ def open_upload(name):
 def install_upload(name, target):
     if target not in TARGETS:
         raise UploadError(404, "unknown target")
-    folder, pk3_only = TARGETS[target]
-    if pk3_only and not name.lower().endswith(".pk3"):
-        raise UploadError(400, "only pk3 files can go there")
+    folder, allowed = TARGETS[target]
+    if allowed is not None and not allowed.fullmatch(name):
+        raise UploadError(400, "this kind of file cannot go there")
     if target == "baseq3" and ID_PAK.fullmatch(name):
         raise UploadError(400, "the id paks cannot be replaced")
     try:

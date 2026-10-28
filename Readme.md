@@ -9,7 +9,7 @@ and includes a member login with role-based administration.
 ## Features
 
 - Homepage with the latest news and clan wars
-- News and clan-war archives with results, maps, line-ups, and screenshots
+- News and clan-war archives with results, maps, line-ups, screenshots, and Quake 3 demos
 - Player and squad overview
 - Clan history, contact page, legal notice, and privacy policy
 - Video archive with an in-browser player and download links
@@ -113,7 +113,8 @@ sbt test
 | `DWC_ADMIN_PASSWORD` | That member's initial password if they have none yet (bootstrap only) |
 | `picture_folder` | Directory containing images served by `/random` |
 | `video_folder` | Directory containing the archive videos served by `/videos` |
-| `download_folder` | Directory containing the files served by `/downloads` |
+| `download_folder` | Directory containing the files served by `/downloads`, and the clan-war demos in its `clanwar-demos` subfolder |
+| `clanwar_demo_retention_days` | Days after which a clan-war demo file no map refers to is deleted (default 30, `0` keeps all) |
 | `owner.*` | Contact and legal-notice details |
 | `privacy.*` | Privacy-policy details |
 
@@ -150,7 +151,7 @@ Copy the repository's `deploy` directory to the Ubuntu server and run as root
 apt update
 apt install -y openjdk-17-jre-headless nginx curl
 useradd --create-home --shell /bin/bash dwc-deploy
-install -d -o micha -g users -m 0755 /home/micha/dwc/releases /var/lib/dwc/pictures /var/lib/dwc/videos /var/lib/dwc/downloads
+install -d -o micha -g users -m 0755 /home/micha/dwc/releases /var/lib/dwc/pictures /var/lib/dwc/videos /var/lib/dwc/downloads /var/lib/dwc/downloads/clanwar-demos
 install -d -o root -g root -m 0755 /etc/dwc
 install -o root -g root -m 0755 deploy/deploy-dwc /usr/local/sbin/deploy-dwc
 install -o root -g root -m 0644 deploy/dwc.service /etc/systemd/system/dwc.service
@@ -262,6 +263,43 @@ support, which makes interrupted downloads resumable. The regex location in
 `deploy/nginx.conf` covers `/downloads/file/` alongside the video endpoints and
 passes those requests through unbuffered.
 
+### Clan-war demos
+
+Every map of a clan war can carry any number of Quake 3 demos, each with the
+player who recorded it. They live in `download_folder/clanwar-demos`
+(`/var/lib/dwc/downloads/clanwar-demos` in production) under whatever name they
+were uploaded with; `/downloads/file/` never serves files from that subfolder.
+Add them in the clan-war form below the screenshots of a map: the file field
+suggests the files in the folder, the player field the lineup's nicks.
+
+Visitors download a demo from `/clanwar/demo/<id>` under the name
+
+```
+dwc.<player>-<gametype>-<map>-<yyyy.MM.dd>-<HHmm>-<clanwar id>[-<n>].<extension>
+```
+
+for example `dwc.n4cer-tdm-q3dm6-2026.10.28-2030-123.dm_68`. The counter `n`
+appears only when the clan war had the same map more than once and numbers its
+plays in the order they were entered. Quake 3 colour codes, a leading `dwc.` in
+the player name and anything other than letters, digits, `_` and `.` are taken
+out of the parts. Demos must end in `.dm_<version>`, `.zip`, `.7z` or `.rar`.
+
+Demos uploaded to n4bot arrive by themselves. Once n4bot links a demo to a clan
+war, `N4botDemoImporter` (every ten minutes, over `n4bot.baseUrl`) fetches the
+file into the demo folder as `n4bot-<id>.dm_68` and adds it to the matching map,
+with the demo taker as recorder: a maintained Quake 3 player's name, otherwise
+the in-game name, both without colour codes and clan tag. A map played twice is
+told apart by the result from dwc's side that n4bot reports; a demo whose map or
+play cannot be told apart stays out (logged as `event=demo_unassigned`) and can
+be added by hand, its file already being in the folder. Each n4bot demo is taken
+over once (`n4bot_demo_imports`), so one removed in the form stays removed.
+
+The demo folder cleans itself up. Every ten minutes, files that no map refers to
+are deleted once they have been in the folder for `clanwar_demo_retention_days`
+(default 30): uploads never added to a map, demos removed from one, and leftover
+`.partial` files. Assign an installed upload within that time. n4bot keeps its
+own copies for `Q3_DEMO_RETENTION_DAYS`, by then long fetched.
+
 ### Member login, roles and audit log
 
 Active lineup members who have a password sign in at `/admin/login` with their
@@ -273,7 +311,7 @@ in the lineup form:
 |---|---|
 | Administrator | Everything, including roles and password links |
 | News | News |
-| Clanwars | Clanwars, maps, leagues, games and game types |
+| Clanwars | Clanwars, maps, leagues, games and game types, installing uploaded clan-war demos |
 | Lineup | Members and squads, except roles and administrator accounts |
 | Quake 3 | Starting and stopping the Quake 3 servers, installing uploaded pk3 files, merging players' nicks in the statistics |
 | Media | Videos and downloads, including uploaded files |
@@ -376,12 +414,13 @@ passes these requests through unbuffered, like the video and download bytes.
 
 #### Installing files uploaded over SFTP
 
-New pk3 files for the game servers and new files for the download section are
-uploaded over SFTP into `/srv/upload/eingang`, where they wait until a member
+New pk3 files for the game servers, new files for the download section and
+clan-war demos are uploaded over SFTP into `/srv/upload/eingang`, where they wait until a member
 puts them into place under Administration > "Uploads". Each file can go to
 `baseq3` or `osp` of the game servers (pk3 files only, role Quake 3) or to the
-download folder (only extensions the download section serves, role Media). A
-file of the same name there is replaced.
+download folder (only extensions the download section serves, role Media) or to
+the clan-war demos (only demo names, role Clanwars). A file of the same name
+there is replaced.
 
 The `dwc` web process may neither read the upload folder nor write to the game
 servers' folders, so the quake3ctl sidecar does the moving, using the same
