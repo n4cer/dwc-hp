@@ -58,6 +58,22 @@ public class HomeControllerTest extends WithApplication {
     }
 
     @Test
+    public void testClanwarGapsRender() {
+        Result result = route(app, new Http.RequestBuilder().method(GET).uri("/clanwars/gaps"));
+
+        assertEquals(OK, result.status());
+        assertTrue(contentAsString(result).contains("<link rel=\"canonical\" href=\"/clanwars/gaps\""));
+    }
+
+    @Test
+    public void testClanwarGapsIgnoreUnknownFilter() {
+        Result result = route(app, new Http.RequestBuilder().method(GET).uri("/clanwars/gaps?gap=%3Cscript%3E"));
+
+        assertEquals(OK, result.status());
+        assertTrue(contentAsString(result).contains("<strong>"));
+    }
+
+    @Test
     public void testVideoOverviewRenders() {
         Result result = route(app, new Http.RequestBuilder().method(GET).uri("/videos"));
 

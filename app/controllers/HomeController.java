@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.inject.Inject;
 
 import models.Clanwar;
+import models.ClanwarGaps;
 import models.ClanwarStats;
 import models.Download;
 import models.History;
@@ -139,6 +140,20 @@ public class HomeController extends Controller {
 
       return cachedPage("clanwars", messages, 1200,
               () -> views.html.clanwars.render(asScala(clanwars), stats, messages));
+    }
+
+    // Not cached, so that an entry filled in the administration disappears from the list right away.
+    public Result clanwarGaps(Http.Request request, String gap) {
+      Messages messages = messagesApi.preferred(request);
+      String shownGap = List.of(ClanwarGaps.DEMOS, ClanwarGaps.SCREENSHOTS, ClanwarGaps.LINEUP).contains(gap) ? gap : "";
+      List<Clanwar> clanwars = Clanwar.find.query()
+              .fetch("league").fetch("gametype").fetch("scores").fetch("scores.map")
+              .fetch("scores.images").fetch("scores.demos").fetch("lineups")
+              .where().eq("game.description", ClanwarGaps.GAME)
+              .orderBy().desc("date").findList();
+
+      return ok(views.html.clanwarGaps.render(ClanwarGaps.from(clanwars, shownGap), shownGap,
+              AdminAuth.hasRole(request, Role.CLANWARS), messages));
     }
 
     public Result clanwar(Http.Request request, Long id) {
@@ -864,6 +879,7 @@ public class HomeController extends Controller {
         addSitemapUrl(xml, baseUrl, routes.HomeController.news(page).url());
       }
       addSitemapUrl(xml, baseUrl, routes.HomeController.clanwars().url());
+      addSitemapUrl(xml, baseUrl, routes.HomeController.clanwarGaps("").url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.history().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.lineup().url());
       addSitemapUrl(xml, baseUrl, routes.HomeController.hallOfFame().url());

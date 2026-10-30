@@ -10,6 +10,7 @@ GET     /sitemap.xml               controllers.HomeController.sitemap
 GET     /news                       controllers.HomeController.news(request: Request, page: Int ?= 1)
 GET     /clanwars                   controllers.HomeController.clanwars(request: Request)
 GET     /clanwars.json               controllers.HomeController.clanwarsJson
+GET     /clanwars/gaps               controllers.HomeController.clanwarGaps(request: Request, gap: String ?= "")
 GET     /quake3-status.json          controllers.HomeController.quake3Status
 GET     /quake3/stats                controllers.HomeController.quake3Stats(request: Request, mode: String ?= "", bots: Boolean ?= false)
 GET     /quake3/stats.json           controllers.HomeController.quake3StatsJson(mode: String ?= "", bots: Boolean ?= false)
