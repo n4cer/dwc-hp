@@ -360,6 +360,8 @@ th[aria-sort] {color:#E2A612;}
 .admin-image-row {display:flex;align-items:center;gap:10px;margin:5px 0;}
 .admin-image-row input {margin:0;}
 .admin-images button,.remove-new-score {margin-top:6px;}
+.admin-upload {display:block;margin-top:6px;}
+.admin-upload input {display:block;margin:3px 0 0;}
 
 /* Clanwar-Detailansicht */
 .clanwar-nav {display:flex;justify-content:space-between;gap:10px;margin:10px 0 14px;font-size:11px;}

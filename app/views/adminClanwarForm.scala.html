@@ -1,12 +1,13 @@
 @(request: Http.Request, item: Clanwar, games: List[Game], gameTypes: List[GameType], leagues: List[League], countries: List[Country], maps: List[models.Map], users: List[User], demoFiles: List[String], error: String, messages: play.i18n.Messages)
 @import scala.jdk.CollectionConverters._
+@screenshotTypes = @{".jpg,.jpeg,.png,.gif,.webp"}
 
 @main(if(item == null) "Add clanwar" else "Edit clanwar", messages, noindex = true) {
     <div class="admin-page">
         <p class="admin-back"><a href="@controllers.routes.AdminController.clanwarIndex()">&laquo; Back to clanwars</a></p>
         <h1>@if(item == null) { Add clanwar } else { Edit clanwar }</h1>
         @if(error != null) { <div class="admin-message error">@error</div> }
-        <form method="post" action="@if(item == null) {@controllers.routes.AdminController.createClanwar()} else {@controllers.routes.AdminController.updateClanwar(item.getId())}">
+        <form method="post" enctype="multipart/form-data" action="@if(item == null) {@controllers.routes.AdminController.createClanwar()} else {@controllers.routes.AdminController.updateClanwar(item.getId())}">
             @helper.CSRF.formField(request.asScala())
             <div class="admin-grid">
                 <label>Opponent *<input type="text" name="enemy" required value="@if(item != null) {@item.getEnemy()}"></label>
@@ -44,6 +45,7 @@
                             }}
                             <div data-new-images="scoreNewImage_@score.getId()"></div>
                             <button type="button" class="secondary add-image" data-target="scoreNewImage_@score.getId()">Add screenshot</button>
+                            <label class="admin-upload">Upload screenshots<input type="file" name="scoreImageUpload_@score.getId()" accept="@screenshotTypes" multiple></label>
                         </div>
                         <div class="admin-images"><strong>Demos</strong>
                             @if(score.getDemos() != null) {@for(demo <- score.getDemos()) {
@@ -55,8 +57,10 @@
                     </div>
                 }}</div>
                 <button type="button" id="add-score" class="secondary">Add score</button>
-                <p class="admin-hint">Screenshot files are resolved below <code>picture_folder/clanwars/</code>.</p>
-                <p class="admin-hint">Demos are optional. Their files are resolved below <code>download_folder/clanwar-demos/</code>; upload them over SFTP and install them as clan war demos under Uploads. Visitors download them as <code>dwc.&lt;recorded by&gt;-&lt;game type&gt;-&lt;map&gt;-&lt;date&gt;-&lt;time&gt;-&lt;clanwar id&gt;[-&lt;n&gt;].&lt;extension&gt;</code>, where n numbers the plays of a map played more than once.</p>
+                <p class="admin-hint">Screenshot files are resolved below <code>picture_folder/clanwars/</code>. Uploaded screenshots (.jpg, .jpeg, .png, .gif, .webp) are stored there; a file name already in use gets a counter.</p>
+                <p class="admin-hint">Demos are optional. Their files are resolved below <code>download_folder/clanwar-demos/</code>. Upload a demo in its row, or for larger files over SFTP and install them as clan war demos under Uploads. Visitors download them as <code>dwc.&lt;recorded by&gt;-&lt;game type&gt;-&lt;map&gt;-&lt;date&gt;-&lt;time&gt;-&lt;clanwar id&gt;[-&lt;n&gt;].&lt;extension&gt;</code>, where n numbers the plays of a map played more than once.</p>
+                <p class="admin-hint">All files of one save may be at most @(controllers.AdminController.CLANWAR_FORM_MAX_BYTES / 1024 / 1024) MB together. If saving fails, choose the files again.</p>
+                <p class="admin-hint"><strong>Statistics:</strong> demos uploaded here are offered for download only. The statistics on the clan war page are computed by n4bot from the demos uploaded to n4bot, which then arrive here by themselves; this site cannot hand demos to n4bot. To get statistics, upload the demo to n4bot.</p>
             </fieldset>
             <div class="admin-actions"><button type="submit">Save</button><a href="@controllers.routes.AdminController.clanwarIndex()">Cancel</a></div>
         </form>
@@ -70,7 +74,7 @@
             <label>DWC score *<input type="number" name="newScoreDwc___KEY__" required></label>
             <label>Opponent score *<input type="number" name="newScoreEnemy___KEY__" required></label>
         </div>
-        <div class="admin-images"><strong>Screenshots</strong><div data-new-images="newScoreImage___KEY__"></div><button type="button" class="secondary add-image" data-target="newScoreImage___KEY__">Add screenshot</button></div>
+        <div class="admin-images"><strong>Screenshots</strong><div data-new-images="newScoreImage___KEY__"></div><button type="button" class="secondary add-image" data-target="newScoreImage___KEY__">Add screenshot</button><label class="admin-upload">Upload screenshots<input type="file" name="newScoreImageUpload___KEY__" accept="@screenshotTypes" multiple></label></div>
         <div class="admin-images"><strong>Demos</strong><div data-new-demos="newScoreDemo___KEY__"></div><button type="button" class="secondary add-demo" data-target="newScoreDemo___KEY__">Add demo</button></div>
         <button type="button" class="secondary remove-new-score">Remove score</button>
     </div></template>

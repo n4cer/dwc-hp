@@ -5,6 +5,7 @@
     if (!list || !template || !addScore) return;
 
     let nextKey = 0;
+    let nextDemoKey = 0;
     addScore.addEventListener('click', () => {
         const key = 'n' + nextKey++;
         const wrapper = document.createElement('div');
@@ -24,8 +25,10 @@
         }
         const demoButton = event.target.closest('.add-demo');
         if (demoButton) {
-            // File and recorder go in pairs: the server matches them up by their order.
+            // File, recorder and row key go in triples: the server matches them up by their order.
+            // An empty file field sends nothing, so the key tells which row an uploaded file belongs to.
             const name = demoButton.dataset.target;
+            const key = 'd' + nextDemoKey++;
             const row = document.createElement('div');
             row.className = 'admin-image-row';
             [['File', 'Demo filename', 'demo-files'], ['Player', 'Recorded by', 'demo-players']].forEach(([suffix, placeholder, list]) => {
@@ -36,6 +39,23 @@
                 input.setAttribute('list', list);
                 row.appendChild(input);
             });
+            const rowKey = document.createElement('input');
+            rowKey.type = 'hidden';
+            rowKey.name = name + 'Upload';
+            rowKey.value = key;
+            row.appendChild(rowKey);
+            const upload = document.createElement('input');
+            upload.type = 'file';
+            upload.name = 'demoUpload_' + key;
+            upload.setAttribute('aria-label', 'Upload demo');
+            // The uploaded file replaces whatever name was typed in. Read-only rather than
+            // disabled: a disabled field is not sent and would shift the triples.
+            upload.addEventListener('change', () => {
+                const file = row.querySelector('input[name="' + name + 'File"]');
+                file.readOnly = upload.files.length > 0;
+                if (upload.files.length) file.value = upload.files[0].name;
+            });
+            row.appendChild(upload);
             document.querySelector('[data-new-demos="' + name + '"]').appendChild(row);
         }
         const removeButton = event.target.closest('.remove-new-score');

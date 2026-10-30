@@ -270,7 +270,19 @@ player who recorded it. They live in `download_folder/clanwar-demos`
 (`/var/lib/dwc/downloads/clanwar-demos` in production) under whatever name they
 were uploaded with; `/downloads/file/` never serves files from that subfolder.
 Add them in the clan-war form below the screenshots of a map: the file field
-suggests the files in the folder, the player field the lineup's nicks.
+suggests the files in the folder, the player field the lineup's nicks. A new
+demo row can also upload its file straight away, and every map has a field
+for uploading screenshots into `picture_folder/clanwars`. Uploaded names are
+made safe (anything but letters, digits, `.`, `_` and `-` becomes `_`) and
+never replace an existing file: a name in use gets a counter (`name-1.dm_68`).
+One save may carry up to 100 MB (`AdminController.CLANWAR_FORM_MAX_BYTES`,
+matched by `client_max_body_size` in `deploy/nginx.conf`); larger demos still
+go over SFTP.
+
+Demos uploaded in the form or over SFTP are only offered for download. The
+statistics on the clan-war page come from n4bot, which computes them from the
+demos uploaded to n4bot; this site only reads n4bot and cannot hand it a demo.
+The form says so next to the demos.
 
 Visitors download a demo from `/clanwar/demo/<id>` under the name
 

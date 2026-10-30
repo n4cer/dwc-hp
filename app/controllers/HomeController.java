@@ -816,6 +816,10 @@ public class HomeController extends Controller {
     }
 
     private Path pictureSubfolder(String subfolder) {
+      return pictureSubfolder(configuration, subfolder);
+    }
+
+    static Path pictureSubfolder(Configuration configuration, String subfolder) {
       return Path.of(configuration.underlying().getString("picture_folder")).resolve(subfolder);
     }
 

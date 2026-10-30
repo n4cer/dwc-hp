@@ -21,15 +21,20 @@ import models.UserRole;
 import models.UserSquad;
 import models.Video;
 import play.api.Configuration;
+import play.api.mvc.PlayBodyParsers;
 import play.cache.AsyncCacheApi;
 import play.filters.csrf.AddCSRFToken;
 import play.i18n.Lang;
 import play.i18n.Messages;
 import play.i18n.MessagesApi;
+import play.libs.Files.TemporaryFile;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -37,9 +42,11 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +60,20 @@ public class AdminController extends Controller {
     // The admin area is only used by clan staff and is intentionally kept German-only,
     // regardless of the visiting browser's language preference.
     private static final List<String> PUBLIC_CACHE_LANGS = List.of("de", "en");
+
+    /** Screenshots and demos of a whole clan war in one request. Mirrors client_max_body_size in deploy/nginx.conf. */
+    public static final long CLANWAR_FORM_MAX_BYTES = 100L * 1024 * 1024;
+
+    /** The clan war form, which may carry far more than Play's default 10 MB of uploads. */
+    public static class ClanwarFormParser extends BodyParser.MultipartFormData {
+        @Inject
+        public ClanwarFormParser(PlayBodyParsers parsers) {
+            super(parsers, CLANWAR_FORM_MAX_BYTES);
+        }
+    }
+
+    /** A file sent with the clan war form: the name it is stored under, or null when it is not acceptable. */
+    private record Upload(Path source, String original, String name) { }
 
     private final Configuration configuration;
     private final AsyncCacheApi cache;
@@ -433,10 +454,12 @@ public class AdminController extends Controller {
         return ok(clanwarForm(request, clanwar, null));
     }
 
+    @BodyParser.Of(ClanwarFormParser.class)
     public Result createClanwar(Http.Request request) {
         return saveClanwar(request, new Clanwar());
     }
 
+    @BodyParser.Of(ClanwarFormParser.class)
     public Result updateClanwar(Http.Request request, Long id) {
         Clanwar clanwar = Clanwar.find.byId(id);
         if (clanwar == null) return notFound("Clanwar not found.");
@@ -896,9 +919,19 @@ public class AdminController extends Controller {
             return badRequest(clanwarForm(request, clanwar.getId() == null ? null : clanwar,
                     "Please complete all required fields correctly."));
         }
-        String relationError = validateClanwarRelations(data, clanwar);
+        Map<String, List<Upload>> uploads = clanwarUploads(request);
+        String relationError = uploadError(uploads);
+        if (relationError == null) relationError = validateClanwarRelations(data, clanwar, uploadNames(uploads));
         if (relationError != null) {
             return badRequest(clanwarForm(request, clanwar.getId() == null ? null : clanwar, relationError));
+        }
+        // Stored before anything is saved, so a full disk leaves the clan war as it was.
+        Map<String, List<String>> stored;
+        try {
+            stored = storeUploads(uploads);
+        } catch (IOException exception) {
+            return internalServerError(clanwarForm(request, clanwar.getId() == null ? null : clanwar,
+                    "The uploaded files could not be stored: " + exception.getMessage()));
         }
         clanwar.setEnemy(enemy);
         clanwar.setDate(date);
@@ -909,7 +942,7 @@ public class AdminController extends Controller {
         clanwar.setLeague(league);
         clanwar.setCountry(country);
         if (clanwar.getId() == null) clanwar.save(); else clanwar.update();
-        syncClanwarRelations(clanwar, data);
+        syncClanwarRelations(clanwar, data, stored);
         clearPublicCaches();
         cache.remove("clanwarsJson");
         for (String lang : PUBLIC_CACHE_LANGS) {
@@ -1075,7 +1108,64 @@ public class AdminController extends Controller {
                 HomeController.clanwarDemoFiles(configuration), error, messages());
     }
 
-    private String validateClanwarRelations(Map<String, String[]> data, Clanwar clanwar) {
+    /**
+     * The files sent with the clan war form by field: screenshots of a map
+     * (scoreImageUpload_&lt;score id&gt;, newScoreImageUpload_&lt;key&gt;) and the file of a new
+     * demo row (demoUpload_&lt;row key&gt;). File fields left empty send nothing.
+     */
+    private static Map<String, List<Upload>> clanwarUploads(Http.Request request) {
+        Http.MultipartFormData<TemporaryFile> body = request.body().asMultipartFormData();
+        Map<String, List<Upload>> uploads = new LinkedHashMap<>();
+        if (body == null) return uploads;
+        for (Http.MultipartFormData.FilePart<TemporaryFile> part : body.getFiles()) {
+            if (part.getFilename() == null || part.getFilename().isBlank()) continue;
+            String name;
+            if (part.getKey().startsWith("demoUpload_")) {
+                name = ClanwarUploads.safeName(part.getFilename(), HomeController::isClanwarDemo);
+            } else if (part.getKey().contains("ImageUpload_")) {
+                name = ClanwarUploads.safeName(part.getFilename(), ClanwarUploads::isScreenshot);
+            } else {
+                continue;
+            }
+            uploads.computeIfAbsent(part.getKey(), key -> new ArrayList<>())
+                    .add(new Upload(part.getRef().path(), part.getFilename(), name));
+        }
+        return uploads;
+    }
+
+    private static String uploadError(Map<String, List<Upload>> uploads) {
+        for (Map.Entry<String, List<Upload>> field : uploads.entrySet()) {
+            for (Upload upload : field.getValue()) {
+                if (upload.name() != null) continue;
+                return field.getKey().startsWith("demoUpload_")
+                        ? "Demo \"" + upload.original() + "\" must end in .dm_68 (or another .dm_ version), .zip, .7z or .rar."
+                        : "Screenshot \"" + upload.original() + "\" must be a .jpg, .jpeg, .png, .gif or .webp file.";
+            }
+        }
+        return null;
+    }
+
+    private static Map<String, List<String>> uploadNames(Map<String, List<Upload>> uploads) {
+        Map<String, List<String>> names = new LinkedHashMap<>();
+        uploads.forEach((field, files) -> names.put(field, files.stream().map(Upload::name).toList()));
+        return names;
+    }
+
+    /** Puts the uploads into place; the names they got by field, which may carry a counter. */
+    private Map<String, List<String>> storeUploads(Map<String, List<Upload>> uploads) throws IOException {
+        Path demos = HomeController.clanwarDemoFolder(configuration);
+        Path screenshots = HomeController.pictureSubfolder(configuration, "clanwars");
+        Map<String, List<String>> stored = new LinkedHashMap<>();
+        for (Map.Entry<String, List<Upload>> field : uploads.entrySet()) {
+            Path folder = field.getKey().startsWith("demoUpload_") ? demos : screenshots;
+            List<String> names = new ArrayList<>();
+            for (Upload upload : field.getValue()) names.add(ClanwarUploads.store(upload.source(), folder, upload.name()));
+            stored.put(field.getKey(), names);
+        }
+        return stored;
+    }
+
+    private String validateClanwarRelations(Map<String, String[]> data, Clanwar clanwar, Map<String, List<String>> uploads) {
         if (clanwar != null && clanwar.getId() != null) {
             for (Score score : Score.find.query().where().eq("match.id", clanwar.getId()).findList()) {
                 if (data.containsKey("scoreDelete_" + score.getId())) continue;
@@ -1090,7 +1180,7 @@ public class AdminController extends Controller {
                             value(data, "demoPlayer_" + demo.getId()));
                     if (demoError != null) return demoError;
                 }
-                String demoError = newDemosError(data, "scoreNewDemo_" + score.getId());
+                String demoError = newDemosError(data, "scoreNewDemo_" + score.getId(), uploads);
                 if (demoError != null) return demoError;
             }
         }
@@ -1100,20 +1190,36 @@ public class AdminController extends Controller {
                     || integer(value(data, "newScoreEnemy_" + key)) == null) {
                 return "Each new score requires a map and two valid numeric scores.";
             }
-            String demoError = newDemosError(data, "newScoreDemo_" + key);
+            String demoError = newDemosError(data, "newScoreDemo_" + key, uploads);
             if (demoError != null) return demoError;
         }
         return null;
     }
 
-    private static String newDemosError(Map<String, String[]> data, String name) {
-        String[] files = values(data, name + "File");
-        String[] players = values(data, name + "Player");
-        for (int i = 0; i < Math.max(files.length, players.length); i++) {
-            String demoError = demoError(i < files.length ? files[i].trim() : "", i < players.length ? players[i].trim() : "");
+    private static String newDemosError(Map<String, String[]> data, String name, Map<String, List<String>> uploads) {
+        for (String[] demo : newDemos(data, name, uploads)) {
+            String demoError = demoError(demo[0], demo[1]);
             if (demoError != null) return demoError;
         }
         return null;
+    }
+
+    /**
+     * The new demo rows of a map as {file, player}. File, player and row key go in
+     * triples, matched up by their order; a file uploaded in a row wins over the
+     * name typed into it.
+     */
+    private static List<String[]> newDemos(Map<String, String[]> data, String name, Map<String, List<String>> uploads) {
+        String[] files = values(data, name + "File");
+        String[] players = values(data, name + "Player");
+        String[] keys = values(data, name + "Upload");
+        List<String[]> demos = new ArrayList<>();
+        for (int i = 0; i < Math.max(files.length, players.length); i++) {
+            List<String> uploaded = i < keys.length ? uploads.get("demoUpload_" + keys[i]) : null;
+            String file = uploaded != null ? uploaded.get(0) : i < files.length ? files[i].trim() : "";
+            demos.add(new String[] {file, i < players.length ? players[i].trim() : ""});
+        }
+        return demos;
     }
 
     /** A demo left blank altogether is dropped, so only half-filled or misnamed ones are errors. */
@@ -1126,7 +1232,7 @@ public class AdminController extends Controller {
         return null;
     }
 
-    private void syncClanwarRelations(Clanwar clanwar, Map<String, String[]> data) {
+    private void syncClanwarRelations(Clanwar clanwar, Map<String, String[]> data, Map<String, List<String>> uploads) {
         syncLineup(clanwar, data);
         List<Score> existingScores = Score.find.query().where().eq("match.id", clanwar.getId()).findList();
         for (Score score : existingScores) {
@@ -1138,8 +1244,8 @@ public class AdminController extends Controller {
             score.setDwcScore(integer(value(data, "scoreDwc_" + score.getId())));
             score.setEnemyScore(integer(value(data, "scoreEnemy_" + score.getId())));
             score.update();
-            syncImages(score, data);
-            syncDemos(score, data);
+            syncImages(score, data, uploads);
+            syncDemos(score, data, uploads);
         }
         for (String key : values(data, "newScoreKey")) {
             Score score = new Score();
@@ -1149,7 +1255,8 @@ public class AdminController extends Controller {
             score.setEnemyScore(integer(value(data, "newScoreEnemy_" + key)));
             score.save();
             for (String imageName : values(data, "newScoreImage_" + key)) saveImage(score, imageName);
-            saveNewDemos(score, data, "newScoreDemo_" + key);
+            for (String imageName : uploads.getOrDefault("newScoreImageUpload_" + key, List.of())) saveImage(score, imageName);
+            saveNewDemos(score, data, "newScoreDemo_" + key, uploads);
         }
     }
 
@@ -1176,7 +1283,7 @@ public class AdminController extends Controller {
         }
     }
 
-    private void syncImages(Score score, Map<String, String[]> data) {
+    private void syncImages(Score score, Map<String, String[]> data, Map<String, List<String>> uploads) {
         for (ScoreImage image : ScoreImage.find.query().where().eq("score.id", score.getId()).findList()) {
             if (data.containsKey("imageDelete_" + image.getId())) {
                 image.delete();
@@ -1186,6 +1293,7 @@ public class AdminController extends Controller {
             }
         }
         for (String imageName : values(data, "scoreNewImage_" + score.getId())) saveImage(score, imageName);
+        for (String imageName : uploads.getOrDefault("scoreImageUpload_" + score.getId(), List.of())) saveImage(score, imageName);
     }
 
     private void saveImage(Score score, String imageName) {
@@ -1196,7 +1304,7 @@ public class AdminController extends Controller {
         image.save();
     }
 
-    private void syncDemos(Score score, Map<String, String[]> data) {
+    private void syncDemos(Score score, Map<String, String[]> data, Map<String, List<String>> uploads) {
         for (ScoreDemo demo : ScoreDemo.find.query().where().eq("score.id", score.getId()).findList()) {
             String file = value(data, "demoFile_" + demo.getId());
             String player = value(data, "demoPlayer_" + demo.getId());
@@ -1208,18 +1316,16 @@ public class AdminController extends Controller {
                 demo.update();
             }
         }
-        saveNewDemos(score, data, "scoreNewDemo_" + score.getId());
+        saveNewDemos(score, data, "scoreNewDemo_" + score.getId(), uploads);
     }
 
-    private void saveNewDemos(Score score, Map<String, String[]> data, String name) {
-        String[] files = values(data, name + "File");
-        String[] players = values(data, name + "Player");
-        for (int i = 0; i < Math.min(files.length, players.length); i++) {
-            if (files[i].isBlank() && players[i].isBlank()) continue;
+    private void saveNewDemos(Score score, Map<String, String[]> data, String name, Map<String, List<String>> uploads) {
+        for (String[] row : newDemos(data, name, uploads)) {
+            if (row[0].isBlank() && row[1].isBlank()) continue;
             ScoreDemo demo = new ScoreDemo();
             demo.setScore(score);
-            demo.setFile(files[i].trim());
-            demo.setPlayer(players[i].trim());
+            demo.setFile(row[0]);
+            demo.setPlayer(row[1]);
             demo.save();
         }
     }
@@ -1245,6 +1351,9 @@ public class AdminController extends Controller {
 
     private static Map<String, String[]> form(Http.Request request) {
         Map<String, String[]> values = request.body().asFormUrlEncoded();
+        if (values == null && request.body().asMultipartFormData() != null) {
+            values = request.body().asMultipartFormData().asFormUrlEncoded();
+        }
         return values == null ? Map.of() : values;
     }
 
