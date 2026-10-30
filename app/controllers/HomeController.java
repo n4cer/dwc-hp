@@ -148,7 +148,7 @@ public class HomeController extends Controller {
       String shownGap = List.of(ClanwarGaps.DEMOS, ClanwarGaps.SCREENSHOTS, ClanwarGaps.LINEUP).contains(gap) ? gap : "";
       List<Clanwar> clanwars = Clanwar.find.query()
               .fetch("league").fetch("gametype").fetch("scores").fetch("scores.map")
-              .fetch("scores.images").fetch("scores.demos").fetch("lineups")
+              .fetch("scores.images").fetch("scores.demos").fetch("lineups").fetch("lineups.member")
               .where().eq("game.description", ClanwarGaps.GAME)
               .orderBy().desc("date").findList();
 

@@ -12,11 +12,26 @@
 }
 
 @main(messages.at("clanwars.title"), messages, messages.at("clanwars.description"), controllers.routes.HomeController.clanwars().url) {
-    <h1>@messages.at("clanwars.title")</h1>
-    <div class="mitteContent">
-        <div class="mitteContent">
+    <div class="mitteContent modern-page">
+        <h1 class="page-title">@messages.at("clanwars.title")</h1>
+        <p class="page-lead">@messages.at("clanwars.description")</p>
+
+        <div class="stat-tiles">
+            <div class="stat-tile"><b>@stats.getOverall.getTotal()</b><span>@messages.at("clanwars.stats.total")</span></div>
+            <div class="stat-tile stat-tile-win"><b>@stats.getOverall.getWins()</b><span>@messages.at("clanwars.stats.wins")</span></div>
+            <div class="stat-tile stat-tile-draw"><b>@stats.getOverall.getDraws()</b><span>@messages.at("clanwars.stats.draws")</span></div>
+            <div class="stat-tile stat-tile-loss"><b>@stats.getOverall.getLosses()</b><span>@messages.at("clanwars.stats.losses")</span></div>
+            <div class="stat-tile stat-tile-accent"><b>@stats.getOverall.getWinRate()%</b><span>@messages.at("clanwars.stats.winrate")</span></div>
+        </div>
+
+        <div class="pill-nav">
+            <a href="@controllers.routes.HomeController.clanwarGaps("")">@messages.at("clanwars.gapsLink")</a>
+        </div>
+
+        <div>
             <details class="clanwar-stats-section">
             <summary class="clanwar-stats-summary">@messages.at("clanwars.stats.title")</summary>
+            <div class="table-box">
             <table class="text clanwar-table clanwar-stats">
                 <thead><tr>
                     <th scope="col">@messages.at("clanwars.stats.category")</th>
@@ -37,8 +52,10 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
 
-            <h3>@messages.at("clanwars.stats.byGame")</h3>
+            <h3 class="section-title">@messages.at("clanwars.stats.byGame")</h3>
+            <div class="table-box">
             <table class="text clanwar-table clanwar-stats">
                 <thead><tr>
                     <th scope="col">@messages.at("clanwars.stats.game")</th>
@@ -54,8 +71,10 @@
                 }
                 </tbody>
             </table>
+            </div>
 
-            <h3>@messages.at("clanwars.stats.byGametype")</h3>
+            <h3 class="section-title">@messages.at("clanwars.stats.byGametype")</h3>
+            <div class="table-box">
             <table class="text clanwar-table clanwar-stats">
                 <thead><tr>
                     <th scope="col">@messages.at("clanwars.stats.gametype")</th>
@@ -71,11 +90,10 @@
                 }
                 </tbody>
             </table>
+            </div>
             </details>
 
-            <p><a href="@controllers.routes.HomeController.clanwarGaps("")">@messages.at("clanwars.gapsLink")</a></p>
-
-            <div class="table-scroll">
+            <div class="table-box">
             <table class="text clanwar-table">
                 <thead><tr>
                     <th scope="col">date</th>
@@ -102,7 +120,7 @@
                         <td>@clanwar.getGame()</td>
                         <td>@clanwar.getGametype()</td>
                         <td>@clanwar.getLeague()</td>
-                        <td class="result" data-result-color="@clanwar.getColor()">@clanwar.getResult()</td>
+                        <td class="result"><span class="result-pill" data-result-color="@clanwar.getColor()">@clanwar.getResult()</span></td>
                         <td>
                             <a href="@controllers.routes.HomeController.clanwar(clanwar.getId())">view</a>
                         </td>

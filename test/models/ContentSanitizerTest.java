@@ -16,6 +16,14 @@ public class ContentSanitizerTest {
     }
 
     @Test
+    public void keepsLists() {
+        String result = ContentSanitizer.sanitizeHtml("<ul><li>a<ul><li>b</li></ul></li></ul><ol><li>c</li></ol>");
+
+        assertTrue(result.contains("<ul><li>a<ul><li>b</li></ul></li></ul>"));
+        assertTrue(result.contains("<ol><li>c</li></ol>"));
+    }
+
+    @Test
     public void removesScriptsHandlersAndUnsafeUrls() {
         String result = ContentSanitizer.sanitizeHtml(
                 "<script>alert(1)</script><b onclick=\"alert(1)\">text</b><a href=\"javascript:alert(1)\">bad</a>");

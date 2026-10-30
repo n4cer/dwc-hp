@@ -24,6 +24,14 @@
     --dwc-q3-black: #000000;
     --dwc-error-bg: #f9dddd;
     --dwc-success-bg: #e0f2df;
+    --dwc-win: #1f8a3d;
+    --dwc-loss: #b3261e;
+    --dwc-draw: #c9610a;
+    --dwc-chip-gap-bg: #f9dddd;
+    --dwc-chip-gap-text: #9c2219;
+    --dwc-chip-have-bg: #e0f2df;
+    --dwc-chip-have-text: #1c6b32;
+    --dwc-accent-text: #8a5f00;
 }
 
 /* Theme tokens - dark, automatic via OS/browser preference (unless overridden) */
@@ -49,6 +57,14 @@
         --dwc-q3-black: #e8e8e8;
         --dwc-error-bg: #3a1f1f;
         --dwc-success-bg: #1f3a20;
+        --dwc-win: #1f8a3d;
+        --dwc-loss: #b3261e;
+        --dwc-draw: #c9610a;
+        --dwc-chip-gap-bg: #3a1f1f;
+        --dwc-chip-gap-text: #f0a097;
+        --dwc-chip-have-bg: #1f3a20;
+        --dwc-chip-have-text: #8fd3a2;
+        --dwc-accent-text: #E2A612;
     }
 }
 
@@ -74,6 +90,14 @@
     --dwc-q3-black: #e8e8e8;
     --dwc-error-bg: #3a1f1f;
     --dwc-success-bg: #1f3a20;
+    --dwc-win: #1f8a3d;
+    --dwc-loss: #b3261e;
+    --dwc-draw: #c9610a;
+    --dwc-chip-gap-bg: #3a1f1f;
+    --dwc-chip-gap-text: #f0a097;
+    --dwc-chip-have-bg: #1f3a20;
+    --dwc-chip-have-text: #8fd3a2;
+    --dwc-accent-text: #E2A612;
 }
 
 #body                {background-color:var(--dwc-bg-page); height:100%;}
@@ -199,7 +223,9 @@ a:hover              {color:#F2B622;text-decoration:underline;}
 .bordered-image {border:1px solid;}
 .text-center {text-align:center;}
 .text-justify {text-align:justify;}
-.pagination {display:flex;align-items:center;justify-content:center;gap:18px;margin:20px 0 10px;font-weight:bold;}
+.pagination {display:flex;align-items:center;justify-content:center;gap:12px;margin:18px 0 10px;font-size:12px;font-weight:bold;}
+.pagination a {padding:5px 12px;border:1px solid var(--dwc-border);border-radius:999px;background:var(--dwc-surface);}
+.pagination a:hover {border-color:#E2A612;text-decoration:none;}
 .pagination span {color:var(--dwc-text-muted);}
 .clanwar-table {border-collapse:separate;border-spacing:1px;width:100%;}
 .clanwar-table th,.clanwar-table td {padding:2px;}
@@ -367,37 +393,37 @@ th[aria-sort] {color:#E2A612;}
 
 /* Clanwar-Detailansicht */
 .clanwar-nav {display:flex;justify-content:space-between;gap:10px;margin:10px 0 14px;font-size:11px;}
-.clanwar-nav a {display:inline-block;padding:4px 9px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);}
+.clanwar-nav a {display:inline-block;padding:4px 10px;border:1px solid var(--dwc-border);border-radius:999px;background:var(--dwc-surface);}
 .clanwar-nav a:hover {border-color:#E2A612;}
 
-.clanwar-detail-header {display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);}
+.clanwar-detail-header {display:flex;align-items:center;gap:14px;margin:0 0 16px;padding:14px 16px;border:1px solid var(--dwc-border);border-radius:8px;background:var(--dwc-surface);}
 .clanwar-detail-flag {height:32px;box-shadow:0 0 0 1px var(--dwc-border);flex-shrink:0;}
 .clanwar-detail-title {flex:1;min-width:0;}
 .clanwar-detail-title h1 {margin:0 0 4px;font-size:19px;}
 .clanwar-detail-meta {color:var(--dwc-text-muted);font-size:11px;}
-.clanwar-detail-result {flex-shrink:0;text-align:center;padding:8px 18px;color:#fff;font-weight:bold;font-size:22px;line-height:1.1;min-width:80px;}
+.clanwar-detail-result {flex-shrink:0;text-align:center;padding:8px 18px;border-radius:8px;color:#fff;font-weight:bold;font-size:22px;line-height:1.1;min-width:80px;}
 .clanwar-detail-result .clanwar-outcome {display:block;margin-top:3px;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:.05em;}
-.clanwar-detail-result[data-result-color="#C10000"] {background-color:#C10000;}
-.clanwar-detail-result[data-result-color="#00B900"] {background-color:#00B900;}
-.clanwar-detail-result[data-result-color="#FF5706"] {background-color:#FF5706;}
+.clanwar-detail-result[data-result-color="#C10000"] {background-color:var(--dwc-loss);}
+.clanwar-detail-result[data-result-color="#00B900"] {background-color:var(--dwc-win);}
+.clanwar-detail-result[data-result-color="#FF5706"] {background-color:var(--dwc-draw);}
 
 .clanwar-lineup {display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px;}
 .clanwar-lineup a {display:inline-block;padding:3px 9px;border-radius:10px;font-size:10px;font-weight:bold;background:#E2A612;color:#111;text-decoration:none;}
 .clanwar-lineup a:hover {background:#F2B622;color:#111;text-decoration:none;}
 
 .clanwar-scores {display:flex;flex-direction:column;gap:10px;margin:0 0 16px;}
-.clanwar-score-card {border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);padding:10px 12px;}
+.clanwar-score-card {border:1px solid var(--dwc-border);border-radius:8px;background:var(--dwc-surface);padding:10px 12px;}
 .clanwar-score-head {display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .clanwar-score-map {font-weight:bold;}
-.clanwar-score-value {display:inline-block;padding:2px 10px;color:#fff;font-weight:bold;}
-.clanwar-score-value[data-result-color="#C10000"] {background-color:#C10000;}
-.clanwar-score-value[data-result-color="#00B900"] {background-color:#00B900;}
-.clanwar-score-value[data-result-color="#FF5706"] {background-color:#FF5706;}
+.clanwar-score-value {display:inline-block;padding:2px 10px;border-radius:999px;color:#fff;font-weight:bold;}
+.clanwar-score-value[data-result-color="#C10000"] {background-color:var(--dwc-loss);}
+.clanwar-score-value[data-result-color="#00B900"] {background-color:var(--dwc-win);}
+.clanwar-score-value[data-result-color="#FF5706"] {background-color:var(--dwc-draw);}
 .clanwar-no-screenshot {color:var(--dwc-text-muted);}
 .clanwar-score-demos {margin:6px 0 0;}
 .clanwar-score-demos a {margin-left:6px;}
 
-.clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;background:var(--dwc-surface-alt);}
+.clanwar-report {margin:0 0 10px;padding:12px 14px;border-left:4px solid #E2A612;border-radius:4px;background:var(--dwc-surface);}
 .clanwar-report h2 {margin:0 0 8px;font-size:14px;}
 .clanwar-report p {white-space:pre-line;}
 
@@ -429,6 +455,81 @@ th[aria-sort] {color:#E2A612;}
 .download-meta {margin-left:6px;color:var(--dwc-text-muted);font-size:11px;}
 .download-type {padding:0 4px;border:1px solid var(--dwc-border);background:var(--dwc-surface-alt);font-size:10px;}
 .download-description {margin-top:3px;font-size:11px;}
+
+/* Gemeinsame Bausteine: Kacheln, Tabellen, Chips, Karten */
+.page-title {margin:6px 0 4px;font-size:24px;line-height:1.2;}
+.page-lead {max-width:640px;margin:0 0 16px;color:var(--dwc-text-muted);font-size:13px;line-height:1.5;}
+.section-title {margin:22px 0 10px;font-size:16px;line-height:1.2;}
+.modern-page {font-size:12px;line-height:1.5;}
+
+.stat-tiles {display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin:0 0 14px;}
+.stat-tile {padding:10px 12px;border:1px solid var(--dwc-border);border-radius:8px;background:var(--dwc-surface);}
+.stat-tile b {display:block;font-size:24px;line-height:1.15;font-variant-numeric:tabular-nums;}
+.stat-tile span {color:var(--dwc-text-muted);font-size:11px;line-height:1.3;}
+.stat-tile-accent b {color:var(--dwc-accent-text);}
+.stat-tile-win b {color:var(--dwc-win);}
+.stat-tile-loss b {color:var(--dwc-loss);}
+.stat-tile-draw b {color:var(--dwc-draw);}
+
+.table-box {overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--dwc-border);border-radius:8px;background:var(--dwc-surface);}
+.table-box .clanwar-table {border-collapse:collapse;border-spacing:0;font-variant-numeric:tabular-nums;}
+.table-box .clanwar-table th {padding:8px 10px;color:var(--dwc-text-muted);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--dwc-border);white-space:nowrap;}
+.table-box .clanwar-table td {padding:7px 10px;border-bottom:1px solid var(--dwc-border);}
+.table-box .clanwar-table tbody tr:last-child td {border-bottom:0;}
+.table-box .clanwar-table tbody tr:hover {background:var(--dwc-surface-alt);}
+.table-box .clanwar-stats {margin-bottom:0;}
+.table-box .clanwar-stats td,.table-box .clanwar-stats th {text-align:right;}
+.table-box .clanwar-stats td:first-child,.table-box .clanwar-stats th:first-child {text-align:left;}
+
+.result-pill {display:inline-block;min-width:44px;padding:2px 8px;border-radius:999px;color:#fff;font-weight:bold;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.result-pill[data-result-color="#00B900"] {background-color:var(--dwc-win);}
+.result-pill[data-result-color="#C10000"] {background-color:var(--dwc-loss);}
+.result-pill[data-result-color="#FF5706"] {background-color:var(--dwc-draw);}
+
+.chip {display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:bold;line-height:1.4;white-space:nowrap;}
+.chip-gap {background:var(--dwc-chip-gap-bg);color:var(--dwc-chip-gap-text);}
+.chip-have {background:var(--dwc-chip-have-bg);color:var(--dwc-chip-have-text);}
+
+.pill-nav {display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+.pill-nav a,.pill-nav strong {display:inline-block;padding:5px 12px;border:1px solid var(--dwc-border);border-radius:999px;background:var(--dwc-surface);font-size:12px;}
+.pill-nav a:hover {border-color:#E2A612;text-decoration:none;}
+.pill-nav strong {border-color:#E2A612;background:#E2A612;color:#111;}
+
+.year-group {margin:0 0 8px;border:1px solid var(--dwc-border);border-radius:8px;background:var(--dwc-surface);}
+.year-group > summary {padding:10px 14px;font-size:14px;font-weight:bold;cursor:pointer;}
+.year-group > summary small {margin-left:6px;color:var(--dwc-text-muted);font-size:11px;font-weight:normal;}
+.year-group-body {display:grid;gap:6px;padding:0 10px 10px;}
+
+.gap-row {border:1px solid var(--dwc-border);border-radius:6px;background:var(--dwc-surface-alt);}
+.gap-row[open] {border-color:#E2A612;}
+.gap-row > summary {display:grid;grid-template-columns:72px minmax(0,1fr) auto auto;gap:4px 12px;align-items:center;padding:8px 10px;list-style:none;cursor:pointer;}
+.gap-row > summary::-webkit-details-marker {display:none;}
+.gap-row-date {color:var(--dwc-text-muted);font-variant-numeric:tabular-nums;}
+.gap-row-who {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.gap-row-who small {margin-left:6px;color:var(--dwc-text-muted);font-size:11px;}
+.gap-row-chips {display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;}
+.gap-row-body {display:grid;gap:6px;padding:8px 10px 10px;border-top:1px solid var(--dwc-border);}
+.gap-map {display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;padding:6px 8px;border-radius:4px;background:var(--dwc-surface);}
+.gap-map-name {font-weight:bold;}
+.gap-map-score {font-variant-numeric:tabular-nums;}
+.gap-map-note {flex-basis:100%;color:var(--dwc-text-muted);font-size:11px;}
+
+/* News */
+.news-card {margin:0 0 12px;padding:14px 16px;border:1px solid var(--dwc-border);border-radius:8px;background:var(--dwc-surface);}
+.news-card-title {margin:0 0 3px;font-size:17px;line-height:1.25;}
+.news-card-meta {margin:0 0 10px;color:var(--dwc-text-muted);font-size:11px;}
+.news-card-edit {margin:10px 0 0;}
+
+/* Frei eingegebenes HTML aus der Administration */
+.rich-text {font-size:13px;line-height:1.55;overflow-wrap:anywhere;}
+.rich-text p {margin:0 0 .7em;}
+.rich-text p:last-child {margin-bottom:0;}
+.rich-text ul,.rich-text ol {margin:.4em 0 .8em;padding-left:1.6em;}
+.rich-text ul {list-style:disc outside;}
+.rich-text ol {list-style:decimal outside;}
+.rich-text ul ul {list-style-type:circle;}
+.rich-text li {margin:.2em 0;}
+.rich-text ul:last-child,.rich-text ol:last-child {margin-bottom:0;}
 
 /* Responsive shell: header scales fluidly at every width, everything else
    switches to a stacked, drawer-based layout below 900px. */
@@ -501,6 +602,9 @@ th[aria-sort] {color:#E2A612;}
     #blockLeft ul li a {display:block;padding:8px 2px;}
 
     .clanwar-nav,.clanwar-detail-header {flex-wrap:wrap;}
+    .gap-row > summary {grid-template-columns:minmax(0,1fr) auto;}
+    .gap-row-date {grid-column:1 / -1;}
+    .gap-row-chips {grid-column:1 / -1;justify-content:flex-start;}
 
     .admin-grid {grid-template-columns:1fr;}
     .admin-score-fields {grid-template-columns:1fr 1fr;}

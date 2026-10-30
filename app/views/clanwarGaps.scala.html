@@ -2,19 +2,36 @@
 
 @filter(value: String, label: String) = {
     @if(gap == value) {
-        <strong>@label</strong>
+        <strong aria-current="true">@label</strong>
     } else {
         <a href="@controllers.routes.HomeController.clanwarGaps(value)">@label</a>
     }
 }
 
-@main(messages.at("clanwarGaps.title"), messages, messages.at("clanwarGaps.description"), controllers.routes.HomeController.clanwarGaps("").url) {
-    <h1>@messages.at("clanwarGaps.title")</h1>
-    <div class="mitteContent">
-        <p>@messages.at("clanwarGaps.intro")</p>
+@tile(value: Int, label: String, cssClass: String) = {
+    <div class="stat-tile @cssClass"><b>@value</b><span>@label</span></div>
+}
 
-        <h3>@messages.at("clanwarGaps.summary")</h3>
-        <div class="table-scroll">
+@chip(present: Boolean, label: String) = {
+    <span class="chip @if(present) {chip-have} else {chip-gap}">@label</span>
+}
+
+@main(messages.at("clanwarGaps.title"), messages, messages.at("clanwarGaps.description"), controllers.routes.HomeController.clanwarGaps("").url) {
+    <div class="mitteContent modern-page">
+        <h1 class="page-title">@messages.at("clanwarGaps.title")</h1>
+        <p class="page-lead">@messages.at("clanwarGaps.intro")</p>
+
+        <div class="stat-tiles">
+            @tile(gaps.getTotals.getClanwars, messages.at("clanwarGaps.clanwars"), "")
+            @tile(gaps.getTotals.getComplete, messages.at("clanwarGaps.complete"), "")
+            @tile(gaps.getTotals.getMapsWithoutDemo, messages.at("clanwarGaps.mapsNoDemo"), "")
+            @tile(gaps.getTotals.getMapsWithoutScreenshot, messages.at("clanwarGaps.mapsNoScreenshot"), "")
+            @tile(gaps.getTotals.getClanwarsWithoutLineup, messages.at("clanwarGaps.clanwarsNoLineup"), "")
+            @tile(gaps.getTotals.getMapsWithRenderableScreenshot, messages.at("clanwarGaps.tile.renderable"), "stat-tile-accent")
+        </div>
+
+        <h2 class="section-title">@messages.at("clanwarGaps.byYear")</h2>
+        <div class="table-box">
             <table class="text clanwar-table clanwar-stats">
                 <thead><tr>
                     <th scope="col">@messages.at("clanwarGaps.year")</th>
@@ -26,15 +43,6 @@
                     <th scope="col">@messages.at("clanwarGaps.noLineup")</th>
                 </tr></thead>
                 <tbody>
-                    <tr class="clanwar-stats-overall">
-                        <td>@messages.at("clanwars.stats.overall")</td>
-                        <td>@gaps.getTotals.getClanwars</td>
-                        <td>@gaps.getTotals.getComplete</td>
-                        <td>@gaps.getTotals.getMaps</td>
-                        <td>@gaps.getTotals.getMapsWithoutDemo</td>
-                        <td>@gaps.getTotals.getMapsWithoutScreenshot</td>
-                        <td>@gaps.getTotals.getClanwarsWithoutLineup</td>
-                    </tr>
                     @for(year <- gaps.getYears.asScala) {
                         <tr>
                             <td>@year.year()</td>
@@ -49,64 +57,60 @@
                 </tbody>
             </table>
         </div>
-        <p>@messages.at("clanwarGaps.renderable", gaps.getTotals.getMapsWithRenderableScreenshot)</p>
 
-        <h3>@messages.at("clanwarGaps.list")</h3>
-        <p class="clanwar-gaps-filter">
-            @filter("", messages.at("clanwarGaps.filter.all")) |
-            @filter(ClanwarGaps.DEMOS, messages.at("clanwarGaps.filter.demos")) |
-            @filter(ClanwarGaps.SCREENSHOTS, messages.at("clanwarGaps.filter.screenshots")) |
+        <h2 class="section-title">@messages.at("clanwarGaps.list")</h2>
+        <nav class="pill-nav" aria-label="@messages.at("clanwarGaps.list")">
+            @filter("", messages.at("clanwarGaps.filter.all"))
+            @filter(ClanwarGaps.DEMOS, messages.at("clanwarGaps.filter.demos"))
+            @filter(ClanwarGaps.SCREENSHOTS, messages.at("clanwarGaps.filter.screenshots"))
             @filter(ClanwarGaps.LINEUP, messages.at("clanwarGaps.filter.lineup"))
-        </p>
+        </nav>
 
         @for(year <- gaps.getYears.asScala if !year.entries().isEmpty) {
-            <details class="clanwar-stats-section">
-                <summary class="clanwar-stats-summary">@year.year() (@year.entries().size)</summary>
-                <div class="table-scroll">
-                    <table class="text clanwar-table clanwar-gaps">
-                        <thead><tr>
-                            <th scope="col">@messages.at("clanwarGaps.date")</th>
-                            <th scope="col">@messages.at("clanwarGaps.opponent")</th>
-                            <th scope="col">@messages.at("clanwarGaps.league")</th>
-                            <th scope="col">@messages.at("clanwarGaps.result")</th>
-                            <th scope="col">@messages.at("clanwarGaps.missing")</th>
-                        </tr></thead>
-                        <tbody>
-                        @for(entry <- year.entries().asScala) {
-                            <tr>
-                                <td>@entry.clanwar().getDate().format("dd.MM.yyyy")</td>
-                                <td>
-                                    <a href="@controllers.routes.HomeController.clanwar(entry.clanwar().getId())">@entry.clanwar().getEnemy()</a>
-                                    @if(isAdmin) {
-                                        (<a href="@controllers.routes.AdminController.editClanwar(entry.clanwar().getId())">Edit</a>)
+            <details class="year-group">
+                <summary>@year.year()<small>@messages.at("clanwarGaps.count", year.entries().size)</small></summary>
+                <div class="year-group-body">
+                @for(entry <- year.entries().asScala) {
+                    <details class="gap-row">
+                        <summary>
+                            <span class="gap-row-date">@entry.clanwar().getDate().format("dd.MM.yyyy")</span>
+                            <span class="gap-row-who"><b>@entry.clanwar().getEnemy()</b><small>@entry.clanwar().getLeague() &middot; @entry.clanwar().getGametype()</small></span>
+                            <span class="result-pill" data-result-color="@entry.clanwar().getColor()">@entry.clanwar().getResult()</span>
+                            <span class="gap-row-chips">
+                                @if(entry.isDemoMissing) { @chip(false, messages.at("clanwarGaps.gap.demo")) }
+                                @if(entry.isScreenshotMissing) { @chip(false, messages.at("clanwarGaps.gap.screenshot")) }
+                                @if(entry.lineupMissing()) { @chip(false, messages.at("clanwarGaps.gap.lineup")) }
+                            </span>
+                        </summary>
+                        <div class="gap-row-body">
+                            <div>
+                                <b>@messages.at("clanwarGaps.lineup"):</b>
+                                @if(entry.lineupMissing()) {
+                                    @chip(false, messages.at("clanwarGaps.gap.lineup"))
+                                } else {
+                                    @entry.clanwar().getLineups().asScala.map(_.getMember().getNick()).mkString(", ")
+                                }
+                            </div>
+                            @for(map <- entry.maps().asScala) {
+                                <div class="gap-map">
+                                    <span class="gap-map-name">@if(map.score().getMap() != null) {@map.score().getMap().getMap()}</span>
+                                    <span class="gap-map-score">@map.score().getDwcScore():@map.score().getEnemyScore()</span>
+                                    @chip(!map.demoMissing(), messages.at("clanwarGaps.gap.demo"))
+                                    @chip(!map.screenshotMissing(), messages.at("clanwarGaps.gap.screenshot"))
+                                    @if(map.screenshotMissing() && !map.demoMissing()) {
+                                        <span class="gap-map-note">@messages.at("clanwarGaps.renderableNote")</span>
                                     }
-                                </td>
-                                <td>@entry.clanwar().getLeague()</td>
-                                <td class="result" data-result-color="@entry.clanwar().getColor()">@entry.clanwar().getResult()</td>
-                                <td>
-                                    @if(entry.lineupMissing()) {
-                                        <div>@messages.at("clanwarGaps.gap.lineup")</div>
-                                    }
-                                    @for(map <- entry.maps().asScala if !map.isComplete) {
-                                        <div>
-                                            @if(map.score().getMap() != null) { @map.score().getMap().getMap() }
-                                            @map.score().getDwcScore():@map.score().getEnemyScore():
-                                            @if(map.demoMissing() && map.screenshotMissing()) {
-                                                @messages.at("clanwarGaps.gap.both")
-                                            } else {
-                                                @if(map.demoMissing()) {
-                                                    @messages.at("clanwarGaps.gap.demo")
-                                                } else {
-                                                    @messages.at("clanwarGaps.gap.screenshot")
-                                                }
-                                            }
-                                        </div>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
+                                </div>
+                            }
+                            <div>
+                                <a href="@controllers.routes.HomeController.clanwar(entry.clanwar().getId())">@messages.at("clanwarGaps.open") &raquo;</a>
+                                @if(isAdmin) {
+                                    &middot; <a href="@controllers.routes.AdminController.editClanwar(entry.clanwar().getId())">Edit</a>
+                                }
+                            </div>
+                        </div>
+                    </details>
+                }
                 </div>
             </details>
         }
